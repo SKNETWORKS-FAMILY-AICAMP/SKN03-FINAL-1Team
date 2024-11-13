@@ -1,5 +1,5 @@
 <script setup>
-import Header from '@/components/Header.vue'
+import Header from '@/components/home/Header.vue'
 import SearchSection from '@/components/home/SearchSection.vue'
 import CardSection from '@/components/home/CardSection.vue'
 import IntroSection from '@/components/home/IntroSection.vue'
