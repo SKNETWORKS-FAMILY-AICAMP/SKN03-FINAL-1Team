@@ -1,8 +1,6 @@
 <template>
   <header>
-    <h1>
-      <a href="#" class="logo"><img alt="Vue logo" src="@/assets/home-logo.png" width="200" /></a>
-    </h1>
+    <a href="#" class="logo"><img alt="logo" src="@/assets/home-logo.png" width="200" /></a>
     <div class="menuWrap">
       <ul class="menu">
         <li><a href="javascript:;">Search</a></li>
