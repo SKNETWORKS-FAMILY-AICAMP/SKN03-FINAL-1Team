@@ -1,18 +1,16 @@
-<script setup></script>
+<script setup>
+import LeftSection from '@/components/Chatbot/LeftSection.vue'
+import RightSection from '@/components/Chatbot/RightSection.vue'
+</script>
 
 <template>
-  <div class="container-fluid vh-100 d-flex flex-column">
-    <div class="row flex-fill">
-      <div class="col-12 col-md-3 d-flex flex-column justify-content-center bg-light p-3">
-        <!-- 좌측 30% -->
-        <div class="left-side-content d-flex flex-column align-items-start">
-          <!-- 원하는 콘텐츠 추가 -->
-          <p>왼쪽 콘텐츠 영역</p>
-        </div>
+  <div class="container-fluid d-flex">
+    <div class="row flex-fill w-100">
+      <div class="col-md-3 p-0">
+        <LeftSection />
       </div>
-      <div class="col-12 col-md-9 d-flex flex-column justify-content-center bg-white p-3">
-        <!-- 우측 70% -->
-        <div class="right-side-content">오른쪽 콘텐츠 영역</div>
+      <div class="col-md-9 p-0">
+        <RightSection />
       </div>
     </div>
   </div>
@@ -20,22 +18,18 @@
 
 <style scoped>
 .container-fluid {
-  height: 100vh; /* 뷰포트 높이를 100%로 설정 */
-}
-
-.left-side-content {
-  background-color: #a04747; /* 배경 색상 설정 */
-  width: 100%;
-  height: 100%;
-  display: flex;
-  align-items: stretch; /* 상하로 빈 공간 없이 채움 */
-  padding: 0;
+  height: 100vh;
   margin: 0;
+  padding: 0;
 }
 
-.right-side-content {
-  background-color: #ffffff; /* 배경 색상 설정 */
+.row {
+  margin: 0;
   width: 100%;
-  height: 100%;
+}
+
+.col-md-4,
+.col-md-8 {
+  padding: 0;
 }
 </style>

@@ -49,9 +49,9 @@
           <p>진윤화 | git : 대충깃링크</p>
         </div>
       </div>
-      <div class="footer-info">
-        <p>© 2024 DocuMento. All Rights Reserved.</p>
-        <img src="@/assets/logo.png" alt="DocuMento logo" width="200" />
+      <div class="footer-info d-flex justify-content-center align-items-center">
+        <img src="@/assets/logo-white.png" alt="DocuMento logo" width="200" class="logo-image" />
+        <p class="mb-0 ml-1">© 2024 DocuMento. <br />All Rights Reserved.</p>
       </div>
     </div>
   </footer>
@@ -75,14 +75,19 @@ footer {
   flex: 1;
   text-align: center;
 }
-
 .footer-info {
   margin-top: 10px;
+  display: flex; /* Flexbox 사용하여 수평 정렬 */
+  align-items: center; /* 요소들이 수직 중앙에 정렬되도록 설정 */
 }
 
 .footer-info img {
   display: block;
-  margin: 0 auto;
+  margin-right: 20px;
+}
+
+.logo-image {
+  margin: 0;
 }
 /* 카드부분 */
 .count-box-container {

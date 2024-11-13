@@ -1,7 +1,7 @@
 <template>
   <header>
     <h1>
-      <a href="#" class="logo"><img alt="Vue logo" src="@/assets/logo.png" width="200" /></a>
+      <a href="#" class="logo"><img alt="Vue logo" src="@/assets/home-logo.png" width="200" /></a>
     </h1>
     <div class="menuWrap">
       <ul class="menu">
