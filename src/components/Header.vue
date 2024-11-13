@@ -24,22 +24,29 @@ header {
   text-align: center;
   position: relative;
   height: 120px;
+  box-sizing: border-box; /* 추가: 박스 크기 조정 */
+  padding: 0 15px; /* 추가: 내부 여백 설정 */
+  overflow-x: hidden; /* 추가: 좌우 스크롤 제거 */
 }
+
 header h1 {
   position: absolute;
   top: 0;
   left: 100px;
 }
+
 header ul.menu:after {
   display: block;
   clear: both;
   content: '';
 }
+
 header ul.menu {
   position: absolute;
   top: 20px;
   right: 150px;
 }
+
 header ul.menu li {
   float: left;
   padding: 10px 20px;
@@ -58,6 +65,7 @@ button.login-btn {
   border-radius: 5px;
   cursor: pointer;
 }
+
 button.login-btn:hover {
   background-color: #a04747;
 }
