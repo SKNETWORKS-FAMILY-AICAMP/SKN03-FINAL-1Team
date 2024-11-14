@@ -3,6 +3,7 @@ import { ref, onMounted, watch, nextTick } from 'vue'
 
 const messages = ref([]) // 대화 내용 저장
 const inputText = ref('') // 입력값 저장
+const isToggled = ref(false) // 토글 상태 저장
 
 const sendMessage = () => {
   if (inputText.value.trim() !== '') {
@@ -29,9 +30,19 @@ onMounted(() => {
 watch(messages, () => {
   scrollToBottom()
 })
+
+const toggleChat = () => {
+  isToggled.value = !isToggled.value // 토글 상태 변경
+}
 </script>
+
 <template>
   <div class="right-side-content d-flex flex-column justify-content-between align-items-center p-4">
+    <div class="toggle-switch" @click="toggleChat">
+      <span class="toggle-text left">기술상담</span>
+      <div :class="['toggle-knob', { toggled: isToggled }]"></div>
+      <span class="toggle-text right">논문탐색</span>
+    </div>
     <div class="chat-box flex-grow-1 w-100" ref="chatBoxRef">
       <div v-for="(message, index) in messages" :key="index" :class="['message', message.type]">
         {{ message.text }}
@@ -61,6 +72,49 @@ watch(messages, () => {
   justify-content: space-between; /* 상단과 하단으로 공간 분배 */
   align-items: center; /* 수평 중앙 정렬 */
   max-width: 900px;
+}
+
+.toggle-switch {
+  width: 150px;
+  height: 25px;
+  background-color: #ccc;
+  border-radius: 25px;
+  position: relative;
+  cursor: pointer;
+  margin-bottom: 10px; /* 아래 여백 추가 */
+  display: flex;
+  align-items: center;
+  justify-content: space-between; /* 텍스트 간의 공간 분배 */
+  padding: 0 10px;
+}
+
+.toggle-knob {
+  width: 50px;
+  height: 25px;
+  background-color: #fff;
+  border-radius: 25px;
+  position: absolute;
+  top: 0;
+  left: 0;
+  transition: left 0.2s ease-in-out;
+}
+
+.toggled {
+  left: 50%; /* 토글 상태일 때 우측으로 이동 */
+  background-color: #a04747; /* 활성화 상태일 때 색상 */
+}
+
+.toggle-text {
+  font-size: 12px;
+  color: #333;
+}
+
+.left {
+  margin-right: 10px;
+}
+
+.right {
+  margin-left: 10px;
 }
 
 .chat-box {

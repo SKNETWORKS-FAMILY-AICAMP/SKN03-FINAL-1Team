@@ -15,8 +15,7 @@ const goToHomePage = () => {
       <icon-bar />
       <div class="book-mark d-flex flex-column">
         <div class="content mx-3 my-3">
-          <img :src="logo" alt="Logo" class="logo mb-3" @click="goToHomePage" />
-          <div class="bookmark-list">북마크 리스트</div>
+          <div class="bookmark-list mt-5">북마크 리스트</div>
         </div>
         <div class="footer mt-auto">
           <button class="btn view-button">논문내용보기-></button>
