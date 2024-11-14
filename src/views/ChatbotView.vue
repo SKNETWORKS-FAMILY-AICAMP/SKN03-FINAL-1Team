@@ -1,6 +1,6 @@
 <script setup>
 import LeftSection from '@/components/Chatbot/LeftSection.vue'
-import RightSection from '@/components/Chatbot/RightSection.vue'
+import RightSection from '@/components/Chatbot/rightsection/RightSectionMain.vue'
 </script>
 
 <template>
