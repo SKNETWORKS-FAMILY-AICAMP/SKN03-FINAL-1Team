@@ -37,7 +37,7 @@ watch(messages, () => {
         {{ message.text }}
       </div>
     </div>
-    <div class="input-area d-flex w-100">
+    <div class="input-area d-flex w-100 p-2 border-secondary-rounded">
       <input
         v-model="inputText"
         type="text"
@@ -60,16 +60,19 @@ watch(messages, () => {
   flex-direction: column;
   justify-content: space-between; /* 상단과 하단으로 공간 분배 */
   align-items: center; /* 수평 중앙 정렬 */
+  max-width: 900px;
 }
 
 .chat-box {
   overflow-y: auto; /* 세로 스크롤 활성화 */
   margin-bottom: 20px;
-  max-height: 80vh; /* 최대 높이 설정 */
+  max-height: 78vh; /* 최대 높이 설정 */
   width: 100%;
 }
 
 .input-area {
+  border: 1px solid #a04747;
+  border-radius: 50px;
   display: flex;
   gap: 10px;
   width: 100%; /* 좌우로 꽉 차게 설정 */
@@ -79,12 +82,12 @@ watch(messages, () => {
 .chat-input {
   flex-grow: 1; /* 입력 필드가 남는 공간을 차지하도록 설정 */
   padding: 10px;
-  border: 2px solid #f8d7d7; /* 클릭 시 테두리 색상 추가 */
+  border: none;
 }
 
 .chat-input:focus {
-  border-color: #f8d7d7; /* 포커스 시 테두리 색상 유지 */
-  box-shadow: 0 0 0 0.25rem rgba(248, 215, 215, 0.5); /* 포커스 시 그림자 효과 */
+  border-color: none;
+  box-shadow: none;
   outline: none; /* 포커스 시 기본 아웃라인 제거 */
 }
 
@@ -95,6 +98,9 @@ watch(messages, () => {
   padding: 10px 20px;
   font-size: 16px;
   cursor: pointer;
+  border-radius: 50%;
+  width: 50px;
+  height: 50px;
 }
 
 .send-button:hover {
