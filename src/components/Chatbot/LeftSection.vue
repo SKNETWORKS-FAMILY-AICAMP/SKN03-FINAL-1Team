@@ -1,8 +1,9 @@
 <script setup>
 import { ref, computed, onMounted } from 'vue'
-import axios from 'axios'
+
 import IconBar from '@/components/Chatbot/IconBar/IconBarMain.vue'
 import PaperItem from './LeftSection/PaperItem.vue'
+
 import AccodionButtonImage from '@/assets/accordion-button.png'
 
 const isSidebarOpen = ref(true)
@@ -47,7 +48,7 @@ const toggleSidebar = () => {
   display: flex;
   flex-direction: row; /* 가로 정렬 */
   background-color: #a04747;
-  width: 300px; /* 기본 너비 */
+  width: 435px;
   height: 100%;
   color: #ffffff;
   border-top-right-radius: 15px;

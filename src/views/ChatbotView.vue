@@ -28,11 +28,6 @@ import RightSection from '@/components/Chatbot/rightsection/RightSectionMain.vue
   flex: 0 0 50px; /* icon-bar의 너비를 80px로 고정 */
 }
 
-.left-section-wrapper {
-  flex: 0 0 365px; /* left-section의 너비를 300px로 고정 */
-  max-width: 365px;
-}
-
 .right-section-wrapper {
   flex-grow: 1; /* 나머지 공간을 차지하도록 설정 */
   display: flex;
