@@ -1,18 +1,19 @@
 <script setup>
-import { ref } from 'vue'
+import { ref, defineProps, defineEmits } from 'vue'
 
-const isToggled = ref(false)
+const props = defineProps(['isToggled']) // props 사용
+const emit = defineEmits(['toggleChat'])
 
 const toggleChat = () => {
-  isToggled.value = !isToggled.value
+  emit('toggleChat') // 부모 컴포넌트에 이벤트 전송
 }
 </script>
 
 <template>
   <div class="toggle-switch" @click="toggleChat">
-    <div :class="['toggle-knob', { toggled: isToggled }]"></div>
-    <span :class="['left-label', { inactive: isToggled }]">기술상담</span>
-    <span :class="['right-label', { inactive: !isToggled }]">논문탐색</span>
+    <div :class="['toggle-knob', { toggled: props.isToggled }]"></div>
+    <span :class="['left-label', { inactive: props.isToggled }]">기술상담</span>
+    <span :class="['right-label', { inactive: !props.isToggled }]">논문탐색</span>
   </div>
 </template>
 
