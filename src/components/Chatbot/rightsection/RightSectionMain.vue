@@ -15,10 +15,10 @@ const toggleChat = () => {
   <div class="right-side-content d-flex flex-column justify-content-between align-items-center p-4">
     <toggle-switch :isToggled="isToggled" @toggleChat="toggleChat" />
     <transition name="slide-fade" mode="out-in">
-      <div v-if="!isToggled" class="page">
+      <div :key="isToggled ? 'paper-search' : 'chat'" v-if="!isToggled" class="page">
         <chat-page />
       </div>
-      <div v-else class="page">
+      <div :key="isToggled ? 'chat' : 'paper-search'" v-else class="page">
         <paper-search-page />
       </div>
     </transition>
