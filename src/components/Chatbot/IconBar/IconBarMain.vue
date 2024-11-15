@@ -1,16 +1,18 @@
 <script setup>
 import { ref } from 'vue'
+import { useRouter } from 'vue-router' // Vue Router 사용
 
 import IconBarFooter from '@/components/Chatbot/IconBar/IconBarFooter.vue'
 
 import DocumentIcon from '@/assets/IconBar/DocumentIcon.png'
 import LogoIcon from '@/assets/logo.png'
 import HamburgerIcon from '@/assets/IconBar/HamburgerIcon.png'
-import SettingIcon from '@/assets/IconBar/SettingIcon.png'
+
+const router = useRouter()
 
 const icons = ref([
-  { id: 2, src: HamburgerIcon },
-  { id: 3, src: DocumentIcon }, // 이미지 파일을 사용
+  { id: 2, src: HamburgerIcon, action: () => router.push('/chatbot') },
+  { id: 3, src: DocumentIcon, action: () => router.push('/paper') }, // HomeIcon 클릭 시 메인 화면으로 이동
 ])
 </script>
 
@@ -23,6 +25,7 @@ const icons = ref([
         :key="icon.id"
         class="icon"
         :class="{ 'logo-icon-bg': icon.id === 1 }"
+        @click="icon.action && icon.action()"
       >
         <img v-if="icon.src" :src="icon.src" alt="Icon" class="icon-image" />
         <span v-else>{{ icon.name }}</span>
