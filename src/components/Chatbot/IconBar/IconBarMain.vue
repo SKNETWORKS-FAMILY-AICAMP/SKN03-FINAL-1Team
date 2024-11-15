@@ -36,10 +36,9 @@ const icons = ref([
   display: flex;
   flex-direction: column;
   align-items: center;
-  padding: 20px;
   height: 100%; /* 세로로 꽉 차도록 설정 */
   background-color: #a04747; /* 배경 색상을 #a04747로 설정 */
-  width: 80px;
+  width: 55px;
   box-shadow: 2px 0px 10px 4px #515151; /* 섀도우 속성 추가 */
   border-top-right-radius: 15px;
   border-bottom-right-radius: 15px;
@@ -54,11 +53,9 @@ const icons = ref([
 
 .icon {
   margin: 10px 0;
-  padding: 10px;
+  padding: 8px;
   background-color: #ffffff; /* 아이콘의 배경 색상을 흰색으로 설정 */
   border-radius: 50%;
-  width: 50px; /* 아이콘의 너비 설정 */
-  height: 50px; /* 아이콘의 높이 설정 */
   display: flex;
   align-items: center;
   justify-content: center;

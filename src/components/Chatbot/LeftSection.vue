@@ -1,11 +1,12 @@
 <script setup>
-import { useRouter } from 'vue-router'
+import { ref, computed, onMounted } from 'vue'
+import axios from 'axios'
 import IconBar from '@/components/Chatbot/IconBar/IconBarMain.vue'
-const router = useRouter()
+import PaperItem from './LeftSection/PaperItem.vue'
 
-const goToHomePage = () => {
-  router.push('/') // 홈페이지 경로로 이동
-}
+const papers = ref([]) // 논문 리스트
+const currentPage = ref(1) // 현재 페이지 번호
+const itemsPerPage = 3 // 페이지 당 항목 수
 </script>
 
 <template>
@@ -13,8 +14,13 @@ const goToHomePage = () => {
     <div class="left-side-content d-flex flex-row">
       <icon-bar />
       <div class="book-mark d-flex flex-column">
-        <div class="content mx-3 my-3">
-          <div class="bookmark-list mt-5">북마크 리스트</div>
+        <div class="bookmark-list mt-5 text-start">북마크 리스트</div>
+        <div class="content my-2">
+          <PaperItem />
+          <PaperItem />
+          <PaperItem />
+          <PaperItem />
+          <PaperItem />
         </div>
       </div>
     </div>
@@ -54,12 +60,15 @@ const goToHomePage = () => {
   flex-grow: 1; /* 남은 공간을 차지하도록 설정 */
   display: flex;
   flex-direction: column;
+  padding: 20px;
 }
 
 .bookmark-list {
   position: relative;
   margin-top: 20px;
   padding: 10px 0;
+  font-size: 20px;
+  color: white;
 }
 
 .bookmark-list::after {
@@ -69,6 +78,30 @@ const goToHomePage = () => {
   left: 0;
   width: 100%;
   height: 1px;
-  background-color: white; /* 하단 테두리 색상 */
+  background-color: white;
+}
+
+.paper-entry {
+  margin-top: 10px;
+}
+
+.pagination {
+  display: flex;
+  justify-content: center;
+  margin-top: 20px;
+}
+
+.pagination button {
+  background-color: #fff;
+  border: 1px solid #ccc;
+  color: #333;
+  padding: 10px 15px;
+  margin: 0 5px;
+  cursor: pointer;
+}
+
+.pagination button.active {
+  background-color: #a04747;
+  color: white;
 }
 </style>

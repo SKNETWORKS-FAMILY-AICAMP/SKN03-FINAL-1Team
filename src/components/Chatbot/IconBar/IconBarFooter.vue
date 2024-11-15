@@ -26,25 +26,6 @@ const footerIcons = ref([
 </template>
 
 <style scoped>
-.icon-bar-container {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  padding: 10px;
-  height: 100%; /* 세로로 꽉 차도록 설정 */
-  background-color: #a04747; /* 배경 색상을 #a04747로 설정 */
-  width: 80px;
-  border-top-right-radius: 15px;
-  border-bottom-right-radius: 15px;
-}
-
-.icon-list {
-  flex-grow: 1; /* 나머지 공간을 차지하도록 설정 */
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-}
-
 .icon {
   margin: 10px 0;
   padding: 10px;
