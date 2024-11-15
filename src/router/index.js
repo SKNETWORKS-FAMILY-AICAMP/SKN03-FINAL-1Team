@@ -23,7 +23,7 @@ const routes = [
     component: ChatbotView,
   },
   {
-    path: '/paper/:id',
+    path: '/paper',
     name: 'paper-detail',
     component: PaperDetailView,
   },

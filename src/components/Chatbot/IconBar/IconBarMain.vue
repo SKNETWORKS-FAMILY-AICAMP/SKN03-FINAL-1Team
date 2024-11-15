@@ -34,10 +34,12 @@ const icons = ref([
 
 <style scoped>
 .icon-bar-container {
+  height: 100vh;
+  margin: 0;
+  padding: 0;
   display: flex;
   flex-direction: column;
   align-items: center;
-  height: 100%; /* 세로로 꽉 차도록 설정 */
   background-color: #a04747; /* 배경 색상을 #a04747로 설정 */
   width: 55px;
   box-shadow: 2px 0px 10px 4px #515151; /* 섀도우 속성 추가 */
