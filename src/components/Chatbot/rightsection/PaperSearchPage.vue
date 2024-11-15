@@ -1,4 +1,6 @@
-<script setup></script>
+<script setup>
+import PaperSearchItem from './PaperSearchItem.vue'
+</script>
 <template>
   <div class="test-content">
     <div class="input-area d-flex w-100 p-2">
@@ -11,9 +13,9 @@
       />
       <button class="btn send-button" @click="sendMessage">></button>
     </div>
-    <div><p>test</p></div>
-    <div><p>test</p></div>
-    <div><p>test</p></div>
+    <paper-search-item class="search-item" />
+    <paper-search-item class="search-item" />
+    <paper-search-item class="search-item" />
   </div>
 </template>
 <style scoped>
@@ -55,5 +57,11 @@
 
 .test-content {
   height: 80vh;
+}
+
+.search-item:not(:last-child) {
+  border-bottom: 1px solid #ccc; /* 구분선 추가 */
+  padding-bottom: 10px; /* 구분선과 요소 간의 간격 추가 */
+  margin-bottom: 10px; /* 구분선과 요소 간의 간격 추가 */
 }
 </style>
