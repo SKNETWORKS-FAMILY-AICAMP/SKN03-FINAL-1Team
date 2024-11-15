@@ -1,12 +1,15 @@
 <script setup>
 import { ref } from 'vue'
+import { useRouter } from 'vue-router' // Vue Router 사용
 import SettingIcon from '@/assets/IconBar/SettingIcon.png' // 이미지 파일을 import
 import HomeIcon from '@/assets/IconBar/HomeIcon.png'
 import DocumentIcon from '@/assets/IconBar/DocumentIcon.png'
 
+const router = useRouter()
+
 const footerIcons = ref([
   { id: 1, src: DocumentIcon },
-  { id: 2, src: HomeIcon },
+  { id: 2, src: HomeIcon, action: () => router.push('/') }, // HomeIcon 클릭 시 메인 화면으로 이동
   { id: 3, src: SettingIcon },
 ])
 </script>
@@ -18,6 +21,7 @@ const footerIcons = ref([
       :key="icon.id"
       class="icon"
       :class="{ 'footer-icon-special': icon.id === 1 }"
+      @click="icon.action && icon.action()"
     >
       <!-- 아이콘 이미지를 렌더링 -->
       <img :src="icon.src" alt="Footer Icon" class="icon-image" />

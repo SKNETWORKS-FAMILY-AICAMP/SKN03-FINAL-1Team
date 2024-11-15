@@ -2,7 +2,7 @@
 import BookMarkIcon from '@/assets/BookMarkIcon.png'
 </script>
 <template>
-  <div class="d-flex align-items-center">
+  <div class="paper-search-item d-flex align-items-center">
     <div class="p-4">
       <img :src="BookMarkIcon" />
       <div>
@@ -20,5 +20,8 @@ import BookMarkIcon from '@/assets/BookMarkIcon.png'
 <style scoped>
 .no-margin {
   margin: 0;
+}
+.paper-search-item {
+  min-width: 600px;
 }
 </style>
