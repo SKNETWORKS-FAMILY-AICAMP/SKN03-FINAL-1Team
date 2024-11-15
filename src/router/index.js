@@ -1,7 +1,8 @@
 import { createRouter, createWebHistory } from 'vue-router'
 import HomeView from '@/views/HomeView.vue'
 import CardSection from '@/components/home/CardSection.vue'
-import ChatbotView from '@/views/ChatbotView.vue' // 여기를 수정했습니다.
+import ChatbotView from '@/views/ChatbotView.vue'
+import PaperDetailView from '@/views/PaperDetailView.vue'
 
 const routes = [
   {
@@ -19,7 +20,12 @@ const routes = [
   {
     path: '/chatbot',
     name: 'chatbot',
-    component: ChatbotView, // 여기를 수정했습니다.
+    component: ChatbotView,
+  },
+  {
+    path: '/paper/:id',
+    name: 'paper-detail',
+    component: PaperDetailView,
   },
 ]
 
