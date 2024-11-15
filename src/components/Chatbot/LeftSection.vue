@@ -3,17 +3,20 @@ import { ref, computed, onMounted } from 'vue'
 import axios from 'axios'
 import IconBar from '@/components/Chatbot/IconBar/IconBarMain.vue'
 import PaperItem from './LeftSection/PaperItem.vue'
+import AccodionButtonImage from '@/assets/accordion-button.png'
 
-const papers = ref([]) // 논문 리스트
-const currentPage = ref(1) // 현재 페이지 번호
-const itemsPerPage = 3 // 페이지 당 항목 수
+const isSidebarOpen = ref(true)
+
+const toggleSidebar = () => {
+  isSidebarOpen.value = !isSidebarOpen.value
+}
 </script>
 
 <template>
   <div class="container m-0 p-0 h-100">
-    <div class="left-side-content d-flex flex-row">
+    <div :class="['left-side-content', { collapsed: !isSidebarOpen }]">
       <icon-bar />
-      <div class="book-mark d-flex flex-column">
+      <div class="book-mark d-flex flex-column" v-if="isSidebarOpen">
         <div class="bookmark-list mt-5 text-start">북마크 리스트</div>
         <div class="content my-2">
           <PaperItem />
@@ -23,10 +26,14 @@ const itemsPerPage = 3 // 페이지 당 항목 수
           <PaperItem />
         </div>
       </div>
+      <div class="d-flex">
+        <button class="accordion-button" @click="toggleSidebar">
+          <img :src="AccodionButtonImage" />
+        </button>
+      </div>
     </div>
   </div>
 </template>
-
 <style scoped>
 .container {
   height: 100vh;
@@ -40,13 +47,18 @@ const itemsPerPage = 3 // 페이지 당 항목 수
   display: flex;
   flex-direction: row; /* 가로 정렬 */
   background-color: #a04747;
-  width: 100%;
+  width: 300px; /* 기본 너비 */
   height: 100%;
   color: #ffffff;
   border-top-right-radius: 15px;
   border-bottom-right-radius: 15px;
   box-shadow: 2px 0px 10px 4px #515151; /* 섀도우 속성 추가 */
   margin-right: 20px;
+  transition: width 0.3s; /* 애니메이션 효과 */
+}
+
+.left-side-content.collapsed {
+  width: 80px; /* 접히면 너비 감소 */
 }
 
 .icon-bar {
@@ -54,6 +66,16 @@ const itemsPerPage = 3 // 페이지 당 항목 수
   height: 100vh;
   border-top-right-radius: 20px;
   border-bottom-right-radius: 20px;
+}
+
+.accordion-button {
+  background-color: transparent;
+  border: none;
+  color: white;
+  cursor: pointer;
+  font-size: 20px;
+  padding: 10px;
+  margin: 10px;
 }
 
 .book-mark {
@@ -103,5 +125,10 @@ const itemsPerPage = 3 // 페이지 당 항목 수
 .pagination button.active {
   background-color: #a04747;
   color: white;
+}
+
+.accordion-button {
+  padding-left: 11px;
+  margin: 0px;
 }
 </style>
