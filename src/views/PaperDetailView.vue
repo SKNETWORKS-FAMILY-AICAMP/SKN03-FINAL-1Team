@@ -1,5 +1,6 @@
 <script setup>
 import LeftSection from '@/components/Chatbot/LeftSection.vue'
+import DropIcon from '@/assets/DropIcon.png'
 
 import { ref, onMounted } from 'vue'
 import { useRoute } from 'vue-router'
@@ -20,11 +21,19 @@ onMounted(async () => {
 </script>
 
 <template>
-  <div class="paper-detail">
-    <left-section />
-    <h1>논문 상세 정보</h1>
-    <div>
-      <p>논문 정보를 불러오는 중...</p>
+  <div class="container-fluid d-flex flex-row m-0 p-0">
+    <div class="p-0">
+      <left-section />
+    </div>
+    <div class="main d-flex align-items-center justify-content-center w-100">
+      <div class="d-flex align-items-center dotted-box">
+        <div>
+          <img :src="DropIcon" class="flex-row align-items-center" />
+          <p class="d-flex align-items-center">
+            좌측 리스트의 파일을 Drag&Drop하거나 업로드하세요.
+          </p>
+        </div>
+      </div>
     </div>
   </div>
 </template>
@@ -45,5 +54,12 @@ h2 {
 
 p {
   margin: 10px 0;
+}
+
+.dotted-box {
+  width: 400px; /* 너비 설정 */
+  height: 300px; /* 높이 설정 */
+  border: 4px dotted #888888; /* 점선 테두리 설정 */
+  margin-top: 20px; /* 상단 여백 설정 */
 }
 </style>
