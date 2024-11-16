@@ -2,6 +2,8 @@
 import LeftSection from '@/components/Chatbot/LeftSection.vue'
 import DropIcon from '@/assets/DropIcon.png'
 
+import PdfViewer from '@/components/PdfViewer.vue'
+
 import { ref, onMounted } from 'vue'
 import { useRoute } from 'vue-router'
 import axios from 'axios'
@@ -26,6 +28,7 @@ onMounted(async () => {
       <left-section />
     </div>
     <div class="main d-flex align-items-center justify-content-center w-100">
+      <PdfViewer />
       <div class="d-flex align-items-center dotted-box">
         <div>
           <img :src="DropIcon" class="flex-row align-items-center" />
