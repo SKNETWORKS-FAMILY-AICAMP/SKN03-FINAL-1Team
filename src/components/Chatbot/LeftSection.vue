@@ -61,14 +61,6 @@ const toggleSidebar = () => {
 .left-side-content.collapsed {
   width: 80px; /* 접히면 너비 감소 */
 }
-
-.icon-bar {
-  width: 80px;
-  height: 100vh;
-  border-top-right-radius: 20px;
-  border-bottom-right-radius: 20px;
-}
-
 .accordion-button {
   background-color: transparent;
   border: none;
