@@ -100,12 +100,6 @@ const toggleSidebar = () => {
   margin-top: 10px;
 }
 
-.pagination {
-  display: flex;
-  justify-content: center;
-  margin-top: 20px;
-}
-
 .pagination button {
   background-color: #fff;
   border: 1px solid #ccc;
