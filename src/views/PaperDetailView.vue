@@ -1,15 +1,19 @@
 <script setup>
-import LeftSection from '@/components/Chatbot/LeftSection.vue'
-import DropIcon from '@/assets/DropIcon.png'
-
-import PdfViewer from '@/components/PdfViewer.vue'
-
 import { ref, onMounted } from 'vue'
 import { useRoute } from 'vue-router'
 import axios from 'axios'
 
+import LeftSection from '@/components/Chatbot/LeftSection.vue'
+import DropIcon from '@/assets/DropIcon.png'
+import PdfViewer from '@/components/PdfViewer.vue'
+
 const paper = ref(null)
 const route = useRoute()
+const showPdfViewer = ref(false) // PDF 뷰어 활성화 상태
+
+const togglePdfViewer = () => {
+  showPdfViewer.value = !showPdfViewer.value // PDF 뷰어 활성화 상태 토글
+}
 
 onMounted(async () => {
   const paperId = route.params.id
@@ -28,8 +32,10 @@ onMounted(async () => {
       <left-section />
     </div>
     <div class="main d-flex align-items-center justify-content-center w-100">
-      <PdfViewer />
-      <div class="d-flex align-items-center dotted-box">
+      <div v-if="showPdfViewer">
+        <PdfViewer />
+      </div>
+      <div v-else class="d-flex align-items-center dotted-box" @click="togglePdfViewer">
         <div>
           <img :src="DropIcon" class="flex-row align-items-center" />
           <p class="d-flex align-items-center">
@@ -64,5 +70,6 @@ p {
   height: 300px; /* 높이 설정 */
   border: 4px dotted #888888; /* 점선 테두리 설정 */
   margin-top: 20px; /* 상단 여백 설정 */
+  cursor: pointer; /* 클릭 가능하도록 커서 변경 */
 }
 </style>
