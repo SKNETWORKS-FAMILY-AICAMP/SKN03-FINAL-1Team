@@ -1,6 +1,7 @@
 <script setup>
 import Header from '@/components/home/HomeHeader.vue'
 import Footer from '@/components/home/HomeFooter.vue'
+import useGoogleOauth from 'vue3-google-oauth2'
 </script>
 
 <template>
@@ -8,7 +9,7 @@ import Footer from '@/components/home/HomeFooter.vue'
     <Header />
     <div class="form-container">
       <h2>회원가입</h2>
-      <button>Google로 회원가입</button>
+      <button @click="googleSignIn">Google로 회원가입</button>
     </div>
     <Footer />
   </div>
