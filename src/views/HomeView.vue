@@ -8,8 +8,8 @@ import Footer from '@/components/home/HomeFooter.vue'
 
 <template>
   <Header />
-  <div class="signup-link"><router-link to="/signup">회원가입</router-link></div>
   <search-section />
+  <div class="signup-link"><router-link to="/signup">회원가입</router-link></div>
   <card-section />
   <intro-section />
   <Footer />

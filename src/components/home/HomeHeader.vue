@@ -1,6 +1,8 @@
+<script setup></script>
+
 <template>
   <header>
-    <a href="#" class="logo"><img alt="logo" src="@/assets/home-logo.png" width="200" /></a>
+    <a href="#" class="logo"><img alt="logo" src="@/assets/home-logo.png" width="170" /></a>
     <div class="menuWrap">
       <ul class="menu">
         <li><a href="javascript:;">Search</a></li>
@@ -11,10 +13,6 @@
     </div>
   </header>
 </template>
-
-<script>
-export default {}
-</script>
 
 <style scoped>
 header {
@@ -27,10 +25,11 @@ header {
   overflow-x: hidden; /* 추가: 좌우 스크롤 제거 */
 }
 
-header h1 {
+.logo {
   position: absolute;
-  top: 0;
-  left: 100px;
+  top: 50%;
+  left: 15px; /* 로고를 왼쪽으로 이동 */
+  transform: translateY(-50%); /* 수직 정렬 */
 }
 
 header ul.menu:after {
