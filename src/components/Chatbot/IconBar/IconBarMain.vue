@@ -65,6 +65,7 @@ const icons = ref([
   display: flex;
   align-items: center;
   justify-content: center;
+  cursor: pointer;
 }
 
 .logo-icon-bg {
