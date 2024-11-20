@@ -1,9 +1,7 @@
 <script setup>
-import { ref } from 'vue'
 import Header from '@/components/home/HomeHeader.vue'
 import Footer from '@/components/home/HomeFooter.vue'
 import TestComponent from '@/components/TestComponent.vue'
-import GAuth from 'vue3-google-oauth2'
 </script>
 
 <template>

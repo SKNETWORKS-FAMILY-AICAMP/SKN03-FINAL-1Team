@@ -1,5 +1,5 @@
 <script setup>
-import { ref, computed, onMounted } from 'vue'
+import { ref } from 'vue'
 
 import IconBar from '@/components/Chatbot/IconBar/IconBarMain.vue'
 import PaperItem from './LeftSection/PaperItem.vue'
