@@ -1,14 +1,16 @@
 <template>
   <div class="pdf-container">
-    <embed :src="pdfUrl" class="pdf-viewer" type="application/pdf" />
+    <embed :src="src" class="pdf-viewer" type="application/pdf" />
   </div>
 </template>
 
 <script setup>
-import { computed } from 'vue'
-import dummyPdf from '@/assets/dummy.pdf'
-
-const pdfUrl = computed(() => dummyPdf)
+const props = defineProps({
+  src: {
+    type: String,
+    required: true,
+  },
+})
 </script>
 
 <style scoped>

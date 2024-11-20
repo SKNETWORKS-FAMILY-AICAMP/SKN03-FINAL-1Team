@@ -10,6 +10,7 @@ import PdfViewer from '@/components/PdfViewer.vue'
 const paper = ref(null)
 const route = useRoute()
 const showPdfViewer = ref(false) // PDF 뷰어 활성화 상태
+const pdfUrl = ref('') // PDF 파일 URL
 
 const togglePdfViewer = () => {
   showPdfViewer.value = !showPdfViewer.value // PDF 뷰어 활성화 상태 토글
@@ -17,11 +18,17 @@ const togglePdfViewer = () => {
 
 onMounted(async () => {
   const paperId = route.params.id
-  try {
-    const response = await axios.get(`https://api.example.com/papers/${paperId}`)
-    paper.value = response.data
-  } catch (error) {
-    console.error('Error fetching paper details:', error)
+  if (paperId) {
+    try {
+      const response = await axios.get(`https://api.example.com/papers/${paperId}`)
+      paper.value = response.data
+      // PDF 파일 URL 설정
+      pdfUrl.value = `http://localhost:8000/download/${paperId}`
+    } catch (error) {
+      console.error('Error fetching paper details:', error)
+    }
+  } else {
+    console.error('paperId가 유효하지 않습니다.')
   }
 })
 </script>
@@ -29,11 +36,11 @@ onMounted(async () => {
 <template>
   <div class="container-fluid d-flex flex-row m-0 p-0">
     <div class="p-0">
-      <left-section />
+      <LeftSection />
     </div>
     <div class="main d-flex align-items-center justify-content-center w-100">
       <div v-if="showPdfViewer">
-        <PdfViewer />
+        <PdfViewer :src="pdfUrl" />
       </div>
       <div v-else class="d-flex align-items-center dotted-box" @click="togglePdfViewer">
         <div>
