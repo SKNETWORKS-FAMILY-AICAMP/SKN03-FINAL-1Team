@@ -1,0 +1,74 @@
+<script setup></script>
+
+<template>
+  <header>
+    <a href="#" class="logo"><img alt="logo" src="@/assets/home-logo.png" width="170" /></a>
+    <div class="menuWrap">
+      <ul class="menu">
+        <li><a href="javascript:;">Search</a></li>
+        <li><a href="javascript:;">Review</a></li>
+        <li><a href="javascript:;">Mypage</a></li>
+      </ul>
+      <button class="login-btn">로그인</button>
+    </div>
+  </header>
+</template>
+
+<style scoped>
+header {
+  width: 100%;
+  text-align: center;
+  position: relative;
+  height: 120px;
+  box-sizing: border-box; /* 추가: 박스 크기 조정 */
+  padding: 0 15px; /* 추가: 내부 여백 설정 */
+  overflow-x: hidden; /* 추가: 좌우 스크롤 제거 */
+}
+
+.logo {
+  position: absolute;
+  top: 50%;
+  left: 15px; /* 로고를 왼쪽으로 이동 */
+  transform: translateY(-50%); /* 수직 정렬 */
+}
+
+header ul.menu:after {
+  display: block;
+  clear: both;
+  content: '';
+}
+
+header ul.menu {
+  position: absolute;
+  top: 20px;
+  right: 150px;
+}
+
+header ul.menu li {
+  float: left;
+  padding: 10px 20px;
+  list-style: none;
+}
+
+/* 로그인 버튼 스타일 */
+button.login-btn {
+  position: absolute;
+  top: 20px;
+  right: 50px;
+  padding: 10px 20px;
+  background-color: #000000;
+  color: white;
+  border: none;
+  border-radius: 5px;
+  cursor: pointer;
+}
+
+button.login-btn:hover {
+  background-color: #a04747;
+}
+
+a {
+  text-decoration: none;
+  color: #333;
+}
+</style>
