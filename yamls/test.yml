@@ -29,9 +29,9 @@ phases:
       - echo Packaging source...
       - echo Pushing the Docker image...
       - docker push $REPOSITORY_URI
-      - printf '[{"name":"%s","imageUri":"%s"}]' $ECS_CONTAINER_NAME $REPOSITORY_URI > ./imagedefinitions.json
-      - echo "Contents of imagedefinitions.json:"
-      - cat ./imagedefinitions.json
+      - printf '[{"name":"%s","imageUri":"%s"}]' $ECS_CONTAINER_NAME $REPOSITORY_URI > ../imagedefinitions.json
+      - echo "Contents of ../imagedefinitions.json:"
+      - cat ../imagedefinitions.json
       - echo "Contents of current directory:"
       - ls -la
 
