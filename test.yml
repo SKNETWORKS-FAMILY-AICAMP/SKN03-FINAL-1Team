@@ -43,11 +43,11 @@ phases:
       # Give your container name
 
       - printf '[{"name":"%s","imageUri":"%s"}]' $ECS_CONTAINER_NAME
-        $REPOSITORY_URI > imagedefinitions.json
+        $REPOSITORY_URI > /imagedefinitions.json
       - echo $ECS_CONTAINER_NAME
-      - echo printing imagedefinitions.json
-      - cat imagedefinitions.json
+      - echo printing /imagedefinitions.json
+      - cat /magedefinitions.json
 
 artifacts:
     files: 
-      - imagedefinitions.json
+      - /imagedefinitions.json
