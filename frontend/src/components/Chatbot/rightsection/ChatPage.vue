@@ -1,12 +1,22 @@
 <script setup>
 import { ref, onMounted, watch, nextTick } from 'vue'
+import axios from 'axios'
 
 const messages = ref([]) // 대화 내용 저장
 const inputText = ref('') // 입력값 저장
 
-const sendMessage = () => {
+const sendMessage = async () => {
   if (inputText.value.trim() !== '') {
     messages.value.push({ text: inputText.value, type: 'user' }) // 사용자 메시지 추가
+
+    try {
+      const response = await axios.get(`/api/ask?ask_query=${encodeURIComponent(inputText.value)}`)
+      messages.value.push({ text: response.data.answer.content, type: 'assistant' }) // API 응답 메시지 추가
+    } catch (error) {
+      console.error(error) // 오류를 콘솔에 출력
+      messages.value.push({ text: '오류가 발생했습니다. 다시 시도해 주세요.', type: 'assistant' }) // 오류 처리
+    }
+
     inputText.value = ''
     scrollToBottom()
   }
@@ -32,20 +42,22 @@ watch(messages, () => {
 </script>
 
 <template>
-  <div class="chat-box flex-grow-1 w-100" ref="chatBoxRef">
-    <div v-for="(message, index) in messages" :key="index" :class="['message', message.type]">
-      {{ message.text }}
+  <div>
+    <div class="chat-box flex-grow-1 w-100" ref="chatBoxRef">
+      <div v-for="(message, index) in messages" :key="index" :class="['message', message.type]">
+        {{ message.text }}
+      </div>
     </div>
-  </div>
-  <div class="input-area d-flex w-100 p-2 border-secondary-rounded">
-    <input
-      v-model="inputText"
-      type="text"
-      class="form-control chat-input"
-      placeholder="궁금한 점들을 물어보세요."
-      @keyup.enter="sendMessage"
-    />
-    <button class="btn send-button" @click="sendMessage">></button>
+    <div class="input-area d-flex w-100 p-2 border-secondary-rounded">
+      <input
+        v-model="inputText"
+        type="text"
+        class="form-control chat-input"
+        placeholder="궁금한 점들을 물어보세요."
+        @keyup.enter="sendMessage"
+      />
+      <button class="btn send-button" @click="sendMessage">></button>
+    </div>
   </div>
 </template>
 

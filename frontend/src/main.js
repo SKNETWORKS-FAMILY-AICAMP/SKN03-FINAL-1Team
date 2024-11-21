@@ -7,7 +7,9 @@ import axios from 'axios'
 
 const app = createApp(App)
 
-app.use(axios)
+// Axios를 글로벌로 설정하기
+app.config.globalProperties.$http = axios
+
 app.use(router)
 app.use(pinia)
 
