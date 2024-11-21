@@ -17,21 +17,20 @@ phases:
       - echo Logging in to Amazon ECR...
       - aws --version
       - ECR_PASSWORD=$(aws ecr get-login-password --region $AWS_DEFAULT_REGION)
-      - AWS_ACCOUNT_ID=$(aws sts get-caller-identity --query 'Account' --output
-        text)
-      - echo -n ${ECR_PASSWORD} | docker login --username AWS --password-stdin
-        ${AWS_ACCOUNT_ID}.dkr.ecr.${AWS_DEFAULT_REGION}.amazonaws.com
+      - AWS_ACCOUNT_ID=$(aws sts get-caller-identity --query 'Account' --output text)
+      - echo -n ${ECR_PASSWORD} | docker login --username AWS --password-stdin ${AWS_ACCOUNT_ID}.dkr.ecr.${AWS_DEFAULT_REGION}.amazonaws.com
       - REPOSITORY_URI=$AWS_ACCOUNT_ID.dkr.ecr.$AWS_DEFAULT_REGION.amazonaws.com/$IMAGE_REPO_NAME:$IMAGE_TAG
 
   build:
     commands:
       - echo Build started on `date`
-      # 프로젝트 폴더로 이동 
+      # `for_cicd` 폴더로 이동 
+      - echo Navigating to for_cicd folder...
       - cd ./for_cicd
       - pwd
       - echo Building the Docker image...
-      # Github Repository에 있는 Dockerfile의 위치에 맞춰 수정 
-      - docker build -f ./Dockerfile -t $IMAGE_REPO_NAME:$IMAGE_TAG .
+      # Dockerfile 경로를 조정 
+      - docker build -f Dockerfile -t $IMAGE_REPO_NAME:$IMAGE_TAG .
       - docker tag $IMAGE_REPO_NAME:$IMAGE_TAG $REPOSITORY_URI
 
   post_build:
@@ -42,11 +41,10 @@ phases:
 
       # Give your container name
 
-      - printf '[{"name":"%s","imageUri":"%s"}]' $ECS_CONTAINER_NAME
-        $REPOSITORY_URI > /imagedefinitions.json
+      - printf '[{"name":"%s","imageUri":"%s"}]' $ECS_CONTAINER_NAME $REPOSITORY_URI > /imagedefinitions.json
       - echo $ECS_CONTAINER_NAME
       - echo printing /imagedefinitions.json
-      - cat /magedefinitions.json
+      - cat /imagedefinitions.json
 
 artifacts:
     files: 
