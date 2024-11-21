@@ -7,11 +7,15 @@ import Footer from '@/components/home/HomeFooter.vue'
 </script>
 
 <template>
-  <Header />
-  <search-section />
-  <card-section />
-  <intro-section />
-  <Footer />
+  <div>
+    <Header />
+    <search-section />
+    <div class="card-intro-wrapper">
+      <card-section />
+      <intro-section />
+    </div>
+    <Footer />
+  </div>
 </template>
 
 <style scoped>
@@ -44,5 +48,11 @@ import Footer from '@/components/home/HomeFooter.vue'
   max-width: 100%;
   height: auto;
   max-height: 300px;
+}
+
+.card-intro-wrapper {
+  max-width: 900px;
+  margin-left: auto;
+  margin-right: auto;
 }
 </style>

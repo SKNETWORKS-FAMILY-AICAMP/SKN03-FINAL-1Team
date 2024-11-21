@@ -42,11 +42,11 @@
         </div>
         <div class="footer-column">
           <h3>개발자</h3>
-          <p>SKN 3기 - 팀명뭐더라</p>
+          <p>SKN 3기 - DocuMento</p>
           <p>서민정 | git : 대충깃링크</p>
           <p>박규택 | git : 대충깃링크</p>
           <p>이준경 | git : 대충깃링크</p>
-          <p>진윤화 | git : 대충깃링크</p>
+          <p>진윤화 | git : https://github.com/JinYunhwa</p>
         </div>
       </div>
       <div class="footer-info d-flex justify-content-center align-items-center">
@@ -64,6 +64,11 @@ footer {
   bottom: 0;
   width: 100%;
   color: white;
+}
+.container {
+  max-width: 900px;
+  margin-left: auto;
+  margin-right: auto;
 }
 
 .footer-columns {
