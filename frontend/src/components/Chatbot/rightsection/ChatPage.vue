@@ -6,13 +6,14 @@ const messages = ref([]) // 대화 내용 저장
 const inputText = ref('') // 입력값 저장
 
 const sendMessage = async () => {
-  if (inputText.value.trim() !== '') {
-    messages.value.push({ text: inputText.value, type: 'user' }) // 사용자 메시지 추가
+  const messageText = inputText.value.trim()
+  if (messageText !== '') {
+    messages.value.push({ text: messageText, type: 'user' }) // 사용자 메시지 추가
     inputText.value = '' // 입력 필드 내용 비우기
     scrollToBottom()
 
     try {
-      const response = await axios.get(`/api/ask?ask_query=${encodeURIComponent(inputText.value)}`)
+      const response = await axios.get(`/api/ask?ask_query=${encodeURIComponent(messageText)}`)
       messages.value.push({ text: response.data.answer.content, type: 'assistant' }) // API 응답 메시지 추가
     } catch (error) {
       console.error(error) // 오류를 콘솔에 출력
