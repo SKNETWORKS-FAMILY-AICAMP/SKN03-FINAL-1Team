@@ -5,9 +5,7 @@
     <div class="container">
       <div class="row justify-content-center">
         <div class="col-md-8 text-center">
-          <h2 class="text-light mb-4">
-            어쩌구 저쩌구 어렵지 않으신가요?<br />키워드를 검색해보아요!!!
-          </h2>
+          <h2 class="text-light mb-4">LLM 기반 논문 검색 시스템<br />DocuMento</h2>
           <input
             v-model="searchQuery"
             class="form-control form-control-lg"

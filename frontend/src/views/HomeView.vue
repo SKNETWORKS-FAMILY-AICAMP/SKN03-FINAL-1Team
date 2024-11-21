@@ -9,8 +9,6 @@ import Footer from '@/components/home/HomeFooter.vue'
 <template>
   <Header />
   <search-section />
-  <div>테스트입니다.</div>
-  <div class="signup-link"><router-link to="/signup">회원가입</router-link></div>
   <card-section />
   <intro-section />
   <Footer />
