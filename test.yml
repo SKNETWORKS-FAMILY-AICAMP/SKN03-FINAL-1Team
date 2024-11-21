@@ -2,18 +2,14 @@ version: 0.2
 env:
   git-credential-helper: 'yes'
   variables:
-    # docker 파라미터 정의
     ECS_CONTAINER_NAME: documento-container
-    IMAGE_REPO_NAME: documento-ecr # aws ecr에 등록이 되어 있는 name
+    IMAGE_REPO_NAME: documento-ecr
     IMAGE_TAG: latest
     AWS_DEFAULT_REGION: ap-northeast-2
 
 phases:
   pre_build:
     commands:
-      # Docker push를 할 ECR에 로그인 필요
-      # https://awscli.amazonaws.com/v2/documentation/api/latest/reference/ecr/get-login-password.html
-      # https://stackoverflow.com/questions/77488134/codebuild-error-exit-status-127-file-name-too-long
       - echo Logging in to Amazon ECR...
       - aws --version
       - ECR_PASSWORD=$(aws ecr get-login-password --region $AWS_DEFAULT_REGION)
@@ -24,28 +20,21 @@ phases:
   build:
     commands:
       - echo Build started on `date`
-      # `for_cicd` 폴더로 이동 
-      - echo Navigating to for_cicd folder...
-      - cd ./for_cicd
-      - pwd
       - echo Building the Docker image...
-      # Dockerfile 경로를 조정 
-      - docker build -f Dockerfile -t $IMAGE_REPO_NAME:$IMAGE_TAG .
+      - docker build -f ./for_cicd/Dockerfile -t $IMAGE_REPO_NAME:$IMAGE_TAG .
       - docker tag $IMAGE_REPO_NAME:$IMAGE_TAG $REPOSITORY_URI
 
   post_build:
     commands:
-      - echo package Source...
-      - echo push the Docker image...
+      - echo Packaging source...
+      - echo Pushing the Docker image...
       - docker push $REPOSITORY_URI
-
-      # Give your container name
-
       - printf '[{"name":"%s","imageUri":"%s"}]' $ECS_CONTAINER_NAME $REPOSITORY_URI > ./imagedefinitions.json
-      - echo $ECS_CONTAINER_NAME
-      - echo printing ./imagedefinitions.json
+      - echo "Contents of imagedefinitions.json:"
       - cat ./imagedefinitions.json
+      - echo "Contents of current directory:"
+      - ls -la
 
 artifacts:
-    files: 
+    files:
       - imagedefinitions.json
