@@ -8,6 +8,8 @@ const inputText = ref('') // 입력값 저장
 const sendMessage = async () => {
   if (inputText.value.trim() !== '') {
     messages.value.push({ text: inputText.value, type: 'user' }) // 사용자 메시지 추가
+    inputText.value = '' // 입력 필드 내용 비우기
+    scrollToBottom()
 
     try {
       const response = await axios.get(`/api/ask?ask_query=${encodeURIComponent(inputText.value)}`)
@@ -16,8 +18,6 @@ const sendMessage = async () => {
       console.error(error) // 오류를 콘솔에 출력
       messages.value.push({ text: '오류가 발생했습니다. 다시 시도해 주세요.', type: 'assistant' }) // 오류 처리
     }
-
-    inputText.value = ''
     scrollToBottom()
   }
 }
@@ -42,7 +42,7 @@ watch(messages, () => {
 </script>
 
 <template>
-  <div>
+  <div class="chat-container">
     <div class="chat-box flex-grow-1 w-100" ref="chatBoxRef">
       <div v-for="(message, index) in messages" :key="index" :class="['message', message.type]">
         {{ message.text }}
@@ -62,10 +62,18 @@ watch(messages, () => {
 </template>
 
 <style scoped>
+.chat-container {
+  width: 600px; /* 가로 길이를 600px로 고정 */
+  height: 75vh; /* 높이를 75vh로 고정 */
+  margin: 0 auto; /* 중앙 정렬 */
+  display: flex;
+  flex-direction: column;
+}
+
 .chat-box {
   overflow-y: auto; /* 세로 스크롤 활성화 */
   margin-bottom: 20px;
-  max-height: 78vh; /* 최대 높이 설정 */
+  flex-grow: 1; /* 남은 공간을 채우도록 설정 */
   width: 100%;
 }
 
