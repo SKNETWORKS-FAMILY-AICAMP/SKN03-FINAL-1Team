@@ -1,0 +1,64 @@
+# Python 관련
+
+__pycache__/
+*.py[cod]
+*.pyo
+*.pyd
+*.so
+*.egg
+*.egg-info/
+dist/
+build/
+*.log
+*.pot
+
+# 환경 설정 파일
+.env
+*.env
+.venv
+
+# IDE 및 편집기 설정
+.vscode/
+.idea/
+*.swp
+*.swo
+.DS_Store
+*.bak
+
+# 운영 시스템 파일
+Thumbs.db
+
+# SQLite 데이터베이스 파일
+*.db
+*.sqlite
+*.sqlite3
+
+
+# FastAPI와 관련된 파일
+uvicorn.log
+instance/
+config.json  # 민감한 정보가 포함된 설정 파일
+
+# Node.js(프론트엔드 포함 프로젝트라면)
+node_modules/
+package-lock.json
+yarn.lock
+
+# Static 및 빌드 결과물
+static/
+dist/
+build/
+
+# Pytest 관련 파일
+htmlcov/
+.tox/
+.nox/
+*.coverage
+*.pytest_cache/
+
+# Jupyter Notebook 출력
+.ipynb_checkpoints/
+
+# 운영 환경에서만 필요한 파일
+*.pid
+*.log
