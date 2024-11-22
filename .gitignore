@@ -61,10 +61,7 @@ data-engineering/output/
 # Docs build artifacts
 docs/_build/
 
-<<<<<<< HEAD
 # .gitignore 파일에 .env 파일 추가
 .env
 backend\.env
 frontend\.env
-=======
->>>>>>> a08fef817b7365195cddf428e8618dbb7745344e
