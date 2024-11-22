@@ -1,7 +1,43 @@
 <script setup>
+import { ref, onMounted } from 'vue'
+import axios from '@/axiosConfig' // 설정한 axios 인스턴스를 가져옵니다.
+
+const userInfo = ref(null)
+
+// 사용자 정보 가져오기
+const fetchUserInfo = async () => {
+  try {
+    const response = await axios.get('/user_info')
+    userInfo.value = response.data
+    console.log('User Info:', userInfo.value)
+  } catch (error) {
+    console.error('Failed to fetch user info:', error)
+  }
+}
+
+// 로그인 버튼 클릭 핸들러
 const handleLogin = () => {
   window.location.href = 'http://localhost:8000/login'
 }
+
+// 로그아웃 핸들러
+const handleLogout = async () => {
+  try {
+    const response = await axios.get('/logout')
+    console.log(response.data.message) // 로그아웃 성공 메시지 확인
+    // 쿠키 삭제 및 페이지 리로드
+    document.cookie = 'session_id=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/; domain=localhost'
+
+    // 페이지 새로고침
+    window.location.href = 'http://localhost:5173'
+  } catch (error) {
+    console.error('Failed to logout:', error)
+  }
+}
+
+onMounted(() => {
+  fetchUserInfo()
+})
 </script>
 
 <template>
@@ -13,9 +49,16 @@ const handleLogin = () => {
         <li><a href="javascript:;">Review</a></li>
         <li><a href="javascript:;">Mypage</a></li>
       </ul>
-      <div id="googleSignInButton" class="login-btn">
+    </div>
+    <div id="userMenu" class="user-info">
+      <template v-if="userInfo">
+        <img :src="userInfo.picture" alt="User Picture" width="32" height="32" />
+        <span>{{ userInfo.name }}</span>
+        <button @click="handleLogout" class="styled-button">Logout</button>
+      </template>
+      <template v-else>
         <button @click="handleLogin" class="styled-button">Login</button>
-      </div>
+      </template>
     </div>
   </header>
 </template>
@@ -48,8 +91,8 @@ header ul.menu:after {
 header ul.menu {
   position: absolute;
   top: 50%;
-  right: 150px;
-  transform: translateY(-50%);
+  left: 50%;
+  transform: translate(-50%, -50%);
   display: flex;
   gap: 20px;
 }
@@ -69,14 +112,14 @@ header ul.menu li a:hover {
   color: #ffc107; /* 호버 효과 */
 }
 
-.login-btn {
+.user-info {
   position: absolute;
   top: 50%;
-  right: 50px;
+  right: 15px;
   transform: translateY(-50%);
   display: flex;
   align-items: center;
-  justify-content: center;
+  gap: 10px; /* 간격 추가 */
 }
 
 .styled-button {
