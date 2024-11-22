@@ -9,6 +9,7 @@ from .paper import (
 from .user import (
     create_new_user,
     login_user,
+    oauth_callback,
     logout_user,
     reissue_user_token,
     fetch_user_bookmarks,
@@ -24,6 +25,7 @@ __all__ = [
     "process_search",
     "create_new_user",
     "login_user",
+    "oauth_callback",
     "logout_user",
     "reissue_user_token",
     "fetch_user_bookmarks",

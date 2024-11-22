@@ -61,10 +61,13 @@ async def create_user(request: Request):
     data = await request.json()
     return await handle_request(create_new_user, data)
 
-@app.post("/login")
-async def login(request: Request):
-    data = await request.json()
-    return await handle_request(login_user, data)
+@app.get("/login")
+async def login():
+    return await handle_request(login_user)
+
+@app.get("/auth/callback")
+async def auth_callback(code: str = Query(..., description="OAuth2 code for login")):
+    return await handle_request(oauth_callback, {"code": code})
 
 @app.post("/logout")
 async def logout(request: Request):
