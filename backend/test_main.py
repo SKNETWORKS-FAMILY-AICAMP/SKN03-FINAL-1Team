@@ -1,31 +1,53 @@
-from fastapi.testclient import TestClient
-from main import app  # main.py 파일에서 FastAPI 앱을 가져옵니다
+from fastapi import FastAPI, Depends, HTTPException
+from fastapi.responses import RedirectResponse
 from dotenv import load_dotenv
 import os
+import requests
 
-# .env 파일 로드
+# 환경 변수 로드
 load_dotenv()
 
-# 환경 변수에서 Google Client ID 가져오기
-GOOGLE_CLIENT_ID = os.getenv("GOOGLE_CLIENT_ID")
+app = FastAPI()
 
-client = TestClient(app)
+# Google OAuth2 설정
+client_id = os.getenv("GOOGLE_CLIENT_ID")
+client_secret = os.getenv("GOOGLE_CLIENT_SECRET")
+redirect_uri = os.getenv("GOOGLE_REDIRECT_URI")
+authorization_url = "https://accounts.google.com/o/oauth2/v2/auth"
+token_url = "https://oauth2.googleapis.com/token"
+user_info_url = "https://openidconnect.googleapis.com/v1/userinfo"
 
-def test_verify_token():
-    # 클라이언트 ID 로그 출력
-    print("Google Client ID:", GOOGLE_CLIENT_ID)
-    
-    # 실제 Google OAuth ID Token 설정
-    test_token = "eyJhbGciOiJSUzI1NiIsImtpZCI6ImQ5NzQwYTcwYjA5NzJkY2NmNzVmYTg4YmM1MjliZDE2YTMwNTczYmQiLCJ0eXAiOiJKV1QifQ.eyJpc3MiOiJodHRwczovL2FjY291bnRzLmdvb2dsZS5jb20iLCJhenAiOiIyMjQ2NTQxMDQ4MDItbTNnbGdvYTVnMTI5MXNhNGxlZm1pbzdrdXFjamg3ZnEuYXBwcy5nb29nbGV1c2VyY29udGVudC5jb20iLCJhdWQiOiIyMjQ2NTQxMDQ4MDItbTNnbGdvYTVnMTI5MXNhNGxlZm1pbzdrdXFjamg3ZnEuYXBwcy5nb29nbGV1c2VyY29udGVudC5jb20iLCJzdWIiOiIxMTIzNDA0NDAzOTIxMjQ3MTMwMTAiLCJlbWFpbCI6ImRic2doazMyMEBnbWFpbC5jb20iLCJlbWFpbF92ZXJpZmllZCI6dHJ1ZSwiYXRfaGFzaCI6InRsWHl6Q29QXzRLRXBUdHlwanBXVkEiLCJuYW1lIjoi7KeE7Jyk7ZmUIiwicGljdHVyZSI6Imh0dHBzOi8vbGgzLmdvb2dsZXVzZXJjb250ZW50LmNvbS9hL0FDZzhvY0xGUHJVRmduMjNnQ3pZRkxCa21NblFPbU8tU3JRdXlNd3ZUcl9LbzFXQW9rcndGUT1zOTYtYyIsImdpdmVuX25hbWUiOiLsnKTtmZQiLCJmYW1pbHlfbmFtZSI6IuynhCIsImlhdCI6MTczMjE4MDk1NCwiZXhwIjoxNzMyMTg0NTU0fQ.arxvzOy9qZRuaGdUzBZ2OdY4fFeVWGw3r-Xu-3UIC7RSPrnxRejcTOEEyEYfXuBgvV4DweeK-glmtxAVVCrNTMoy9ESk6NinQtqlnHgohdvuAUpIiHblEBai2bd8rDtCDDCoOQGzaB2EGg6A8ImeumWAc6vBi0pkeDm0ygZsL8cs9uYNH6hyL_0LJWZpLxgmc2YtnpJZeKfoSZjMUnuXP3gNPhRDtLdXRpWRlM-vAEUH9RbkqYCCHswyMxe5qhTEFfJ8DeGjEJ-Wsn2SZN0a9o6J6fB9RkpLQg1J0O2RqTTYQP02yCQdmZmyP8N_q-Q286JsY3PqONjGYelWuneYzQ"
+@app.get("/login")
+def login():
+    return RedirectResponse(
+        f"{authorization_url}?response_type=code&client_id={client_id}&redirect_uri={redirect_uri}&scope=openid%20email%20profile"
+    )
 
-    response = client.post("/verify-token/", json={"token": test_token})
-    
-    assert response.status_code == 200, response.text
-    data = response.json()
-    
-    assert data["status"] == "success"
-    assert "user_id" in data
-    assert "user_info" in data
+@app.get("/auth/callback")
+def auth_callback(code: str):
+    token_response = requests.post(
+        token_url,
+        data={
+            "code": code,
+            "client_id": client_id,
+            "client_secret": client_secret,
+            "redirect_uri": redirect_uri,
+            "grant_type": "authorization_code",
+        },
+    )
+    token_response_data = token_response.json()
 
-if __name__ == "__main__":
-    test_verify_token()
+    access_token = token_response_data.get("access_token")
+    if not access_token:
+        raise HTTPException(status_code=400, detail="Invalid token")
+
+    user_info_response = requests.get(
+        user_info_url, headers={"Authorization": f"Bearer {access_token}"}
+    )
+    user_info = user_info_response.json()
+
+    return user_info
+
+@app.get("/")
+def read_root():
+    return {"message": "Hello, World!"}
