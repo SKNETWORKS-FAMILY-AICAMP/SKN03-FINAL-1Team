@@ -1,7 +1,7 @@
 from fastapi import HTTPException
 from fastapi.responses import JSONResponse
 from fastapi.responses import RedirectResponse
-from utils import *
+from utils import googleOAuth, MySQLHandler
 import requests
 
 # ********************************************* #
@@ -12,8 +12,8 @@ async def create_new_user(data):
     """새로운 사용자 생성 로직"""
     pass
 
-async def login_user():
-    print("=== POST /login ===")
+async def login_user(data):
+    print("===  /login ===")
     oauth = googleOAuth()
     return RedirectResponse(
         f"{oauth.authorization_url}?response_type=code&client_id={oauth.client_id}&redirect_uri={oauth.redirect_uri}&scope=openid%20email%20profile"

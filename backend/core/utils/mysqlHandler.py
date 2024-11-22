@@ -1,34 +1,41 @@
 import mysql.connector
 from mysql.connector import Error
 import json
+import boto3
+import os
+from botocore.exceptions import BotoCoreError, ClientError
 
 
 class MySQLHandler:
-    def __init__(self, credential_file: str = "../../../.config/mysqlAccessKey.json"):
+    def __init__(self):
         """
-        Initialize MySQLHandler with connection details from a credential file.
+        Initialize MySQLHandler with connection details from aws ssm.
         """
-        self.credential_file = credential_file
         self.connection = None
         self._load_credentials()
 
     def _load_credentials(self):
         """
-        Load MySQL credentials from a JSON file and initialize connection details.
+        Load MySQL credentials from aws ssm and initialize connection details.
         """
         try:
-            with open(self.credential_file, "r") as f:
-                credentials = json.load(f)
+            ssm = boto3.client('ssm')
 
-            self.host = credentials.get("host")
-            self.user = credentials.get("user")
-            self.password = credentials.get("password")
-            self.database = credentials.get("database")
+            parameter = ssm.get_parameter(Name='/DOCUMENTO/KEY/MYSQL_ACCESS_KEY/HOST', WithDecryption=True)
+            self.host = parameter['Parameter']['Value']
 
-        except FileNotFoundError:
-            raise FileNotFoundError(f"Credential file '{self.credential_file}' not found.")
-        except json.JSONDecodeError:
-            raise ValueError(f"Error decoding JSON in credential file '{self.credential_file}'.")
+            parameter = ssm.get_parameter(Name='/DOCUMENTO/KEY/MYSQL_ACCESS_KEY/USER', WithDecryption=True)
+            self.user = parameter['Parameter']['Value']
+
+            parameter = ssm.get_parameter(Name='/DOCUMENTO/KEY/MYSQL_ACCESS_KEY/PASSWORD', WithDecryption=True)
+            self.password = parameter['Parameter']['Value']
+
+            parameter = ssm.get_parameter(Name='/DOCUMENTO/KEY/MYSQL_ACCESS_KEY/DATABASE', WithDecryption=True)
+            self.database = parameter['Parameter']['Value']
+
+        except (BotoCoreError, ClientError) as e:
+            print(f"Error retrieving parameter from SSM: {e}")
+            raise
 
     def connect(self):
         """

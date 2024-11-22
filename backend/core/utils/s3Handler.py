@@ -2,14 +2,14 @@ import boto3
 from typing import List
 import json
 from io import BytesIO
-
+import os
+from botocore.exceptions import BotoCoreError, ClientError
 
 class S3Handler:
-    def __init__(self, credential_file: str = "../../../.config/s3AwsAccessKey.json"):
+    def __init__(self):
         """
         Initialize the S3Handler with credentials from a JSON file and region.
         """
-        self.credential_file = credential_file
         self.s3_client = None
         self._load_credentials_and_create_client()
 
@@ -18,20 +18,25 @@ class S3Handler:
         Load AWS credentials from a file and initialize the S3 client.
         """
         try:
-            with open(self.credential_file, "r") as f:
-                credentials = json.load(f)
+            ssm = boto3.client('ssm')
+            parameter = ssm.get_parameter(Name='/DOCUMENTO/KEY/S3_ACCESS_KEY/ACCESS_KEY_ID', WithDecryption=True)
+            access_key_id = parameter['Parameter']['Value']
+
+            parameter = ssm.get_parameter(Name='/DOCUMENTO/KEY/S3_ACCESS_KEY/SECRETE_ACCESS_KEY_ID', WithDecryption=True)
+            secret_access_key = parameter['Parameter']['Value']
+
+            parameter = ssm.get_parameter(Name='/DOCUMENTO/KEY/S3_ACCESS_KEY/REGION', WithDecryption=True)
+            region = parameter['Parameter']['Value']
 
             self.s3_client = boto3.Session(
-                aws_access_key_id=credentials["accessKeyId"],
-                aws_secret_access_key=credentials["secretAccessKeyId"],
-                region_name=credentials["region"]
+                aws_access_key_id=access_key_id,
+                aws_secret_access_key=secret_access_key,
+                region_name=region
             ).client("s3")
-        except FileNotFoundError:
-            raise FileNotFoundError("Credential file not found.")
-        except json.JSONDecodeError:
-            raise ValueError("Error decoding JSON in credential file.")
-        except Exception as e:
-            raise RuntimeError(f"Error creating S3 client: {e}")
+
+        except (BotoCoreError, ClientError) as e:
+            print(f"Error retrieving parameter from SSM: {e}")
+            raise
 
     def list_buckets(self) -> List[dict]:
         """
