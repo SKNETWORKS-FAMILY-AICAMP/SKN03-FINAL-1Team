@@ -14,7 +14,7 @@ const handleLogin = () => {
         <li><a href="javascript:;">Mypage</a></li>
       </ul>
       <div id="googleSignInButton" class="login-btn">
-        <button @click="handleLogin">Login</button>
+        <button @click="handleLogin" class="styled-button">Login</button>
       </div>
     </div>
   </header>
@@ -29,6 +29,8 @@ header {
   box-sizing: border-box;
   padding: 0 15px;
   overflow-x: hidden;
+  background: linear-gradient(45deg, #6ab7ff, #4fc3f7); /* 배경 그라데이션 */
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1); /* 그림자 효과 */
 }
 
 .logo {
@@ -46,23 +48,54 @@ header ul.menu:after {
 
 header ul.menu {
   position: absolute;
-  top: 20px;
+  top: 50%;
   right: 150px;
+  transform: translateY(-50%);
+  display: flex;
+  gap: 20px;
 }
 
 header ul.menu li {
-  float: left;
-  padding: 10px 20px;
   list-style: none;
+}
+
+header ul.menu li a {
+  text-decoration: none;
+  color: white;
+  font-weight: bold;
+  transition: color 0.3s;
+}
+
+header ul.menu li a:hover {
+  color: #ffc107; /* 호버 효과 */
 }
 
 .login-btn {
   position: absolute;
-  top: 20px;
+  top: 50%;
   right: 50px;
+  transform: translateY(-50%);
   display: flex;
   align-items: center;
   justify-content: center;
+}
+
+.styled-button {
+  background-color: #ff7043;
+  border: none;
+  color: white;
+  padding: 10px 20px;
+  text-align: center;
+  text-decoration: none;
+  display: inline-block;
+  font-size: 16px;
+  border-radius: 5px; /* 둥근 모서리 */
+  cursor: pointer;
+  transition: background-color 0.3s; /* 배경 색 전환 효과 */
+}
+
+.styled-button:hover {
+  background-color: #ff5722; /* 호버 배경 색 */
 }
 
 .result {
