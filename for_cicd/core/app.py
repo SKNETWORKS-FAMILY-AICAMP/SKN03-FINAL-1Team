@@ -91,5 +91,21 @@ async def remove_from_bookmarks(
 ):
     return await handle_request(user.remove_bookmark, {"userId": userId, "paperDoi": paperDoi})
 
+
+
+# ***************  health check *************** #
+
+
+# 6. Health Check (Vue.js와 연결 테스트)
+@app.get("/health")
+def health_check():
+    return {"status": "Backend is up and running"}
+
+@app.get("/")
+def welcome_check():
+    return {"status": "Welcome to documento"}
+
+
+
 # if __name__ == "__main__":
 #     uvicorn.run("app:app", host="0.0.0.0", port=8000, reload=True)
