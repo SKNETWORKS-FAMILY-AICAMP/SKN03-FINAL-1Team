@@ -13,8 +13,9 @@ RUN apt-get update && apt-get install -y \
 WORKDIR /app
 
 # 코드 복사
-COPY . /app
-#COPY ./requirements.txt /app
+#documento 변경
+COPY ./core /app
+COPY ./requirements.txt /app
 
 # Python 패키지 설치
 RUN pip3 install --no-cache-dir -r requirements.txt
