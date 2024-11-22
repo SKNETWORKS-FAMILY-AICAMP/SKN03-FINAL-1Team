@@ -96,6 +96,7 @@ def get_user_info(session_id: Optional[str] = Cookie(None)):
         raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="세션이 유효하지 않습니다.")
     return session_data[session_id]
 
+
 @app.get("/logout")
 def logout(session_id: Optional[str] = Cookie(None), response: Response = None):
     if session_id and session_id in session_data:
