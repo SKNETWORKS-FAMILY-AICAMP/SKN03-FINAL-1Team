@@ -11,7 +11,3 @@ $Env:OPENAI_API_KEY
 Remove-Item Env:OPENAI_API_KEY   
 
 
-
-- yml
-이름 변경
-cd ./for_cicd  -> cd ./backend
