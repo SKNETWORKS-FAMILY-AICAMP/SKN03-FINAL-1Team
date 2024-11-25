@@ -21,7 +21,7 @@ export default defineConfig({
   server: {
     proxy: {
       '/api': {
-        target: 'https://www.zelope.click',
+        target: 'https://api.documento.click',
         changeOrigin: true,
         rewrite: (path) => path.replace(/^\/api/, ''),
       },
