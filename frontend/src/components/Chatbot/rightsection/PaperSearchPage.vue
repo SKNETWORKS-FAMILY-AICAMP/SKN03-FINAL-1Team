@@ -1,6 +1,34 @@
 <script setup>
+import { ref } from 'vue'
+import axios from '@/axiosConfig' // 설정한 axios 인스턴스를 가져옵니다.
 import PaperSearchItem from './PaperSearchItem.vue'
+
+const inputText = ref('')
+const papers = ref([])
+
+// 논문 데이터 가져오기
+const fetchPapers = async () => {
+  try {
+    const response = await axios.post('https://api.documento.click/papers/search/', {
+      userKeyword: inputText.value,
+    })
+    papers.value = response.data.result.paperList
+    console.log('Papers:', papers.value)
+  } catch (error) {
+    console.error('Failed to fetch papers:', error)
+  }
+}
+
+// 메시지 전송 핸들러
+const sendMessage = () => {
+  if (inputText.value.trim() !== '') {
+    fetchPapers()
+  } else {
+    console.warn('탐색 키워드를 입력해보아요.')
+  }
+}
 </script>
+
 <template>
   <div class="test-content">
     <div class="input-area d-flex w-100 p-2">
@@ -13,11 +41,12 @@ import PaperSearchItem from './PaperSearchItem.vue'
       />
       <button class="btn send-button" @click="sendMessage">></button>
     </div>
-    <paper-search-item class="search-item" />
-    <paper-search-item class="search-item" />
-    <paper-search-item class="search-item" />
+    <div v-for="(paper, index) in papers" :key="index">
+      <PaperSearchItem :paper="paper" class="search-item" />
+    </div>
   </div>
 </template>
+
 <style scoped>
 .input-area {
   border: 1px solid #a04747;

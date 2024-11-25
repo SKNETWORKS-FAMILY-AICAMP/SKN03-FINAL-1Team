@@ -1,27 +1,38 @@
 <script setup>
-import BookMarkIcon from '@/assets/BookMarkIcon.png'
+defineProps({
+  paper: Object,
+})
 </script>
+
 <template>
-  <div class="paper-search-item d-flex align-items-center">
-    <div class="p-4">
-      <img :src="BookMarkIcon" />
-      <div>
-        <h2>75%</h2>
-      </div>
+  <div class="paper-item d-flex align-items-center my-2">
+    <div class="p-3">
+      <img :src="paper.DragHandleIcon" />
     </div>
-    <div class="text-start">
-      <h5>Hierarchical Text-ConditionalImage Generation with CLIP Latents</h5>
-      <p class="my-1">대충 날짜 | 대충 저자</p>
-      <p class="no-margin">키워드 : 어쩌구</p>
-      <p class="no-margin">핵심 방법론 : 어쩌구저쩌구</p>
+    <div class="text-start flex-grow-1 d-flex flex-column">
+      <p>{{ paper.title }}</p>
+      <p>{{ paper.authors }}</p>
+      <p>{{ paper.abstract }}</p>
+      <p>{{ paper.citation }} citations</p>
+    </div>
+    <div class="ms-auto p-4">
+      <img :src="paper.BookMarkIcon" />
     </div>
   </div>
 </template>
+
 <style scoped>
-.no-margin {
-  margin: 0;
+.paper-item {
+  background: white;
+  color: black;
+  border-radius: 10px;
+  margin: 5px;
+  padding: 0px;
+  height: auto; /* Height is adjusted to fit the content */
 }
-.paper-search-item {
-  min-width: 600px;
+.paper-item p {
+  line-height: 1.2;
+  margin-top: 5px;
+  margin-bottom: 5px;
 }
 </style>
