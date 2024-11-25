@@ -26,7 +26,7 @@ origins = [
 
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=origins,
+    allow_origins=["*"],
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
@@ -131,8 +131,12 @@ async def get_user_bookmarks(request: Request):
 @app.post("/papers/bookmarks/")
 #쿼리문 형태 : ?paperDoi=”string”
 async def add_to_bookmarks(request: Request):
-    headers = request.headers
+    body = await request.body()
+    if not body:
+        raise HTTPException(status_code=400, detail="Request body is empty")
+    
     data = await request.json()
+    headers = request.headers
     return await handle_request(handle_bookmark, headers,data)
 
 # ********************************************* #
