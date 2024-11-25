@@ -187,16 +187,24 @@ async def fetch_user_bookmarks(header):
 async def handle_bookmark(header, data):
     print("=== POST /users/bookmarks ===")
     try :
-        user_token = header.user_token
+        user_token = header.get("user_token")
         
-        paper_doi = data.paperDoi
-        user_keyword = data.userKeyword
-        bookmark = data.bookmark
+        paper_doi = data.get("paperDoi")
+        user_keyword = data.get("userKeyword")
+        bookmark = data.get("bookmark")
         
+        if not user_token:
+            raise HTTPException(status_code=400, detail="Invalid parameters")
+        if not paper_doi:
+            raise HTTPException(status_code=400, detail="Invalid parameters")
+        if not user_keyword:
+            raise HTTPException(status_code=400, detail="Invalid parameters")
+        if not bookmark:
+            raise HTTPException(status_code=400, detail="Invalid parameters")
             
 
         print("paperDoi : ", paper_doi)
-        print("userKeyword : ", user_keyword)
+        print("userKeyword : ", user_token)
     except Exception as e:
         print(f"Missing key in parameters: {e}")
         raise HTTPException(status_code=400, detail="Invalid parameters")

@@ -20,15 +20,16 @@ origins = [
     "http://localhost:8000/",
     "http://localhost:5173/",
     "https://api.documento.click/",
-    "http://www.documento.click/"
+    "http://www.documento.click/",
+    "https://0.0.0.0:8000/"
 ]
 
 app.add_middleware(
     CORSMiddleware,
     allow_origins=origins,
     allow_credentials=True,
-    allow_methods=[""],
-    allow_headers=[""],
+    allow_methods=["*"],
+    allow_headers=["*"],
 )
 
 
@@ -121,7 +122,7 @@ async def create_paper_transformation(data: userPrompt):
 # 5.1. 북마크 리스트
 @app.get("/papers/bookmarks/")
 async def get_user_bookmarks(request: Request):
-    headers = await request.headers
+    headers = request.headers
     
     return await handle_request(fetch_user_bookmarks, headers)
 
@@ -130,7 +131,7 @@ async def get_user_bookmarks(request: Request):
 @app.post("/papers/bookmarks/")
 #쿼리문 형태 : ?paperDoi=”string”
 async def add_to_bookmarks(request: Request):
-    headers = await request.headers
+    headers = request.headers
     data = await request.json()
     return await handle_request(handle_bookmark, headers,data)
 
