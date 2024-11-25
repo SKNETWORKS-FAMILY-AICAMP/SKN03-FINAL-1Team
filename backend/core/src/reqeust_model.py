@@ -6,13 +6,7 @@ class userKeyword(BaseModel):
 class userPrompt(BaseModel):
     userPrompt: str | None = None
 
-class bookMark(BaseModel):
-    paperDoi: str
-    userKeyword: str
-    bookmark: bool
-    
+
 class paperDoi(BaseModel):
     paperDoi: str | None = None
     
-class CommonHeaders(BaseModel):
-    user_token : str

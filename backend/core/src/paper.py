@@ -151,7 +151,8 @@ async def fetch_user_bookmarks(header):
     print("=== GET /papers/bookmarks ===")
     try :
         user_token = header.get("user_token")
-        print("user_token : ", user_token)
+        if user_token is None:
+            raise HTTPException(status_code=400, detail="Invalid parameters")
     except Exception as e:
         print(f"Missing key in parameters: {e}")
         raise HTTPException(status_code=400, detail="Invalid parameters")
