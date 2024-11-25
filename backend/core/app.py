@@ -6,6 +6,9 @@ from src import *
 
 app = FastAPI()
 
+#기본 baseurl : https://api.documento.click
+
+
 # ********************************************* #
 # ******************  Utils  ****************** #
 # ********************************************* #
@@ -23,76 +26,89 @@ async def handle_request(func, data=None):
             status_code=500,
             content={"statusCode": 500, "message": str(e)}
         )
-
-# ********************************************* #
-# ***************  About Paper  *************** #
-# ********************************************* #
-
-@app.get("/papers")
-async def get_paper_by_doi(paperDoi: str = Query(..., description="Paper DOI for fetching paper details")):
-    return await handle_request(fetch_paper_details, {"paperDoi": paperDoi})
-
-@app.get("/papers/priorpapers")
-async def get_prior_papers(paperDoi: str = Query(..., description="Paper DOI for fetching prior papers")):
-    return await handle_request(fetch_prior_papers, {"paperDoi": paperDoi})
-
-@app.post("/papers/summary")
-async def create_paper_summary(request: Request):
-    data = await request.json()
-    return await handle_request(process_summary, data)
-
-@app.post("/papers/transformation")
-async def create_paper_transformation(request: Request):
-    data = await request.json()
-    return await handle_request(process_transformation, data)
-
-@app.post("/papers/search")
-async def search_papers(request: Request):
-    data = await request.json()
-    return await handle_request(process_search, data)
-
+        
 
 # ********************************************* #
 # ***************  About  User  *************** #
 # ********************************************* #
 
+
+# 1. 회원가입
 @app.post("/users")
 async def create_user(request: Request):
     data = await request.json()
     return await handle_request(create_new_user, data)
 
-@app.get("/login")
+
+# 2. 로그인
+@app.post("/login")
 async def login():
     return await handle_request(login_user)
 
+# 회원가입/로그인 용
 @app.get("/auth/callback")
 async def auth_callback(code: str = Query(..., description="OAuth2 code for login")):
     return await handle_request(oauth_callback, {"code": code})
 
-@app.post("/logout")
-async def logout(request: Request):
+
+
+# ********************************************* #
+# ***************  About Paper  *************** #
+# ********************************************* #
+
+# 3. 논문검색
+@app.post("/papers/search")
+async def search_papers(request: Request):
     data = await request.json()
-    return await handle_request(logout_user, data)
+    return await handle_request(process_search, data)
 
-@app.get("/reissue")
-async def reissue_token(userId: int = Query(..., description="User ID for reissue")):
-    return await handle_request(reissue_user_token, {"userId": userId})
+# 4. 키워드 최적화
+@app.post("/papers/transformation")
+async def create_paper_transformation(request: Request):
+    data = await request.json()
+    return await handle_request(process_transformation, data)
 
+
+
+# ***************  5. bookmark  *************** #
 @app.get("/users/bookmarks")
 async def get_user_bookmarks(userId: int = Query(..., description="User ID for fetching bookmarked papers")):
     return await handle_request(fetch_user_bookmarks, {"userId": userId})
 
+
+# 멘토님 曰 : 추가와 삭제는 같은 방식의 post
 @app.post("/users/bookmarks")
+#쿼리문 형태 : ?paperDoi=”string”
 async def add_to_bookmarks(request: Request):
     data = await request.json()
     return await handle_request(add_bookmark, data)
 
-@app.delete("/users/bookmarks")
-async def remove_from_bookmarks(
-    userId: int = Query(..., description="User ID for removing bookmark"),
-    paperDoi: str = Query(..., description="Paper DOI for removing from bookmarks")
-):
-    return await handle_request(remove_bookmark, {"userId": userId, "paperDoi": paperDoi})
+# ********************************************* #
+
+# 6. 논문 선택
+# notion에는 /papers/?paperDoi=”string” 이렇게 적혀있음 
+@app.get("/papers")
+async def get_paper_by_doi(paperDoi: str = Query(..., description="Paper DOI for fetching paper details")):
+    return await handle_request(fetch_paper_details, {"paperDoi": paperDoi})
+
+#7. 논문 요약
+@app.post("/papers/summary")
+async def create_paper_summary(request: Request):
+    data = await request.json()
+    return await handle_request(process_summary, data)
+
+#8. 선행 논문 리스트
+@app.get("/papers/priorpapers")
+#쿼리문 : ?paperDoi=”string”
+async def get_prior_papers(paperDoi: str = Query(..., description="Paper DOI for fetching prior papers")):
+    return await handle_request(fetch_prior_papers, {"paperDoi": paperDoi})
+
+
+
+
+
+
+
 
 # ********************************************* #
 # ***************  health check *************** #
