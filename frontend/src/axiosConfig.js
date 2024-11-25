@@ -6,7 +6,6 @@ const instance = axios.create({
   withCredentials: true, // 인증 정보를 포함하는 요청 허용
   headers: {
     'Content-Type': 'application/json',
-    'Access-Control-Allow-Origin': '*',
   },
 })
 
