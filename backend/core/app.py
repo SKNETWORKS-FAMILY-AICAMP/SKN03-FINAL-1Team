@@ -116,7 +116,8 @@ async def create_paper_transformation(data: userPrompt):
 # ***************  5. bookmark  *************** #
 # 5.1. 북마크 리스트
 @app.get("/papers/bookmarks/")
-async def get_user_bookmarks(headers: Annotated[CommonHeaders, Header()]):
+async def get_user_bookmarks(request: Request):
+    headers = request.headers
     return await handle_request(fetch_user_bookmarks, headers)
 
 
