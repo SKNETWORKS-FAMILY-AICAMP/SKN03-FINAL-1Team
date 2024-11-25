@@ -64,7 +64,7 @@ async def handle_request(func, data=None):
 
 
 # 1. 회원가입
-@app.post("/users")
+@app.get("/users")
 async def create_user(request: Request):
     data = await request.json()
     return await handle_request(create_new_user, data)
@@ -117,7 +117,7 @@ async def add_to_bookmarks(request: Request):
 
 # 6. 논문 선택
 # notion에는 /papers/?paperDoi=”string” 이렇게 적혀있음 
-@app.get("/papers")
+@app.get("/papers/select")
 async def get_paper_by_doi(paperDoi: str = Query(..., description="Paper DOI for fetching paper details")):
     return await handle_request(fetch_paper_details, {"paperDoi": paperDoi})
 
