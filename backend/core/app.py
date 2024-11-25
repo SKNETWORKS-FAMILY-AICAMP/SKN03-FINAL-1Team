@@ -1,17 +1,32 @@
 from fastapi import FastAPI, HTTPException, Query, Request
+
+from fastapi.middleware.cors import CORSMiddleware
 from typing import List, Optional
 from fastapi.responses import JSONResponse
 import uvicorn
 from src import *
 
 app = FastAPI(
-    title="FIX : api func renewal",
+    title="FIX : CORS",
     description="",
-    version="2.0.2"
+    version="2.1.0"
+)
+
+#기본 baseurl : https://api.documento.click
+origins = [
+    "https://www.documento.click"
+]
+
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=origins,
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
 )
 
 
-#기본 baseurl : https://api.documento.click
+
 
 
 # ********************************************* #
