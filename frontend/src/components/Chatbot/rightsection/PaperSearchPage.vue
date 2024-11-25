@@ -9,12 +9,9 @@ const papers = ref([])
 // 논문 데이터 가져오기
 const fetchPapers = async () => {
   try {
-    const response = await axios.post(
-      'https://cors-anywhere.herokuapp.com/https://api.documento.click/papers/search/',
-      {
-        userKeyword: inputText.value,
-      },
-    )
+    const response = await axios.post('/papers/search/', {
+      userKeyword: inputText.value,
+    })
     papers.value = response.data.result.paperList
     console.log('Papers:', papers.value)
   } catch (error) {
