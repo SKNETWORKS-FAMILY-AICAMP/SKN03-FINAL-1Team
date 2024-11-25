@@ -30,7 +30,7 @@ const handleLogout = async () => {
       'session_id=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/; domain=documento.click'
 
     // 페이지 새로고침
-    window.location.href = 'http://www.documento.com'
+    window.location.href = 'http://www.documento.click'
   } catch (error) {
     console.error('Failed to logout:', error)
   }
