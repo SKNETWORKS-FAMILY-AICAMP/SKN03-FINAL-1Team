@@ -17,7 +17,7 @@ const fetchUserInfo = async () => {
 
 // 로그인 버튼 클릭 핸들러
 const handleLogin = () => {
-  window.location.href = 'http://api.documento.com/login'
+  window.location.href = 'http://api.documento.click/login'
 }
 
 // 로그아웃 핸들러
