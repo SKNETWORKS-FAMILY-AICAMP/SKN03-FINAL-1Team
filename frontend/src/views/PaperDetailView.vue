@@ -23,7 +23,7 @@ onMounted(async () => {
       const response = await axios.get(`https://api.example.com/papers/${paperId}`)
       paper.value = response.data
       // PDF 파일 URL 설정
-      pdfUrl.value = `http://localhost:8000/download/${paperId}`
+      pdfUrl.value = `http://api.documento.click/download/${paperId}`
     } catch (error) {
       console.error('Error fetching paper details:', error)
     }
