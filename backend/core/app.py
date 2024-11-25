@@ -50,13 +50,24 @@ async def handle_request(func, data=None):
     except HTTPException as e:
         return JSONResponse(
             status_code=e.status_code,
-            content={"statusCode": e.status_code, "message": str(e.detail)}
+            content={
+                    "resultCode" : e.status_code,
+                    "message" : str(e),
+                    "result" : []
+                    
+                        }
         )
     except Exception as e:
         return JSONResponse(
             status_code=500,
-            content={"statusCode": 500, "message": str(e)}
+            content={
+                    "resultCode" : 500,
+                    "message" : str(e),
+                    "result" : []
+                    
+                        }
         )
+        
         
 
 # ********************************************* #
@@ -94,9 +105,9 @@ async def search_papers(data: userKeyword):
     return await handle_request(process_search, data)
 
 # 4. 키워드 최적화
-@app.post("/papers/transformation")
-async def create_paper_transformation(request: Request):
-    data = await request.json()
+@app.post("/papers/transformation/")
+async def create_paper_transformation(data: userPrompt):
+    #data = await request.json()
     return await handle_request(process_transformation, data)
 
 

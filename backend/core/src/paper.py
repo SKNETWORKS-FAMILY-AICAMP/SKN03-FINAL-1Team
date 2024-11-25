@@ -189,9 +189,21 @@ async def process_search(data):
                 "citation": 150
             }
         ],
-        "count": 3
+        "pagination": {
+        "currentPage": 999,
+        "pageSize": 999,
+        "totalPages": 999,
+        "totalResults": 999,
+        "hasNextPage": False,
+        "hasPreviousPage": False
+      }
     }
     print("outputData : ", output_data)
 
     print("=== FIN /papers/search ===")
-    return JSONResponse(content=output_data, status_code=200)
+    return JSONResponse(status_code=200, 
+                        content={
+                            "resultCode" : 200,
+                            "message" : "Search completed successfully",
+                            "result" : output_data
+                        })
