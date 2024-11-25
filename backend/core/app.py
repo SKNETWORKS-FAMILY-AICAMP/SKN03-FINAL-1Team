@@ -33,6 +33,16 @@ app.add_middleware(
 # ******************  Utils  ****************** #
 # ********************************************* #
 
+"""
+기본 리턴 형태
+"response" : {
+	"resultCode" : 200,
+	"message" : "Search completed successfully",
+	"result" : { .... }
+}
+"""
+
+
 async def handle_request(func, data=None):
     try:
         return await func(data)
@@ -61,7 +71,7 @@ async def create_user(request: Request):
 
 
 # 2. 로그인
-@app.post("/login")
+@app.get("/login")
 async def login():
     return await handle_request(login_user)
 
