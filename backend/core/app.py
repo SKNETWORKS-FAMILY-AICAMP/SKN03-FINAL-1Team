@@ -4,7 +4,12 @@ from fastapi.responses import JSONResponse
 import uvicorn
 from src import *
 
-app = FastAPI()
+app = FastAPI(
+    title="FIX : api func renewal",
+    description="",
+    version="2.0.2"
+)
+
 
 #기본 baseurl : https://api.documento.click
 
@@ -71,13 +76,13 @@ async def create_paper_transformation(request: Request):
 
 
 # ***************  5. bookmark  *************** #
-@app.get("/users/bookmarks")
+@app.get("/papers/bookmarks")
 async def get_user_bookmarks(userId: int = Query(..., description="User ID for fetching bookmarked papers")):
     return await handle_request(fetch_user_bookmarks, {"userId": userId})
 
 
 # 멘토님 曰 : 추가와 삭제는 같은 방식의 post
-@app.post("/users/bookmarks")
+@app.post("/papers/bookmarks")
 #쿼리문 형태 : ?paperDoi=”string”
 async def add_to_bookmarks(request: Request):
     data = await request.json()
@@ -102,11 +107,6 @@ async def create_paper_summary(request: Request):
 #쿼리문 : ?paperDoi=”string”
 async def get_prior_papers(paperDoi: str = Query(..., description="Paper DOI for fetching prior papers")):
     return await handle_request(fetch_prior_papers, {"paperDoi": paperDoi})
-
-
-
-
-
 
 
 
