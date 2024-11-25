@@ -17,7 +17,7 @@ const fetchUserInfo = async () => {
 
 // 로그인 버튼 클릭 핸들러
 const handleLogin = () => {
-  window.location.href = 'http://localhost:8000/login'
+  window.location.href = 'http://api.documento.com/login'
 }
 
 // 로그아웃 핸들러
@@ -29,7 +29,7 @@ const handleLogout = async () => {
     document.cookie = 'session_id=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/; domain=localhost'
 
     // 페이지 새로고침
-    window.location.href = 'http://localhost:5173'
+    window.location.href = 'http://www.documento.com'
   } catch (error) {
     console.error('Failed to logout:', error)
   }
