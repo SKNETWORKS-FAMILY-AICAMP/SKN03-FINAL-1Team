@@ -4,6 +4,9 @@ from .paper import (
     process_summary,
     process_transformation,
     process_search,
+    fetch_user_bookmarks,
+    handle_bookmark,
+
 )
 
 from .user import (
@@ -12,9 +15,7 @@ from .user import (
     oauth_callback,
     logout_user,
     reissue_user_token,
-    fetch_user_bookmarks,
-    add_bookmark,
-    remove_bookmark,
+
 )
 
 __all__ = [
@@ -29,6 +30,5 @@ __all__ = [
     "logout_user",
     "reissue_user_token",
     "fetch_user_bookmarks",
-    "add_bookmark",
-    "remove_bookmark",
+    "handle_bookmark",
 ]

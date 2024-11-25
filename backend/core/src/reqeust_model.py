@@ -13,3 +13,6 @@ class bookMark(BaseModel):
     
 class paperDoi(BaseModel):
     paperDoi: str | None = None
+    
+class CommonHeaders(BaseModel):
+    user_token : str
