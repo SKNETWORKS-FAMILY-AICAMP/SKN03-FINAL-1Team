@@ -43,22 +43,24 @@ onMounted(() => {
 <template>
   <header>
     <a href="#" class="logo"><img alt="logo" src="@/assets/home-logo.png" width="170" /></a>
-    <div class="menuWrap">
-      <ul class="menu">
-        <li><a href="javascript:;">Search</a></li>
-        <li><a href="javascript:;">Review</a></li>
-        <li><a href="javascript:;">Mypage</a></li>
-      </ul>
-    </div>
-    <div id="userMenu" class="user-info">
-      <template v-if="userInfo">
-        <img :src="userInfo.picture" alt="User Picture" width="32" height="32" />
-        <span>{{ userInfo.name }}</span>
-        <button @click="handleLogout" class="styled-button">Logout</button>
-      </template>
-      <template v-else>
-        <button @click="handleLogin" class="styled-button">Login</button>
-      </template>
+    <div class="menu-container">
+      <div class="menuWrap">
+        <ul class="menu">
+          <li><a href="javascript:;">Search</a></li>
+          <li><a href="javascript:;">Review</a></li>
+          <li><a href="javascript:;">Mypage</a></li>
+        </ul>
+      </div>
+      <div id="userMenu" class="user-info">
+        <template v-if="userInfo">
+          <img :src="userInfo.picture" alt="User Picture" width="32" height="32" />
+          <span>{{ userInfo.name }}</span>
+          <button @click="handleLogout" class="styled-button">Logout</button>
+        </template>
+        <template v-else>
+          <button @click="handleLogin" class="styled-button">Login</button>
+        </template>
+      </div>
     </div>
   </header>
 </template>
@@ -82,6 +84,19 @@ header {
   transform: translateY(-50%);
 }
 
+.menu-container {
+  display: flex;
+  justify-content: flex-end;
+  align-items: center;
+  height: 100%; /* 메뉴 컨테이너 높이를 header와 동일하게 설정 */
+}
+
+.menuWrap {
+  display: flex;
+  align-items: center;
+  margin-right: 20px; /* 사용자 정보와의 간격 추가 */
+}
+
 header ul.menu:after {
   display: block;
   clear: both;
@@ -89,10 +104,6 @@ header ul.menu:after {
 }
 
 header ul.menu {
-  position: absolute;
-  top: 50%;
-  left: 50%;
-  transform: translate(-50%, -50%);
   display: flex;
   gap: 20px;
 }
@@ -113,10 +124,6 @@ header ul.menu li a:hover {
 }
 
 .user-info {
-  position: absolute;
-  top: 50%;
-  right: 15px;
-  transform: translateY(-50%);
   display: flex;
   align-items: center;
   gap: 10px; /* 간격 추가 */
