@@ -9,17 +9,6 @@ const LOGOUT_REDIRECT_URL = process.env.VUE_APP_LOGOUT_REDIRECT_URL
 
 const userInfo = ref(null)
 
-// 사용자 정보 가져오기
-const fetchUserInfo = async () => {
-  try {
-    const response = await axios.get(`${API_URL}/user_info`)
-    userInfo.value = response.data
-    console.log('User Info:', userInfo.value)
-  } catch (error) {
-    console.error('Failed to fetch user info:', error)
-  }
-}
-
 // 로그인 버튼 클릭 핸들러
 const handleLogin = () => {
   window.location.href = LOGIN_URL
