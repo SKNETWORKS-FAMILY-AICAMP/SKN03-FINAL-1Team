@@ -136,6 +136,8 @@ async def add_to_bookmarks(request: Request):
 # notion에는 /papers/?paperDoi=”string” 이렇게 적혀있음 
 @app.get("/papers/select/")
 async def get_paper_by_doi(paperDoi: str = "default"):
+    print(paperDoi)
+    print(type(paperDoi))
     return await handle_request(fetch_paper_details, paperDoi)
 
 #7. 논문 요약
