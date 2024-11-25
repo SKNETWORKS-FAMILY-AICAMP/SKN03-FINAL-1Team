@@ -2,12 +2,17 @@
 import { ref, onMounted } from 'vue'
 import axios from '@/axiosConfig' // 설정한 axios 인스턴스를 가져옵니다.
 
+// 환경 변수에서 API URL과 로그인 URL을 가져옵니다.
+const API_URL = process.env.VUE_APP_API_URL
+const LOGIN_URL = process.env.VUE_APP_LOGIN_URL
+const LOGOUT_REDIRECT_URL = process.env.VUE_APP_LOGOUT_REDIRECT_URL
+
 const userInfo = ref(null)
 
 // 사용자 정보 가져오기
 const fetchUserInfo = async () => {
   try {
-    const response = await axios.get('/user_info')
+    const response = await axios.get(`${API_URL}/user_info`)
     userInfo.value = response.data
     console.log('User Info:', userInfo.value)
   } catch (error) {
@@ -17,20 +22,20 @@ const fetchUserInfo = async () => {
 
 // 로그인 버튼 클릭 핸들러
 const handleLogin = () => {
-  window.location.href = 'http://api.documento.click/login'
+  window.location.href = LOGIN_URL
 }
 
 // 로그아웃 핸들러
 const handleLogout = async () => {
   try {
-    const response = await axios.get('/logout')
+    const response = await axios.get(`${API_URL}/logout`)
     console.log(response.data.message) // 로그아웃 성공 메시지 확인
     // 쿠키 삭제 및 페이지 리로드
     document.cookie =
       'session_id=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/; domain=documento.click'
 
     // 페이지 새로고침
-    window.location.href = 'http://www.documento.click'
+    window.location.href = LOGOUT_REDIRECT_URL
   } catch (error) {
     console.error('Failed to logout:', error)
   }
