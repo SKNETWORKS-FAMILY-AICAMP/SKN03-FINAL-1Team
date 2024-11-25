@@ -26,7 +26,8 @@ const handleLogout = async () => {
     const response = await axios.get('/logout')
     console.log(response.data.message) // 로그아웃 성공 메시지 확인
     // 쿠키 삭제 및 페이지 리로드
-    document.cookie = 'session_id=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/; domain=localhost'
+    document.cookie =
+      'session_id=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/; domain=documento.click'
 
     // 페이지 새로고침
     window.location.href = 'http://www.documento.com'
