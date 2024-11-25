@@ -15,24 +15,15 @@ app = FastAPI(
 )
 
 #기본 baseurl : https://api.documento.click
-origins = [
-    "http://localhost/",
-    "http://localhost:8000/",
-    "http://localhost:5173/",
-    "https://api.documento.click/",
-    "http://www.documento.click/",
-    "https://0.0.0.0:8000/"
-]
+from fastapi.middleware.cors import CORSMiddleware
 
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["*"],
-    allow_credentials=True,
-    allow_methods=["*"],
-    allow_headers=["*"],
+    allow_origins=["https://www.documento.click"],  # 프론트엔드 서브 도메인
+    allow_methods=["*"],  # 모든 HTTP 메서드 허용
+    allow_headers=["*"],  # 모든 헤더 허용
+    allow_credentials=True,  # 인증 정보 허용 (쿠키 등)
 )
-
-
 
 
 
