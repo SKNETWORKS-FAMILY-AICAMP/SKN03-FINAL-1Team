@@ -4,7 +4,7 @@ import CardSection from '@/components/home/CardSection.vue'
 import ChatbotView from '@/views/ChatbotView.vue'
 import PaperDetailView from '@/views/PaperDetailView.vue'
 import SignUpView from '@/views/SignUpView.vue' // 회원가입 뷰 임포트 추가
-
+import TestView from '@/views/TestView.vue'
 const routes = [
   {
     path: '/',
@@ -32,6 +32,11 @@ const routes = [
     path: '/signup', // 회원가입 경로 추가
     name: 'signup',
     component: SignUpView,
+  },
+  {
+    path: '/test',
+    name: 'test',
+    component: TestView,
   },
 ]
 

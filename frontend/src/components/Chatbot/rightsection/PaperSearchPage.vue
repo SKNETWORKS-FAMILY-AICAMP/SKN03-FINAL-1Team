@@ -9,7 +9,7 @@ const papers = ref([])
 // 논문 데이터 가져오기
 const fetchPapers = async () => {
   try {
-    const response = await axios.post('/papers/search/', {
+    const response = await axios.get('/', {
       userKeyword: inputText.value,
     })
     papers.value = response.data.result.paperList
