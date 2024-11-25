@@ -5,6 +5,7 @@ from typing import List, Optional
 from fastapi.responses import JSONResponse
 import uvicorn
 from src import *
+from src.reqeust_model import *
 
 app = FastAPI(
     title="FIX : CORS",
@@ -87,9 +88,9 @@ async def auth_callback(code: str = Query(..., description="OAuth2 code for logi
 # ********************************************* #
 
 # 3. 논문검색
-@app.post("/papers/search")
-async def search_papers(request: Request):
-    data = await request.json()
+@app.post("/papers/search/")
+async def search_papers(data: userKeyword):
+    #data = await request.json()
     return await handle_request(process_search, data)
 
 # 4. 키워드 최적화

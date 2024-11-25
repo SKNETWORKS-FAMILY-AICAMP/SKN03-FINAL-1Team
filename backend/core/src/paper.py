@@ -146,17 +146,18 @@ async def process_transformation(data):
 
 async def process_search(data):
     print("=== POST /papers/search ===")
-    try :
-        user_keyword = data.get("userKeyword")
-        print("userKeyword : ", user_keyword)
-    except Exception as e:
+    try:
+        user_keyword = data.userKeyword  # 요청 데이터에서 userKeyword 가져오기
+        if not user_keyword:  # user_keyword가 None 또는 빈 문자열인 경우 처리
+            raise HTTPException(status_code=400, detail="Invalid parameters: userKeyword cannot be None or empty")
+        print("userKeyword:", user_keyword)
+    except AttributeError as e:  # 키가 없는 경우
         print(f"Missing key in parameters: {e}")
-        raise HTTPException(status_code=400, detail="Invalid parameters")
-    
-    try :
-        pass
-    except Exception as e:
-        pass
+        raise HTTPException(status_code=400, detail="Invalid parameters: Missing userKeyword")
+    except Exception as e:  # 기타 예외 처리
+        print(f"Unexpected error: {e}")
+        raise HTTPException(status_code=500, detail="Internal server error")
+
 
     output_data = {
         "paperList": [
