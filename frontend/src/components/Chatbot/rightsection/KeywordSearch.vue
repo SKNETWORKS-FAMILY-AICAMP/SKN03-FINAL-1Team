@@ -26,6 +26,11 @@ const handleOptimization = () => {
     console.warn('최적화할 프롬프트를 입력해보세요.')
   }
 }
+
+// DOI 알림 핸들러
+const showDoiAlert = (doi) => {
+  alert(`DOI: ${doi}`)
+}
 </script>
 
 <template>
@@ -58,11 +63,17 @@ const handleOptimization = () => {
       <div
         v-for="(keywordItem, index) in generatedResults.generatedKeywordList"
         :key="index"
-        class="card mb-3 shadow-sm"
+        class="mb-4"
       >
-        <div class="card-body">
-          <h5 class="card-title">키워드: {{ keywordItem.generatedKeyword }}</h5>
-          <div v-for="(paper, paperIndex) in keywordItem.paperList" :key="paperIndex" class="mb-3">
+        <h5 class="fw-bold">키워드: {{ keywordItem.generatedKeyword }}</h5>
+        <div
+          v-for="(paper, paperIndex) in keywordItem.paperList"
+          :key="paperIndex"
+          class="card mb-3 shadow-sm"
+          @click="showDoiAlert(paper.paperDoi)"
+          style="cursor: pointer"
+        >
+          <div class="card-body">
             <h6>{{ paper.title }}</h6>
             <p><strong>DOI:</strong> {{ paper.paperDoi }}</p>
             <p><strong>초록:</strong> {{ paper.korAbstract }}</p>
