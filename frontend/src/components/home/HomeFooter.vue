@@ -2,7 +2,7 @@
 
 <template>
   <footer>
-    <!-- 새로운 섹션 시작 -->
+    <!-- 새로운 섹션 시작! -->
     <div class="container">
       <div class="count-box-container row mt-5 mx-3">
         <div class="count-box col-md-4 my-3">
