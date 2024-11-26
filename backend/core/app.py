@@ -12,8 +12,8 @@ from src.reqeust_model import *
 
 app = FastAPI(
     title="Sucess : API",
-    description="/auth/callback 수정",
-    version="2.5.1"
+    description="로그인 설레발??....?",
+    version="2.5.8"
 )
 
 
@@ -94,9 +94,9 @@ async def login():
 
 # 회원가입/로그인 용
 @app.get("/auth/callback")
-async def auth_callback(code: str ):
+async def auth_callback(code: str = ""):
     print(code)
-    return await handle_request(oauth_callback, {"code": code})
+    return await handle_request(oauth_callback, code)
 
 
 
