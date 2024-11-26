@@ -12,8 +12,8 @@ from src.reqeust_model import *
 
 app = FastAPI(
     title="Sucess : API",
-    description="로그인 설레발??....?",
-    version="2.5.8"
+    description="로그인 설레발??....?v3",
+    version="2.5.10"
 )
 
 
@@ -90,7 +90,8 @@ async def handle_request(func, data=None):
 # 2. 로그인
 @app.get("/login")
 async def login():
-    return await handle_request(login_user)
+    data = "success"
+    return await handle_request(login_user,data)
 
 # 회원가입/로그인 용
 @app.get("/auth/callback")

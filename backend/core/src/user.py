@@ -19,8 +19,9 @@ session_data = {}
 #                         })
     
 
-async def login_user():
+async def login_user(data):
     print("===  /login ===")
+    print(data)
     oauth = googleOAuth()
     return RedirectResponse(
         f"{oauth.authorization_url}?response_type=code&client_id={oauth.client_id}&redirect_uri={oauth.redirect_uri}&scope=openid%20email%20profile"
