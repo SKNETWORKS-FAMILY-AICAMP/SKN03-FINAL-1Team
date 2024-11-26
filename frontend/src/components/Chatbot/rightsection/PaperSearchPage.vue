@@ -1,6 +1,6 @@
 <script setup>
 import { ref } from 'vue'
-import axios from 'axios' // 설정한 axios 인스턴스를 가져옵니다.
+import axios from '@/axiosConfig' // 설정한 axios 인스턴스를 가져옵니다.
 import PaperSearchItem from '@/components/Chatbot/rightsection/PaperSearchItem.vue' // 정확한 경로로 수정
 
 const inputText = ref('')
@@ -9,7 +9,7 @@ const papers = ref([])
 // 논문 데이터 가져오기 (POST 요청)
 const fetchPapers = async () => {
   try {
-    const response = await axios.post('https://api.documento.click/papers/search/', {
+    const response = await axios.post('/papers/search/', {
       userKeyword: inputText.value,
     })
     papers.value = response.data.result.paperList
