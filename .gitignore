@@ -73,3 +73,5 @@ backend/.venv
 frontend\src\axiosConfig.js
 
 start_backend.bat
+
+frontend\src\axiosConfig.js
