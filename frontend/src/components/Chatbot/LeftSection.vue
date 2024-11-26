@@ -20,11 +20,7 @@ const toggleSidebar = () => {
       <div class="book-mark d-flex flex-column" v-if="isSidebarOpen">
         <div class="bookmark-list mt-5 text-start">북마크 리스트</div>
         <div class="content my-2">
-          <PaperItem />
-          <PaperItem />
-          <PaperItem />
-          <PaperItem />
-          <PaperItem />
+          <!-- <PaperItem /> -->
         </div>
       </div>
       <div class="d-flex">
