@@ -1,41 +1,46 @@
-from fastapi import FastAPI, HTTPException, Query, Request, Header
+from fastapi import FastAPI, HTTPException, Query, Request
+from fastapi.exceptions import RequestValidationError
 
 from fastapi.middleware.cors import CORSMiddleware
-from typing import List, Optional
 from fastapi.responses import JSONResponse
 import uvicorn
 from src import *
 from src.reqeust_model import *
-from typing import Annotated
+
+
+
 
 app = FastAPI(
-    title="FIX : API with dummy",
-    description="",
-    version="2.2.0"
+    title="Sucess : API",
+    description="이것저것 변경됨",
+    version="2.3.2"
 )
 
+
+# 커스텀 예외 처리: 422 유효성 검사 에러
+@app.exception_handler(RequestValidationError)
+async def validation_exception_handler(request: Request, exc: RequestValidationError):
+    return JSONResponse(
+        status_code=422,
+        content={
+            "resultCode": 422,
+            "errorCode": "VALIDATION_ERROR",
+            "message": "Validation failed. Please check your input.",
+        },
+    )
+
+
+
 #기본 baseurl : https://api.documento.click
-origins = [
-    "http://localhost/",
-    "http://localhost:8000/",
-    "http://localhost:5173/",
-    "https://localhost/",
-    "https://localhost:8000/",
-    "https://localhost:5173/",
-    "https://api.documento.click/",
-    "https://www.documento.click/",
-    "https://0.0.0.0:8000/"
-]
+from fastapi.middleware.cors import CORSMiddleware
 
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["*"],
-    allow_credentials=True,
-    allow_methods=["*"],
-    allow_headers=["*"],
+    allow_origins=["https://www.documento.click"],  # 프론트엔드 서브 도메인
+    allow_methods=["*"],  # 모든 HTTP 메서드 허용
+    allow_headers=["*"],  # 모든 헤더 허용
+    allow_credentials=True,  # 인증 정보 허용 (쿠키 등)
 )
-
-
 
 
 
@@ -55,28 +60,19 @@ app.add_middleware(
 
 async def handle_request(func, data=None):
     try:
+        # 요청 처리 함수 실행
         return await func(data)
-    except HTTPException as e:
-        return JSONResponse(
-            status_code=e.status_code,
-            content={
-                    "resultCode" : e.status_code,
-                    "message" : str(e),
-                    "result" : []
-                    
-                        }
-        )
+    
     except Exception as e:
+        # 예상치 못한 오류 처리
         return JSONResponse(
             status_code=500,
             content={
-                    "resultCode" : 500,
-                    "message" : str(e),
-                    "result" : []
-                    
-                        }
+                "resultCode": 500,
+                "errorCode": "UNEXPECTED_ERROR : MAYBE SERVER",
+                "message": str(e),
+            },
         )
-        
         
 
 # ********************************************* #
@@ -123,7 +119,7 @@ async def create_paper_transformation(data: userPrompt):
 
 # ***************  5. bookmark  *************** #
 # 5.1. 북마크 리스트
-@app.get("/papers/bookmarks/")
+@app.get("/users/bookmarks/")
 async def get_user_bookmarks(request: Request):
     headers = request.headers
     
@@ -131,7 +127,7 @@ async def get_user_bookmarks(request: Request):
 
 
 # 멘토님 曰 : 추가와 삭제는 같은 방식의 post
-@app.post("/papers/bookmarks/")
+@app.post("/users/bookmarks/")
 #쿼리문 형태 : ?paperDoi=”string”
 async def add_to_bookmarks(request: Request):
     body = await request.body()
@@ -148,6 +144,8 @@ async def add_to_bookmarks(request: Request):
 # notion에는 /papers/?paperDoi=”string” 이렇게 적혀있음 
 @app.get("/papers/select/")
 async def get_paper_by_doi(paperDoi: str = "default"):
+    print(paperDoi)
+    print(type(paperDoi))
     return await handle_request(fetch_paper_details, paperDoi)
 
 #7. 논문 요약
