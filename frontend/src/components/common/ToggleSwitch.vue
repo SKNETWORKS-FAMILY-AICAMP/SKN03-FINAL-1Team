@@ -1,7 +1,7 @@
 <script setup>
 import { ref, defineProps, defineEmits } from 'vue'
 
-const props = defineProps(['isToggled']) // props 사용
+const props = defineProps(['isToggled']) // props 사용!
 const emit = defineEmits(['toggleChat'])
 
 const toggleChat = () => {
