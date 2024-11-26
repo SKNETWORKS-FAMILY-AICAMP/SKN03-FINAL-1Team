@@ -5,7 +5,7 @@ import axios from 'axios'
 const paperDetails = ref('')
 const paperDoi = ref('default')
 const postData = ref('') // POST 요청에 사용할 데이터
-const selectedUrl = ref('http://localhost:8000') // 기본 URL 설정
+const selectedUrl = ref('https://localhost:8000') // 기본 URL 설정
 const selectedApi = ref('/papers/select') // 기본 API 엔드포인트 설정
 
 // 논문 선택 함수 (GET 요청)
@@ -72,6 +72,7 @@ const handleFetch = () => {
       v-if="selectedApi === '/papers/search'"
       placeholder="Enter search keyword"
     />
+    <input v-model="postData" v-if="selectedApi === '/health'" placeholder="Enter health check" />
     <button @click="handleFetch">Fetch Paper Details</button>
     <div>
       <h2>Paper Details:</h2>
