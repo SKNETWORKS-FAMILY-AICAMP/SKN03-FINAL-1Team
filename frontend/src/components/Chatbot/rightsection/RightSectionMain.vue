@@ -1,6 +1,6 @@
 <script setup>
 import { ref } from 'vue'
-import ToggleSwitch from './ToggleSwitch.vue'
+import ToggleSwitch from '@/components/common/ToggleSwitch.vue'
 import KeywordSearch from './KeywordSearch.vue'
 import PaperSearchPage from './PaperSearchPage.vue'
 
