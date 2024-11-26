@@ -1,9 +1,11 @@
 <script setup>
 import { ref } from 'vue'
+import { useRouter } from 'vue-router'
 import axios from '@/axiosConfig' // 설정한 axios 인스턴스를 가져옵니다.
 
 const inputPrompt = ref('')
 const generatedResults = ref(null)
+const router = useRouter()
 
 // 키워드 최적화 요청 (POST 요청)
 const optimizeKeywords = async () => {
@@ -27,9 +29,17 @@ const handleOptimization = () => {
   }
 }
 
-// DOI 알림 핸들러
-const showDoiAlert = (doi) => {
-  alert(`DOI: ${doi}`)
+// DOI 요청 핸들러 및 페이지 이동
+const requestPaperByDoi = async (doi) => {
+  try {
+    const response = await axios.get(`/papers/select/?paperDoi=${doi}`)
+    if (response.data.resultCode === 201) {
+      alert(`Path: ${response.data.result.paperS3Path}`)
+      router.push('/paper')
+    }
+  } catch (error) {
+    console.error('Failed to fetch paper details:', error)
+  }
 }
 </script>
 
@@ -70,7 +80,7 @@ const showDoiAlert = (doi) => {
           v-for="(paper, paperIndex) in keywordItem.paperList"
           :key="paperIndex"
           class="card mb-3 shadow-sm"
-          @click="showDoiAlert(paper.paperDoi)"
+          @click="requestPaperByDoi(paper.paperDoi)"
           style="cursor: pointer"
         >
           <div class="card-body">

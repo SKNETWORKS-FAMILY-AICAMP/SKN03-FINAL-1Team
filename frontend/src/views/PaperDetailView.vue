@@ -1,7 +1,7 @@
 <script setup>
 import { ref, onMounted } from 'vue'
 import { useRoute } from 'vue-router'
-import axios from 'axios'
+import axios from '@/axiosConfig' // axiosConfig 가져오기
 
 import LeftSection from '@/components/Chatbot/LeftSection.vue'
 import DropIcon from '@/assets/DropIcon.png'
@@ -11,6 +11,7 @@ const paper = ref(null)
 const route = useRoute()
 const showPdfViewer = ref(false) // PDF 뷰어 활성화 상태
 const pdfUrl = ref('') // PDF 파일 URL
+const paperS3Path = ref('') // paperS3Path 상태 추가
 
 const togglePdfViewer = () => {
   showPdfViewer.value = !showPdfViewer.value // PDF 뷰어 활성화 상태 토글
@@ -20,10 +21,14 @@ onMounted(async () => {
   const paperId = route.params.id
   if (paperId) {
     try {
-      const response = await axios.get(`https://api.example.com/papers/${paperId}`)
+      const response = await axios.get(`/papers/${paperId}`)
       paper.value = response.data
       // PDF 파일 URL 설정
-      pdfUrl.value = `http://api.documento.click/download/${paperId}`
+      pdfUrl.value = `/download/${paperId}`
+      // paperS3Path 설정
+      if (response.data.resultCode === 201) {
+        paperS3Path.value = response.data.result.paperS3Path
+      }
     } catch (error) {
       console.error('Error fetching paper details:', error)
     }
@@ -45,6 +50,8 @@ onMounted(async () => {
       <div v-else class="d-flex align-items-center dotted-box" @click="togglePdfViewer">
         <div>
           <img :src="DropIcon" class="flex-row align-items-center" />
+          <p>S3 Path: {{ paperS3Path }}</p>
+          <!-- paperS3Path 표시 -->
           <p class="d-flex align-items-center">
             좌측 리스트의 파일을 Drag&Drop하거나 업로드하세요.
           </p>
