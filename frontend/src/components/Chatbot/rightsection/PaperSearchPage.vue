@@ -6,10 +6,10 @@ import PaperSearchItem from '@/components/Chatbot/rightsection/PaperSearchItem.v
 const inputText = ref('')
 const papers = ref([])
 
-// 논문 데이터 가져오기
+// 논문 데이터 가져오기 (POST 요청)
 const fetchPapers = async () => {
   try {
-    const response = await axios.get('/', {
+    const response = await axios.post('/', {
       userKeyword: inputText.value,
     })
     papers.value = response.data.result.paperList
