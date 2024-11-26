@@ -1,4 +1,4 @@
-from .search_model import (
+from .dummy_model import (
     dummy_search,
     dummy_transformation,
     dummy_summary,

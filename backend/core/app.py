@@ -12,8 +12,8 @@ from src.reqeust_model import *
 
 app = FastAPI(
     title="Sucess : API",
-    description="이것저것 변경됨",
-    version="2.4.5"
+    description="/auth/callback 수정",
+    version="2.5.1"
 )
 
 
@@ -80,11 +80,11 @@ async def handle_request(func, data=None):
 # ********************************************* #
 
 
-# 1. 회원가입
-@app.get("/users")
-async def create_user(request: Request):
-    data = await request.json()
-    return await handle_request(create_new_user, data)
+# # 1. 회원가입
+# @app.get("/users")
+# async def create_user(request: Request):
+#     data = await request.json()
+#     return await handle_request(create_new_user, data)
 
 
 # 2. 로그인
@@ -94,7 +94,8 @@ async def login():
 
 # 회원가입/로그인 용
 @app.get("/auth/callback")
-async def auth_callback(code: str = Query(..., description="OAuth2 code for login")):
+async def auth_callback(code: str ):
+    print(code)
     return await handle_request(oauth_callback, {"code": code})
 
 
@@ -120,10 +121,14 @@ async def create_paper_transformation(data: userPrompt):
 # ***************  5. bookmark  *************** #
 # 5.1. 북마크 리스트
 @app.get("/users/bookmarks/")
-async def get_user_bookmarks(request: Request):
-    headers = request.headers
+async def get_user_bookmarks(uuid: str = ""):
     
-    return await handle_request(fetch_user_bookmarks, headers)
+    return await handle_request(fetch_user_bookmarks, uuid)
+
+#async def get_user_bookmarks(request: Request):
+#   headers = request.headers
+
+#쿼리문 : ?uuid=”string”
 
 
 # 멘토님 曰 : 추가와 삭제는 같은 방식의 post
