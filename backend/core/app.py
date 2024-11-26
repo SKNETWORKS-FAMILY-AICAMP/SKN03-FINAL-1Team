@@ -19,8 +19,11 @@ origins = [
     "http://localhost/",
     "http://localhost:8000/",
     "http://localhost:5173/",
+    "https://localhost/",
+    "https://localhost:8000/",
+    "https://localhost:5173/",
     "https://api.documento.click/",
-    "http://www.documento.click/",
+    "https://www.documento.click/",
     "https://0.0.0.0:8000/"
 ]
 
