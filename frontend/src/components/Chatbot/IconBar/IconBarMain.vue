@@ -2,26 +2,33 @@
 import { ref } from 'vue'
 import { useRouter } from 'vue-router' // Vue Router 사용
 
-import IconBarFooter from '@/components/Chatbot/IconBar/IconBarFooter.vue'
-
 import DocumentIcon from '@/assets/IconBar/DocumentIcon.png'
 import LogoIcon from '@/assets/logo.png'
 import HamburgerIcon from '@/assets/IconBar/HamburgerIcon.png'
+import SettingIcon from '@/assets/IconBar/SettingIcon.png'
+import HomeIcon from '@/assets/IconBar/HomeIcon.png'
 
 const router = useRouter()
 
-const icons = ref([
+const mainIcons = ref([
   { id: 2, src: HamburgerIcon, action: () => router.push('/chatbot') },
-  { id: 3, src: DocumentIcon, action: () => router.push('/paper') }, // HomeIcon 클릭 시 메인 화면으로 이동
+  { id: 3, src: DocumentIcon, action: () => router.push('/paper') }, // DocumentIcon 클릭 시 /paper로 이동
+])
+
+const footerIcons = ref([
+  { id: 1, src: DocumentIcon },
+  { id: 2, src: HomeIcon, action: () => router.push('/') }, // HomeIcon 클릭 시 메인 화면으로 이동
+  { id: 3, src: SettingIcon },
 ])
 </script>
 
 <template>
   <div class="icon-bar-container">
-    <img :src="LogoIcon" alt="Logo" class="logo mb-3" @click="goToHomePage" />
+    <img :src="LogoIcon" alt="Logo" class="logo mb-3" @click="router.push('/')" />
     <div class="icon-list">
+      <!-- 메인 아이콘들 -->
       <div
-        v-for="icon in icons"
+        v-for="icon in mainIcons"
         :key="icon.id"
         class="icon"
         :class="{ 'logo-icon-bg': icon.id === 1 }"
@@ -30,7 +37,20 @@ const icons = ref([
         <img v-if="icon.src" :src="icon.src" alt="Icon" class="icon-image" />
         <span v-else>{{ icon.name }}</span>
       </div>
-      <icon-bar-footer />
+
+      <!-- 푸터 아이콘들 -->
+      <div class="icon-list justify-content-end">
+        <div
+          v-for="icon in footerIcons"
+          :key="icon.id"
+          class="icon"
+          :class="{ 'footer-icon-special': icon.id === 1 }"
+          @click="icon.action && icon.action()"
+        >
+          <!-- 아이콘 이미지를 렌더링 -->
+          <img :src="icon.src" alt="Footer Icon" class="icon-image" />
+        </div>
+      </div>
     </div>
   </div>
 </template>
@@ -71,8 +91,21 @@ const icons = ref([
   background-color: #a04747; /* LogoIcon의 배경 색상을 빨간색으로 설정 */
 }
 
+.footer-icon-special {
+  background-color: #ffffff; /* id가 1인 아이콘의 배경 색상 설정 */
+  border-radius: 50%; /* id가 1인 아이콘을 동그랗게 설정 */
+}
+
 .icon-image {
   max-width: 100%;
   max-height: 100%;
+}
+
+.logo {
+  cursor: pointer;
+}
+
+.mb-3 {
+  margin-bottom: 1rem;
 }
 </style>
