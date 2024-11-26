@@ -1,5 +1,6 @@
 from pydantic import BaseModel
 
+
 class userKeyword(BaseModel):
     userKeyword: str | None = None
 
@@ -9,4 +10,3 @@ class userPrompt(BaseModel):
 
 class paperDoi(BaseModel):
     paperDoi: str | None = None
-    

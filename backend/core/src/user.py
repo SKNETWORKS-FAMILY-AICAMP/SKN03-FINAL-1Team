@@ -81,3 +81,89 @@ async def reissue_user_token(data):
     pass
 
 
+# 5. bookmarks
+# 5.1. 북마크 리스트
+async def fetch_user_bookmarks(header):
+    """
+    user_token -> user_id -> bookmarked_papers
+    """
+    print("=== GET /papers/bookmarks ===")
+    try :
+        user_token = header.get("user_token")
+        if user_token is None:
+            raise HTTPException(status_code=400, detail="Invalid parameters")
+    except Exception as e:
+        print(f"Missing key in parameters: {e}")
+        raise HTTPException(status_code=400, detail="Invalid parameters")
+    
+    
+    
+    output_data = {
+            "paperList": [
+                {
+                "paperDoi": "10.18653/v1/2020.acl-demos.1",
+                "title": "Xiaomingbot: A Multilingual Robot News Reporter",
+                "userKeyword": "multilingual news generation"
+                },
+                {
+                "paperDoi": "10.18653/v1/2020.acl-demos.10",
+                "title": "SyntaxGym: An Online Platform for Targeted Evaluation of Language Models",
+                "userKeyword": "language model evaluation"
+                }
+            ]
+        }
+    print("outputData : ", output_data)
+
+    print("=== FIN /papers/bookmarks ===")
+    return JSONResponse(status_code=201, 
+                    content={
+                        "resultCode" : 201,
+                        "message" : "Bookmark list retrieved successfully.",
+                        "result" : output_data
+                    })
+    
+# 5.2. 북마크 추가 /삭제
+async def handle_bookmark(header, data):
+    print("=== POST /users/bookmarks ===")
+    try :
+        user_token = header.get("user_token")
+        
+        paper_doi = data.get("paperDoi")
+        user_keyword = data.get("userKeyword")
+        bookmark = data.get("bookmark")
+        
+        if not user_token:
+            raise HTTPException(status_code=400, detail="Invalid parameters")
+        if not paper_doi:
+            raise HTTPException(status_code=400, detail="Invalid parameters")
+        if not user_keyword:
+            raise HTTPException(status_code=400, detail="Invalid parameters")
+        if not bookmark:
+            raise HTTPException(status_code=400, detail="Invalid parameters")
+            
+
+        print("paperDoi : ", paper_doi)
+        print("userKeyword : ", user_token)
+    except Exception as e:
+        print(f"Missing key in parameters: {e}")
+        raise HTTPException(status_code=400, detail="Invalid parameters")
+
+    else:
+        if bookmark:
+            #True, 즉 bookMark 되어있던 것을 삭제
+            return_obj = JSONResponse(status_code=201, 
+                    content={
+                        "resultCode" : 201,
+                        "message" : "Bookmark removed successfully."
+                    })
+        else:
+            return_obj = JSONResponse(status_code=201, 
+                    content={
+                        "resultCode" : 201,
+                        "message" : "Bookmark list retrieved successfully."
+                    })
+   
+
+    print("=== FIN /users/bookmarks ===")
+
+    return return_obj

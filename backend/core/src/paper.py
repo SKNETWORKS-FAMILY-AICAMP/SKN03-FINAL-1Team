@@ -2,6 +2,10 @@ from fastapi import HTTPException
 from fastapi.responses import JSONResponse
 from utils import *
 
+#이 부분은 실제 AI 모델 구축하면 변경
+from dummy import *
+
+
 
 # ********************************************* #
 # ***************  About Paper  *************** #
@@ -9,32 +13,77 @@ from utils import *
 
 # 3. 논문 검색
 async def process_search(data):
-    """
-    키워드를 받아 유사도 높은 논문 리스트를 반환
-    및 
-    페이지네이션
-    
-    """
+
     print("=== POST /papers/search ===")
     try:
         user_keyword = data.userKeyword  # 요청 데이터에서 userKeyword 가져오기
         if not user_keyword:  # user_keyword가 None 또는 빈 문자열인 경우 처리
-            raise HTTPException(status_code=400, detail="Invalid parameters: userKeyword cannot be None or empty")
-        print("userKeyword:", user_keyword)
-    except AttributeError as e:  # 키가 없는 경우
-        print(f"Missing key in parameters: {e}")
-        raise HTTPException(status_code=400, detail="Invalid parameters: Missing userKeyword")
+            raise HTTPException(status_code=400)
+
+        # doi_list : [ {doi(str): similarity}]
+        doi_list = dummy_search(user_keyword)
+        """
+    DOI -> DB에서 
+    title, authors, publicationYear, publicationMonth, abstract, citation, venue 뽑고
+    그거 "paperList": [ {}, {}, ...] 붙히고
+    pagination
+        """
+        if not doi_list:
+            print(f"NO_RESULTS: {e}")
+            raise HTTPException(status_code=404)
+        
+    
     except Exception as e:  # 기타 예외 처리
         print(f"Unexpected error: {e}")
-        raise HTTPException(status_code=500, detail="Internal server error")
+        return JSONResponse(
+            status_code=500,
+            content={
+                "resultCode" : 500,
+                "errorCode": "UNEXPECTED_ERROR",
+                "message": "An unexpected error occurred while processing your request.??"
+            }
+        )
+    
+    except HTTPException as e:
+        if e.status_code == 404:
+            return JSONResponse(
+            status_code=404,
+            content={
+                "resultCode" : 404,
+                "errorCode": "NO_RESULTS",
+                "message": "No results found. Please refine your search."
+            }
+        )
+        elif e.status_code == 400:
+            return JSONResponse(
+            status_code=400,
+            content={
+                "resultCode" : 400,
+                "errorCode": "INVALID PARAMETER",
+                "message": "Parameter is Invalid. Check the input"
+            }
+        )
+        else:
+            return JSONResponse(
+            status_code=e.status_code,
+            content={
+                "resultCode" : e.status_code,
+                "errorCode": "UNEXPECTED_ERROR",
+                "message": "An unexpected error occurred while processing your request."
+            }
+        )
 
 
-    output_data = {
+    else:
+        
+    
+        output_data = {
         "paperList": [
             {
                 "paperDoi": "10.18653/v1/2023.nmt.1",
                 "title": "Advancements in Neural Machine Translation",
                 "authors": "John Doe, Jane Smith, Alex Johnson",
+                "venue": "venue",
                 "publicationYear": 2023,
                 "publicationMonth": "October",
                 "abstract": "This paper explores recent developments in neural machine translation, focusing on transformer models and their impact on translation quality.",
@@ -44,6 +93,7 @@ async def process_search(data):
                 "paperDoi": "10.18653/v1/2023.ai.2",
                 "title": "Artificial Intelligence in Healthcare",
                 "authors": "Emily Brown, Michael White",
+                "venue": "venue",
                 "publicationYear": 2022,
                 "publicationMonth": "June",
                 "abstract": "A comprehensive analysis of artificial intelligence applications in healthcare, highlighting benefits and ethical considerations.",
@@ -53,6 +103,7 @@ async def process_search(data):
                 "paperDoi": "10.18653/v1/2023.lm.3",
                 "title": "Large Language Models and Their Applications",
                 "authors": "Chris Green, Sarah Blue",
+                "venue": "venue",
                 "publicationYear": 2023,
                 "publicationMonth": "January",
                 "abstract": "This study examines large language models, their architecture, and how they are applied in real-world scenarios.",
@@ -68,15 +119,20 @@ async def process_search(data):
         "hasPreviousPage": False
       }
     }
-    print("outputData : ", output_data)
+        print("outputData : ", output_data)
 
-    print("=== FIN /papers/search ===")
-    return JSONResponse(status_code=200, 
-                        content={
-                            "resultCode" : 200,
-                            "message" : "Search completed successfully",
-                            "result" : output_data
-                        })
+        print("=== FIN /papers/search ===")
+        return JSONResponse(status_code=201, 
+                            content={
+                                "resultCode" : 201,
+                                "message" : "Search completed successfully???",
+                                "result" : output_data
+                            })
+    
+    
+    
+
+    
 
 # 4. 키워드 최적화
 async def process_transformation(data):
@@ -135,99 +191,13 @@ async def process_transformation(data):
     print("outputData : ", output_data)
 
     print("=== FIN /papers/transformation ===")
-    return JSONResponse(status_code=200, 
+    return JSONResponse(status_code=201, 
                     content={
-                        "resultCode" : 200,
+                        "resultCode" : 201,
                         "message" : "Keyword optimization successful.",
                         "result" : output_data
                     })
 
-# 5. bookmarks
-# 5.1. 북마크 리스트
-async def fetch_user_bookmarks(header):
-    """
-    user_token -> user_id -> bookmarked_papers
-    """
-    print("=== GET /papers/bookmarks ===")
-    try :
-        user_token = header.get("user_token")
-        if user_token is None:
-            raise HTTPException(status_code=400, detail="Invalid parameters")
-    except Exception as e:
-        print(f"Missing key in parameters: {e}")
-        raise HTTPException(status_code=400, detail="Invalid parameters")
-    
-    
-    
-    output_data = {
-            "paperList": [
-                {
-                "paperDoi": "10.18653/v1/2020.acl-demos.1",
-                "title": "Xiaomingbot: A Multilingual Robot News Reporter",
-                "userKeyword": "multilingual news generation"
-                },
-                {
-                "paperDoi": "10.18653/v1/2020.acl-demos.10",
-                "title": "SyntaxGym: An Online Platform for Targeted Evaluation of Language Models",
-                "userKeyword": "language model evaluation"
-                }
-            ]
-        }
-    print("outputData : ", output_data)
-
-    print("=== FIN /papers/bookmarks ===")
-    return JSONResponse(status_code=200, 
-                    content={
-                        "resultCode" : 200,
-                        "message" : "Bookmark list retrieved successfully.",
-                        "result" : output_data
-                    })
-    
-# 5.2. 북마크 추가 /삭제
-async def handle_bookmark(header, data):
-    print("=== POST /users/bookmarks ===")
-    try :
-        user_token = header.get("user_token")
-        
-        paper_doi = data.get("paperDoi")
-        user_keyword = data.get("userKeyword")
-        bookmark = data.get("bookmark")
-        
-        if not user_token:
-            raise HTTPException(status_code=400, detail="Invalid parameters")
-        if not paper_doi:
-            raise HTTPException(status_code=400, detail="Invalid parameters")
-        if not user_keyword:
-            raise HTTPException(status_code=400, detail="Invalid parameters")
-        if not bookmark:
-            raise HTTPException(status_code=400, detail="Invalid parameters")
-            
-
-        print("paperDoi : ", paper_doi)
-        print("userKeyword : ", user_token)
-    except Exception as e:
-        print(f"Missing key in parameters: {e}")
-        raise HTTPException(status_code=400, detail="Invalid parameters")
-
-    else:
-        if bookmark:
-            #True, 즉 bookMark 되어있던 것을 삭제
-            return_obj = JSONResponse(status_code=200, 
-                    content={
-                        "resultCode" : 200,
-                        "message" : "Bookmark removed successfully."
-                    })
-        else:
-            return_obj = JSONResponse(status_code=200, 
-                    content={
-                        "resultCode" : 200,
-                        "message" : "Bookmark list retrieved successfully."
-                    })
-   
-
-    print("=== FIN /users/bookmarks ===")
-
-    return return_obj
 
 
 # 6. 논문 선택
@@ -245,9 +215,9 @@ async def fetch_paper_details(data):
     output_data = {
                     "paperS3Path": "THIS/IS/DUMMY/PATH"
                     }
-    return JSONResponse(status_code=200, 
+    return JSONResponse(status_code=201, 
                     content={
-                        "resultCode" : 200,
+                        "resultCode" : 201,
                         "message" : "fetch_bookmark completed successfully",
                         "result" : output_data
                     })
@@ -277,9 +247,9 @@ async def process_summary(data):
     print("outputData : ", output_data)
 
     print("=== FIN /papers/summary ===")
-    return JSONResponse(status_code=200, 
+    return JSONResponse(status_code=201, 
                     content={
-                        "resultCode" : 200,
+                        "resultCode" : 201,
                         "message" : "Paper summary and details provided successfully.",
                         "result" : output_data
                     })
@@ -320,9 +290,9 @@ async def fetch_prior_papers(data):
     print("outputData : ", output_data)
 
     print("=== FIN /papers/priorpapers ===")
-    return JSONResponse(status_code=200, 
+    return JSONResponse(status_code=201, 
                     content={
-                        "resultCode" : 200,
+                        "resultCode" : 201,
                         "message" : "Preceding papers retrieved successfully.",
                         "result" : output_data
                     })
