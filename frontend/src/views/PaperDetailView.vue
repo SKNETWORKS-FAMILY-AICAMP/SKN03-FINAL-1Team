@@ -6,6 +6,7 @@ import axios from '@/axiosConfig' // axiosConfig 가져오기
 import LeftSection from '@/components/Chatbot/LeftSection.vue'
 import DropIcon from '@/assets/DropIcon.png'
 import PdfViewer from '@/components/PdfViewer.vue'
+import PaperDetail from '@/components/Paper/PaperDetail.vue'
 
 const paper = ref(null)
 const route = useRoute()
@@ -62,6 +63,9 @@ onMounted(async () => {
           </p>
         </div>
       </div>
+    </div>
+    <div>
+      <PaperDetail />
     </div>
   </div>
 </template>
