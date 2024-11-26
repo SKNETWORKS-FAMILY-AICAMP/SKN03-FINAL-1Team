@@ -19,15 +19,20 @@ const togglePdfViewer = () => {
 
 onMounted(async () => {
   const paperId = route.params.id
+  const s3Path = route.query.paperS3Path // 쿼리 파라미터에서 paperS3Path 가져오기
+  if (s3Path) {
+    paperS3Path.value = s3Path
+    pdfUrl.value = `/download/${s3Path}`
+  }
+
   if (paperId) {
     try {
       const response = await axios.get(`/papers/${paperId}`)
       paper.value = response.data
       // PDF 파일 URL 설정
-      pdfUrl.value = `/download/${paperId}`
-      // paperS3Path 설정
-      if (response.data.resultCode === 201) {
+      if (!s3Path && response.data.resultCode === 201) {
         paperS3Path.value = response.data.result.paperS3Path
+        pdfUrl.value = `/download/${response.data.result.paperS3Path}`
       }
     } catch (error) {
       console.error('Error fetching paper details:', error)

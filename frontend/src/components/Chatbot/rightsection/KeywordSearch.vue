@@ -34,8 +34,11 @@ const requestPaperByDoi = async (doi) => {
   try {
     const response = await axios.get(`/papers/select/?paperDoi=${doi}`)
     if (response.data.resultCode === 201) {
-      alert(`Path: ${response.data.result.paperS3Path}`)
-      router.push('/paper')
+      const paperS3Path = response.data.result.paperS3Path
+      router.push({
+        path: '/paper',
+        query: { paperS3Path },
+      })
     }
   } catch (error) {
     console.error('Failed to fetch paper details:', error)
