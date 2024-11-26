@@ -4,7 +4,7 @@ import axios from '@/axiosConfig' // 설정한 axios 인스턴스를 가져옵�
 import DragHandleIcon from '@/assets/DragHandleIcon.png'
 import BookMarkIcon from '@/assets/BookMarkIcon.png'
 
-const userId = 31525125
+const userId = 'test'
 const bookmarks = ref([])
 
 // 사용자 북마크 데이터 가져오기
