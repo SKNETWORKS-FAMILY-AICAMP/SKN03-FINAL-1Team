@@ -10,9 +10,11 @@ const bookmarks = ref([])
 // 사용자 북마크 데이터 가져오기
 const fetchBookmarks = async () => {
   try {
-    const response = await axios.get(
-      `https://api.documento.click/papers/bookmarks?userId=${userId}`,
-    )
+    const response = await axios.get('/papers/bookmarks/', {
+      headers: {
+        userToken: userId,
+      },
+    })
     bookmarks.value = response.data.paperList
     console.log('Bookmarks:', bookmarks.value)
   } catch (error) {
