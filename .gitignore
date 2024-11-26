@@ -69,5 +69,3 @@ backend/.venv
 backend\.venv
 frontend/.env
 backend/.venv
-
-frontend\src\axiosConfig.js
