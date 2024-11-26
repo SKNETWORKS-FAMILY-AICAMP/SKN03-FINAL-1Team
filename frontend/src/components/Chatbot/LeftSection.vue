@@ -1,7 +1,7 @@
 <script setup>
 import { ref } from 'vue'
 
-import IconBar from '@/components/Chatbot/IconBar/IconBarMain.vue'
+import NevigationBar from '@/components/common/NevigationBar.vue'
 import PaperItem from './LeftSection/PaperItem.vue'
 
 import AccodionButtonImage from '@/assets/accordion-button.png'
@@ -16,7 +16,7 @@ const toggleSidebar = () => {
 <template>
   <div class="container m-0 p-0 h-100">
     <div :class="['left-side-content', { collapsed: !isSidebarOpen }]">
-      <icon-bar />
+      <NevigationBar />
       <div class="book-mark d-flex flex-column" v-if="isSidebarOpen">
         <div class="bookmark-list mt-5 text-start">북마크 리스트</div>
         <div class="content my-2">
