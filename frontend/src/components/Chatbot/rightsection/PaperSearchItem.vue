@@ -1,31 +1,24 @@
+<script setup>
+import BookMarkIcon from '@/assets/BookMarkIcon.png'
+</script>
 <template>
-  <div class="paper-item">
-    <h3>{{ paper.title }}</h3>
-    <p><strong>DOI:</strong> {{ paper.paperDoi }}</p>
-    <p><strong>Authors:</strong> {{ paper.authors }}</p>
-    <p><strong>Publication Year:</strong> {{ paper.publicationYear }}</p>
-    <p><strong>Publication Month:</strong> {{ paper.publicationMonth }}</p>
-    <p><strong>Abstract:</strong> {{ paper.abstract }}</p>
-    <p><strong>Citations:</strong> {{ paper.citation }}</p>
+  <div class="d-flex align-items-center">
+    <div class="p-4">
+      <img :src="BookMarkIcon" />
+      <div>
+        <h2>75%</h2>
+      </div>
+    </div>
+    <div class="text-start">
+      <h5>Hierarchical Text-ConditionalImage Generation with CLIP Latents</h5>
+      <p class="my-1">대충 날짜 | 대충 저자</p>
+      <p class="no-margin">키워드 : 어쩌구</p>
+      <p class="no-margin">핵심 방법론 : 어쩌구저쩌구</p>
+    </div>
   </div>
 </template>
-
-<script setup>
-import { defineProps } from 'vue'
-
-const props = defineProps({
-  paper: {
-    type: Object,
-    required: true,
-  },
-})
-</script>
-
 <style scoped>
-.paper-item {
-  padding: 10px;
-  margin-bottom: 10px;
-  border: 1px solid #ccc;
-  border-radius: 10px;
+.no-margin {
+  margin: 0;
 }
 </style>
