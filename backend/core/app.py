@@ -13,7 +13,7 @@ from src.reqeust_model import *
 app = FastAPI(
     title="Sucess : API",
     description="이것저것 변경됨",
-    version="2.3.2"
+    version="2.4.5"
 )
 
 
@@ -143,7 +143,7 @@ async def add_to_bookmarks(request: Request):
 # 6. 논문 선택
 # notion에는 /papers/?paperDoi=”string” 이렇게 적혀있음 
 @app.get("/papers/select/")
-async def get_paper_by_doi(paperDoi: str = "default"):
+async def get_paper_by_doi(paperDoi: str = ""):
     print(paperDoi)
     print(type(paperDoi))
     return await handle_request(fetch_paper_details, paperDoi)
@@ -156,7 +156,7 @@ async def create_paper_summary(data: paperDoi):
 #8. 선행 논문 리스트
 @app.get("/papers/priorpapers/")
 #쿼리문 : ?paperDoi=”string”
-async def get_prior_papers(paperDoi: str = "default"):
+async def get_prior_papers(paperDoi: str = ""):
     return await handle_request(fetch_prior_papers, paperDoi)
 
 
