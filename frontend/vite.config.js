@@ -21,7 +21,7 @@ export default defineConfig({
   server: {
     proxy: {
       '/api': {
-        target: 'http://localhost:8000', // 백엔드 서버 주소 변경
+        target: 'https://api.documento.click', // 백엔드 서버 주소 변경
         changeOrigin: true,
         rewrite: (path) => path.replace(/^\/api/, ''),
       },
