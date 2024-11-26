@@ -1,7 +1,7 @@
 import { createRouter, createWebHistory } from 'vue-router'
 import HomeView from '@/views/HomeView.vue'
 import CardSection from '@/components/home/CardSection.vue'
-import ChatbotView from '@/views/ChatbotView.vue'
+import KeywordTransformationView from '@/views/MainView.vue'
 import PaperDetailView from '@/views/PaperDetailView.vue'
 import SignUpView from '@/views/SignUpView.vue' // 회원가입 뷰 임포트 추가
 import TestView from '@/views/TestView.vue'
@@ -19,9 +19,9 @@ const routes = [
     ],
   },
   {
-    path: '/chatbot',
-    name: 'chatbot',
-    component: ChatbotView,
+    path: '/keyword-transformation',
+    name: 'keyword-transformation',
+    component: KeywordTransformationView,
   },
   {
     path: '/paper',

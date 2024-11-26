@@ -1,22 +1,35 @@
 <script setup>
 import BookMarkIcon from '@/assets/BookMarkIcon.png'
+import { defineProps } from 'vue'
+
+// props 정의
+const props = defineProps({
+  paper: {
+    type: Object,
+    required: true,
+  },
+})
 </script>
+
 <template>
   <div class="d-flex align-items-center">
     <div class="p-4">
       <img :src="BookMarkIcon" />
       <div>
-        <h2>75%</h2>
+        <h2>{{ paper.citation }} Citations</h2>
       </div>
     </div>
     <div class="text-start">
-      <h5>Hierarchical Text-ConditionalImage Generation with CLIP Latents</h5>
-      <p class="my-1">대충 날짜 | 대충 저자</p>
-      <p class="no-margin">키워드 : 어쩌구</p>
-      <p class="no-margin">핵심 방법론 : 어쩌구저쩌구</p>
+      <h5>{{ paper.title }}</h5>
+      <p class="my-1">
+        {{ paper.publicationMonth }} {{ paper.publicationYear }} | {{ paper.authors }}
+      </p>
+      <p class="no-margin">DOI: {{ paper.paperDoi }}</p>
+      <p class="no-margin">Abstract: {{ paper.abstract }}</p>
     </div>
   </div>
 </template>
+
 <style scoped>
 .no-margin {
   margin: 0;

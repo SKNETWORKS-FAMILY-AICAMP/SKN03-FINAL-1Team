@@ -1,7 +1,7 @@
 <script setup>
 import { ref } from 'vue'
 import ToggleSwitch from './ToggleSwitch.vue'
-import ChatPage from './ChatPage.vue'
+import KeywordSearch from './KeywordSearch.vue'
 import PaperSearchPage from './PaperSearchPage.vue'
 
 const isToggled = ref(false) // 토글 상태 저장
@@ -16,7 +16,7 @@ const toggleChat = () => {
     <toggle-switch :isToggled="isToggled" @toggleChat="toggleChat" />
     <transition name="slide-fade" mode="out-in">
       <div :key="isToggled ? 'paper-search' : 'chat'" v-if="!isToggled" class="page">
-        <chat-page />
+        <keyword-search />
       </div>
       <div :key="isToggled ? 'chat' : 'paper-search'" v-else class="page">
         <paper-search-page />

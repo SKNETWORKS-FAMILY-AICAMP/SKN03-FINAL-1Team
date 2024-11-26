@@ -23,7 +23,7 @@
               키워드에 맞는, 내게 필요한 논문을 찾고 싶다면? 키워드 검색을 통해 내게 필요한 논문을
               빠르게 찾아보아요.
             </p>
-            <a href="/chatbot" class="card-btn btn mt-auto">논문 검색 기능 ></a>
+            <a href="/keyword-transformation" class="card-btn btn mt-auto">논문 검색 기능 ></a>
           </div>
         </div>
       </div>
