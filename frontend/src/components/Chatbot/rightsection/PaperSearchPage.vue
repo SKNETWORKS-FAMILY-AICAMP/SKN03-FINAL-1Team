@@ -9,7 +9,7 @@ const papers = ref([])
 // 논문 데이터 가져오기 (POST 요청)
 const fetchPapers = async () => {
   try {
-    const response = await axios.post('/papers/search', {
+    const response = await axios.post('https://api.documento.click/papers/search', {
       userKeyword: inputText.value,
     })
     papers.value = response.data.result.paperList
