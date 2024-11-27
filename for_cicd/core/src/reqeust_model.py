@@ -10,3 +10,8 @@ class userPrompt(BaseModel):
 
 class paperDoi(BaseModel):
     paperDoi: str | None = None
+
+class bookMark(BaseModel):
+    paperDoi: str 
+    userKeyword : str
+    bookMark : bool

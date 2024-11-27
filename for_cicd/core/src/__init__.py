@@ -13,11 +13,14 @@ from .user import (
     login_user,
     oauth_callback,
     #logout_user,
-    reissue_user_token,
+    #reissue_user_token,
     fetch_user_bookmarks,
     handle_bookmark,
+    get_userinfo,
 
 )
+
+from .init import initialize_global_objects # seom-j
 
 __all__ = [
     "fetch_paper_details",
@@ -28,9 +31,10 @@ __all__ = [
     #"create_new_user",
     "login_user",
     "oauth_callback",
-    #"logout_user",
-    "reissue_user_token",
+    # "logout_user", 
+    #"reissue_user_token",
     "fetch_user_bookmarks",
     "handle_bookmark",
+    "initialize_global_objects", # seom-j
+    "get_userinfo",
 ]
-

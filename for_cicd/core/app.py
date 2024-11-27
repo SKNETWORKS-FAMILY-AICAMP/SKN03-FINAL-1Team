@@ -1,6 +1,7 @@
-from fastapi import FastAPI, HTTPException, Query, Request
-from fastapi.exceptions import RequestValidationError
+from fastapi import FastAPI, HTTPException, Query, Request, Cookie
+from typing import Annotated
 
+from fastapi.exceptions import RequestValidationError
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import JSONResponse
 import uvicorn
@@ -8,32 +9,14 @@ from src import *
 from src.reqeust_model import *
 
 
-
-
 app = FastAPI(
-    title="Sucess : API",
-    description="로그인 설레발??....?v3",
-    version="2.5.10"
+    title="Sucess : search, login, cookie",
+    description="이것저것 변경됨",
+    version="2.6.3"
 )
 
 
-# 커스텀 예외 처리: 422 유효성 검사 에러
-@app.exception_handler(RequestValidationError)
-async def validation_exception_handler(request: Request, exc: RequestValidationError):
-    return JSONResponse(
-        status_code=422,
-        content={
-            "resultCode": 422,
-            "errorCode": "VALIDATION_ERROR",
-            "message": "Validation failed. Please check your input.",
-        },
-    )
-
-
-
-#기본 baseurl : https://api.documento.click
-from fastapi.middleware.cors import CORSMiddleware
-
+# ******************  CORS 처리  ****************** #
 app.add_middleware(
     CORSMiddleware,
     allow_origins=["https://www.documento.click"],  # 프론트엔드 서브 도메인
@@ -43,21 +26,11 @@ app.add_middleware(
 )
 
 
-
 # ********************************************* #
 # ******************  Utils  ****************** #
 # ********************************************* #
 
-"""
-기본 리턴 형태
-"response" : {
-	"resultCode" : 200,
-	"message" : "Search completed successfully",
-	"result" : { .... }
-}
-"""
-
-
+# return handler
 async def handle_request(func, data=None):
     try:
         # 요청 처리 함수 실행
@@ -74,55 +47,69 @@ async def handle_request(func, data=None):
             },
         )
         
+        
+# 커스텀 예외 처리: 422 유효성 검사 에러
+@app.exception_handler(RequestValidationError)
+async def validation_exception_handler(request: Request, exc: RequestValidationError):
+    return JSONResponse(
+        status_code=422,
+        content={
+            "resultCode": 422,
+            "errorCode": "VALIDATION_ERROR",
+            "message": "Validation failed. Please check your input.",
+        },
+    )
+
+
+        
+
+@app.on_event("startup")
+async def initialize_globals():
+    try:
+        await initialize_global_objects(app)
+        print("Global objects initialized successfully.")
+    except Exception as e:
+        print(f"Error initializing global objects: {e}")
+        raise RuntimeError("Failed to initialize global objects during startup.")
+
+
+@app.on_event("shutdown")
+async def cleanup_resources():
+    print("Cleaning up resources...")
+    
 
 # ********************************************* #
 # ***************  About  User  *************** #
 # ********************************************* #
 
 
-# # 1. 회원가입
+# # 1. 회원가입 -> 로그인과 동시에 Google에서 진행
 # @app.get("/users")
 # async def create_user(request: Request):
 #     data = await request.json()
 #     return await handle_request(create_new_user, data)
 
-from utils import  MySQLHandler
-# 0. DB테스트
-@app.get("/db_test")
-async def db_test():
-    try :
-        user_id = 1111
-        email = "Thisisdummy@duumy.com"
-        db_handler = MySQLHandler()
-        db_handler.connect()
-        insert_query = "INSERT INTO DOCUMENTO.user (user_id, email) VALUES (%s, %s)"
-        db_handler.execute_query(insert_query, (user_id, email))
-        print(f"Inserted user_id: {user_id}, email: {email} into DOCUMENTO.user_tb")
-    except Exception as e:
-        print(f"Error with insert to MySQL: {e}")
-    finally:
-        db_handler.disconnect()
-
-
 
 # 2. 로그인
 @app.get("/login")
 async def login():
+    # Input parmeter 오류 처리 오류 
     data = "success"
+    
     return await handle_request(login_user,data)
 
-# 회원가입/로그인 용
+
+# 2-1. 회원가입/로그인 용
 @app.get("/auth/callback")
 async def auth_callback(code: str = ""):
-    print(code)
     return await handle_request(oauth_callback, code)
 
-# @app.get("/user_info")
-# def get_user_info(session_id: Optional[str] = Cookie(None)):
-#     if session_id is None or session_id not in session_data:
-#         raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="세션이 유효하지 않습니다.")
-#     return session_data[session_id]
-
+# 2-2. 세션 저장용
+@app.get("/user_info/")
+async def user_info(session_id :  Annotated[str | None, Cookie()] = None):
+    print(session_id)
+    
+    return await handle_request(get_userinfo, session_id)
 
 
 # ********************************************* #
@@ -131,9 +118,9 @@ async def auth_callback(code: str = ""):
 
 # 3. 논문검색
 @app.post("/papers/search/")
-async def search_papers(data: userKeyword):
-    #data = await request.json()
-    return await handle_request(process_search, data)
+async def search_papers(request: Request, data: userKeyword):
+    return await handle_request(process_search, {"data": data, "request": request})
+
 
 # 4. 키워드 최적화
 @app.post("/papers/transformation/")
@@ -146,34 +133,24 @@ async def create_paper_transformation(data: userPrompt):
 # ***************  5. bookmark  *************** #
 # 5.1. 북마크 리스트
 @app.get("/users/bookmarks/")
-async def get_user_bookmarks(uuid: str = ""):
-    
-    return await handle_request(fetch_user_bookmarks, uuid)
+async def get_user_bookmarks(session_id :  Annotated[str | None, Cookie()] = None):
 
-#async def get_user_bookmarks(request: Request):
-#   headers = request.headers
-
-#쿼리문 : ?uuid=”string”
+    return await handle_request(fetch_user_bookmarks, session_id)
 
 
 # 멘토님 曰 : 추가와 삭제는 같은 방식의 post
 @app.post("/users/bookmarks/")
 #쿼리문 형태 : ?paperDoi=”string”
-async def add_to_bookmarks(request: Request):
-    body = await request.body()
-    if not body:
-        raise HTTPException(status_code=400, detail="Request body is empty")
+async def add_to_bookmarks(request: Request, session_id :  Annotated[str | None, Cookie()] = None):
     
-    data = await request.json()
-    headers = request.headers
-    return await handle_request(handle_bookmark, headers,data)
+    return await handle_request(handle_bookmark, {"ssid": session_id, "request": request})
 
 # ********************************************* #
 
 # 6. 논문 선택
 # notion에는 /papers/?paperDoi=”string” 이렇게 적혀있음 
 @app.get("/papers/select/")
-async def get_paper_by_doi(paperDoi: str = ""):
+async def get_paper_by_doi(paperDoi: str = "default"):
     print(paperDoi)
     print(type(paperDoi))
     return await handle_request(fetch_paper_details, paperDoi)
@@ -186,7 +163,7 @@ async def create_paper_summary(data: paperDoi):
 #8. 선행 논문 리스트
 @app.get("/papers/priorpapers/")
 #쿼리문 : ?paperDoi=”string”
-async def get_prior_papers(paperDoi: str = ""):
+async def get_prior_papers(paperDoi: str = "default"):
     return await handle_request(fetch_prior_papers, paperDoi)
 
 
