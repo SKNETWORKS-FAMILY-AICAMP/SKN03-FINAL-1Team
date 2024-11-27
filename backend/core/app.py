@@ -1,6 +1,6 @@
-from fastapi import FastAPI, HTTPException, Query, Request, Cookie, status
+from fastapi import FastAPI, HTTPException, Query, Request
 from fastapi.exceptions import RequestValidationError
-from typing import Optional
+
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import JSONResponse
 import uvicorn
@@ -8,12 +8,12 @@ from src import *
 from src.reqeust_model import *
 
 
-session_data = {}
+
 
 app = FastAPI(
     title="Sucess : API",
-    description="로그인 siuuuuuuuuuuuuuuuu 이제 쿠키",
-    version="2.6.1"
+    description="로그인 설레발??....?v3",
+    version="2.5.10"
 )
 
 
@@ -99,11 +99,11 @@ async def auth_callback(code: str = ""):
     print(code)
     return await handle_request(oauth_callback, code)
 
-@app.get("/user_info")
-def get_user_info(session_id: Optional[str] = Cookie(None)):
-    if session_id is None or session_id not in session_data:
-        raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="세션이 유효하지 않습니다.")
-    return session_data[session_id]
+# @app.get("/user_info")
+# def get_user_info(session_id: Optional[str] = Cookie(None)):
+#     if session_id is None or session_id not in session_data:
+#         raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="세션이 유효하지 않습니다.")
+#     return session_data[session_id]
 
 
 

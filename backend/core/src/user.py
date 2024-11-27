@@ -114,9 +114,16 @@ async def oauth_callback(code):
 
         # 쿠키로 세션 아이디를 전달
         response = RedirectResponse(url="https://www.documento.click/")
-        response.set_cookie(key="session_id", value=session_id, httponly=True)
+        response.set_cookie(key="session_id", value=session_id, httponly=True, max_age=30 * 60,)
 
-        return response     
+        # 쿠키 설정 검증 출력
+        print("Set-Cookie Header:", response.headers.get("set-cookie"))
+        
+        return JSONResponse(status_code=200, 
+                            content={
+                                "resultCode" : 200,
+                                "message" : "Search completed successfully"
+                            })
     
     
     
