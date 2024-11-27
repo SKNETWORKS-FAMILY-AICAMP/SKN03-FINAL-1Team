@@ -1,9 +1,9 @@
 <script setup>
-import Header from '@/components/home/HomeHeader.vue'
-import SearchSection from '@/components/home/SearchSection.vue'
-import CardSection from '@/components/home/CardSection.vue'
-import IntroSection from '@/components/home/IntroSection.vue'
-import Footer from '@/components/home/HomeFooter.vue'
+import Header from '@/components/Home/HomeHeader.vue'
+import SearchSection from '@/components/Home/SearchSection.vue'
+import CardSection from '@/components/Home/CardSection.vue'
+import IntroSection from '@/components/Home/IntroSection.vue'
+import Footer from '@/components/Home/HomeFooter.vue'
 </script>
 
 <template>
