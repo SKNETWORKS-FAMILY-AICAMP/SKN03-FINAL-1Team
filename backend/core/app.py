@@ -5,12 +5,13 @@ from fastapi.responses import JSONResponse
 import uvicorn
 from src import *
 from src.reqeust_model import *
+from typing import Annotated
 
 
 app = FastAPI(
     title="Sucess : search, login, cookie",
-    description="이것저것 변경됨",
-    version="2.6.1"
+    description="유저부분 완료",
+    version="2.7.1"
 )
 
 
@@ -102,12 +103,12 @@ async def login():
 async def auth_callback(code: str = ""):
     return await handle_request(oauth_callback, code)
 
-# # 2-2. 세션 저장용
-# @app.get("/user_info")
-# async def get_user_info(session_id: str | None = Cookie(default=None)):
-#     # if not session_id:
-#     #     session_id = 1111
-#     return await handle_request(get_userinfo, session_id)
+# 2-2. 세션 저장용
+@app.get("/user_info/")
+async def user_info(session_id :  Annotated[str | None, Cookie()] = None):
+    print(session_id)
+    
+    return await handle_request(get_userinfo, session_id)
 
 
 # ********************************************* #
@@ -131,23 +132,17 @@ async def create_paper_transformation(data: userPrompt):
 # ***************  5. bookmark  *************** #
 # 5.1. 북마크 리스트
 @app.get("/users/bookmarks/")
-async def get_user_bookmarks(request: Request):
-    headers = request.headers
-    
-    return await handle_request(fetch_user_bookmarks, headers)
+async def get_user_bookmarks(session_id :  Annotated[str | None, Cookie()] = None):
+
+    return await handle_request(fetch_user_bookmarks, session_id)
 
 
 # 멘토님 曰 : 추가와 삭제는 같은 방식의 post
 @app.post("/users/bookmarks/")
 #쿼리문 형태 : ?paperDoi=”string”
-async def add_to_bookmarks(request: Request):
-    body = await request.body()
-    if not body:
-        raise HTTPException(status_code=400, detail="Request body is empty")
+async def add_to_bookmarks(request: Request, session_id :  Annotated[str | None, Cookie()] = None):
     
-    data = await request.json()
-    headers = request.headers
-    return await handle_request(handle_bookmark, headers,data)
+    return await handle_request(handle_bookmark, {"ssid": session_id, "request": request})
 
 # ********************************************* #
 
