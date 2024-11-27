@@ -4,17 +4,19 @@ from .paper import (
     process_summary,
     process_transformation,
     process_search,
+
+
 )
 
 from .user import (
-    create_new_user,
+    #create_new_user,
     login_user,
     oauth_callback,
-    logout_user,
+    #logout_user,
     reissue_user_token,
     fetch_user_bookmarks,
-    add_bookmark,
-    remove_bookmark,
+    handle_bookmark,
+
 )
 
 __all__ = [
@@ -23,12 +25,12 @@ __all__ = [
     "process_summary",
     "process_transformation",
     "process_search",
-    "create_new_user",
+    #"create_new_user",
     "login_user",
     "oauth_callback",
-    "logout_user",
+    #"logout_user",
     "reissue_user_token",
     "fetch_user_bookmarks",
-    "add_bookmark",
-    "remove_bookmark",
+    "handle_bookmark",
 ]
+

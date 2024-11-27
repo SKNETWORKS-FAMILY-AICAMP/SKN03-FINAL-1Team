@@ -86,6 +86,24 @@ async def handle_request(func, data=None):
 #     data = await request.json()
 #     return await handle_request(create_new_user, data)
 
+from utils import  MySQLHandler
+# 0. DB테스트
+@app.get("/db_test")
+async def db_test():
+    try :
+        user_id = 1111
+        email = "Thisisdummy@duumy.com"
+        db_handler = MySQLHandler()
+        db_handler.connect()
+        insert_query = "INSERT INTO DOCUMENTO.user (user_id, email) VALUES (%s, %s)"
+        db_handler.execute_query(insert_query, (user_id, email))
+        print(f"Inserted user_id: {user_id}, email: {email} into DOCUMENTO.user_tb")
+    except Exception as e:
+        print(f"Error with insert to MySQL: {e}")
+    finally:
+        db_handler.disconnect()
+
+
 
 # 2. 로그인
 @app.get("/login")

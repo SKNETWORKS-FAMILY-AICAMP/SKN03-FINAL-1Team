@@ -9,7 +9,7 @@ from uuid import uuid4
 # ***************  About  User  *************** #
 # ********************************************* #
 # 세션 데이터를 저장할 딕셔너리 (임시)
-session_data = {}
+
 # async def create_new_user(data):
 #     return JSONResponse(status_code=201, 
 #                         content={
@@ -107,11 +107,22 @@ async def oauth_callback(code):
         print("User Info received from Google:", user_info)
         # # 세션 ID를 생성하는 함수
         def generate_session_id():
-            return str(uuid4())
+            numeric_id = int(uuid4().int % 10**15)  # 숫자 15자리 제한
+            return numeric_id
         # 세션 생성
         session_id = generate_session_id()
-        session_data[session_id] = user_info
-
+        email = user_info.get("email", "")
+        name = user_info.get("name", "")
+        try: 
+            db_handler = MySQLHandler()
+            db_handler.connect()
+            insert_query = "INSERT INTO DOCUMENTO.user (user_id, email, name) VALUES (%s, %s, %s)"
+            db_handler.execute_query(insert_query, (session_id, email, name))
+        except Exception as e:
+            print(f"Error with insert to MySQL: {e}")
+        
+        
+        
         # 쿠키로 세션 아이디를 전달
         response = RedirectResponse(url="https://www.documento.click/")
         response.set_cookie(key="session_id", value=session_id, httponly=True, max_age=30 * 60,)
@@ -119,12 +130,10 @@ async def oauth_callback(code):
         # 쿠키 설정 검증 출력
         print("Set-Cookie Header:", response.headers.get("set-cookie"))
         
-        return JSONResponse(status_code=200, 
-                            content={
-                                "resultCode" : 200,
-                                "message" : "Search completed successfully"
-                            })
-    
+        
+        
+        
+        return response
     
     
     
