@@ -14,29 +14,33 @@ import json
 async def process_search(data): # seom-j
     print("=== POST /papers/search ===")
     try:
+        # get data
         user_keyword = data.get("data").userKeyword
         if not user_keyword:
             raise HTTPException(status_code=400)
         print("userKeyword : ", user_keyword)
 
+        # get searcher, faiss_index, faiss_ids (global variables)
         request = data.get("request")
         searcher = request.app.state.searcher
         faiss_index = request.app.state.faiss_index
         faiss_ids = request.app.state.faiss_ids
 
+        # search (utils/paperSearcher.py)
         json_results = searcher.search_faiss_index(user_keyword, faiss_index, faiss_ids, similarity_threshold=75)
 
         if isinstance(json_results, str):
             json_results = json.loads(json_results)
-
         if not isinstance(json_results, list):
             raise ValueError("jsonResults is not a valid list")
 
+        # parse results
         doi_list = [
             {"paper_doi": result["paper_doi"], "similarity": result["similarity"]}
             for result in json_results[:3]
         ]
 
+        # fetch paper data from MySQL & create output
         db_handler = MySQLHandler()
         db_handler.connect()
 
@@ -63,6 +67,7 @@ async def process_search(data): # seom-j
         if not paper_list:
             raise HTTPException(status_code=404)
 
+        # pagination
         current_page = 1  
         page_size = 3  
         total_results = len(paper_list)
@@ -74,6 +79,7 @@ async def process_search(data): # seom-j
         end_index = start_index + page_size
         paginated_paper_list = paper_list[start_index:end_index]
 
+        # output
         output_data = {
             "paperList": paginated_paper_list,
             "pagination": {
@@ -135,9 +141,6 @@ async def process_search(data): # seom-j
                 "message": "An unexpected error occurred while processing your request.",
             },
         )
-
-
-    
 
 # 4. 키워드 최적화
 async def process_transformation(data):
@@ -214,21 +217,42 @@ async def fetch_paper_details(data):
     except Exception as e:
         print(f"Missing key in parameters: {e}")
         raise HTTPException(status_code=400, detail="Invalid parameters")
-    """
-    doi -> 논문 찾기 -> S3 path
-    """
-    output_data = {
-                    "paperS3Path": "THIS/IS/DUMMY/PATH"
-                    }
-    return JSONResponse(status_code=201, 
+    
+
+    try :
+        # fetch paper data from MySQL & create output
+        db_handler = MySQLHandler()
+        db_handler.connect()
+        select_query = """
+        SELECT s3_path 
+        FROM paper 
+        WHERE paper_doi = %s
+        """
+        paper_data = db_handler.fetch_one(select_query, (paper_doi,))
+        db_handler.disconnect()
+    except Exception as e:
+        print(f"MySQL error: {e}")
+        raise HTTPException(status_code=500, detail="Error fetching data from MySQL")
+    
+    try :
+        # get s3 path & create output
+        s3_path = paper_data["s3_path"]
+        print("s3Path : ", s3_path)
+        output_data = {
+            "paperS3Path": s3_path
+        }
+    except Exception as e:
+        print(f"Error processing data: {e}")
+        raise HTTPException(status_code=500, detail="Error processing data")
+
+    return JSONResponse(status_code=200, 
                     content={
-                        "resultCode" : 201,
-                        "message" : "fetch_bookmark completed successfully",
+                        "resultCode" : 200,
+                        "message" : "PDF provided successfully.",
                         "result" : output_data
                     })
-    
-# 7. 논문요약
 
+# 7. 논문요약
 async def process_summary(data):
     print("=== POST /papers/summary ===")
     try :
@@ -237,7 +261,6 @@ async def process_summary(data):
     except Exception as e:
         print(f"Missing key in parameters: {e}")
         raise HTTPException(status_code=400, detail="Invalid parameters")
-    
 
     output_data = {
         "title": "Advancements in Neural Machine Translation",
@@ -261,7 +284,6 @@ async def process_summary(data):
     
 
 #8. 선행 논문 리스트
-
 async def fetch_prior_papers(data):
     print("=== GET /papers/priorpapers ===")
     try :
@@ -271,27 +293,47 @@ async def fetch_prior_papers(data):
         print(f"Missing key in parameters: {e}")
         raise HTTPException(status_code=400, detail="Invalid parameters")
     
-    """
-    
-    """
+    try :
+        # fetch paper data from MySQL & create output
+        db_handler = MySQLHandler()
+        db_handler.connect()
+        select_query = """
+        SELECT reference_papers 
+        FROM paper 
+        WHERE paper_doi = %s
+        """
+        paper_data = db_handler.fetch_one(select_query, (paper_doi,))
+
+        # parse reference papers & fetch data
+        reference_papers = (json.loads(paper_data["reference_papers"]) if paper_data else [])[:10]
+        paper_list = []
+        for ref in reference_papers:
+            ref_doi = ref["paper_doi"]
+
+            select_query = """
+            SELECT paper_doi, title, generated_keyword 
+            FROM paper 
+            WHERE paper_doi = %s
+            """
+            ref_data = db_handler.fetch_one(select_query, (ref_doi,))
+
+            # create output
+            if ref_data:
+                paper_list.append({
+                    "paperDoi": ref_data["paper_doi"],
+                    "parentPaperDoi": paper_doi,
+                    "title": ref_data["title"],
+                    "generatedKeyword": ref_data.get("generated_keyword", ""),
+                    "similarity": ref["similarity"],
+                })
+        db_handler.disconnect()
+    except Exception as e:
+        print(f"MySQL error: {e}")
+        raise HTTPException(status_code=500, detail="Error fetching data from MySQL")
+
     output_data = {
-        "paperList": [
-            {
-            "paperDoi": "10.18653/v1/2020.acl-demos.1",
-            "parentPaperDoi": "10.18653/v1/2020.acl-demos.10",
-            "title": "Xiaomingbot: A Multilingual Robot News Reporter",
-            "generatedKeyword": "multilingual news generation",
-            "similarity": 0.92
-            },
-            {
-            "paperDoi": "10.18653/v1/2020.acl-demos.10",
-            "parentPaperDoi": "10.18653/v1/2020.acl-demos.1",
-            "title": "SyntaxGym: An Online Platform for Targeted Evaluation of Language Models",
-            "generatedKeyword": "language model evaluation",
-            "similarity": 0.85
-            }
-        ]
-    }
+            "paperList": paper_list
+        }
     print("outputData : ", output_data)
 
     print("=== FIN /papers/priorpapers ===")

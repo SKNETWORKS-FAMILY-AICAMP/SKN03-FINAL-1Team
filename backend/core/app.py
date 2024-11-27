@@ -152,8 +152,8 @@ async def add_to_bookmarks(request: Request):
 # ********************************************* #
 
 # 6. 논문 선택
-# notion에는 /papers/?paperDoi=”string” 이렇게 적혀있음 
-@app.get("/papers/select/")
+# notion에는 /papers/?paperDoi=”string” 이렇게 적혀있음 -> 근데 왜 다시..?
+@app.get("/papers/")
 async def get_paper_by_doi(paperDoi: str = "default"):
     print(paperDoi)
     print(type(paperDoi))
