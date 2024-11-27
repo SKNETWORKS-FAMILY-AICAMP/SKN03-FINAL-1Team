@@ -6,6 +6,7 @@ from src import *
 
 app = FastAPI()
 
+
 # ********************************************* #
 # ******************  Utils  ****************** #
 # ********************************************* #
@@ -23,6 +24,10 @@ async def handle_request(func, data=None):
             status_code=500,
             content={"statusCode": 500, "message": str(e)}
         )
+    
+@app.on_event("startup") # seom-j
+async def initialize_globals():
+    return await handle_request(initialize_global_objects, app)
 
 # ********************************************* #
 # ***************  About Paper  *************** #

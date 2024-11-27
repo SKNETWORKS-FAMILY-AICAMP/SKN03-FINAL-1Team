@@ -17,6 +17,8 @@ from .user import (
     remove_bookmark,
 )
 
+from .init import initialize_global_objects # seom-j
+
 __all__ = [
     "fetch_paper_details",
     "fetch_prior_papers",
@@ -31,4 +33,5 @@ __all__ = [
     "fetch_user_bookmarks",
     "add_bookmark",
     "remove_bookmark",
+    "initialize_global_objects", # seom-j
 ]

@@ -1,5 +1,6 @@
 from fastapi import HTTPException
 from fastapi.responses import JSONResponse
+from fastapi import APIRouter, Request
 from utils import *
 
 
@@ -144,7 +145,7 @@ async def process_transformation(data):
     print("=== FIN /papers/transformation ===")
     return JSONResponse(content=output_data, status_code=200)
 
-async def process_search(data):
+async def process_search(data): # seom-j
     print("=== POST /papers/search ===")
     try :
         user_keyword = data.get("userKeyword")
@@ -154,7 +155,14 @@ async def process_search(data):
         raise HTTPException(status_code=400, detail="Invalid parameters")
     
     try :
-        pass
+        searcher = data["request"].app.state.searcher
+        faiss_index = data["request"].app.state.faiss_index
+        faiss_ids = data["request"].app.state.faiss_ids
+        json_results = searcher.search_faiss_index(user_keyword, faiss_index, faiss_ids, similarity_threshold=75)
+        print("*"*50)
+        print(json_results)
+        print("*"*50)
+
     except Exception as e:
         pass
 
