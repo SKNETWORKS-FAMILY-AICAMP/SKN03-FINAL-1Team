@@ -9,13 +9,14 @@ from .paper import (
 )
 
 from .user import (
-    create_new_user,
+    #create_new_user,
     login_user,
     oauth_callback,
-    logout_user,
-    reissue_user_token,
+    #logout_user,
+    #reissue_user_token,
     fetch_user_bookmarks,
     handle_bookmark,
+    get_userinfo,
 
 )
 
@@ -27,12 +28,13 @@ __all__ = [
     "process_summary",
     "process_transformation",
     "process_search",
-    "create_new_user",
+    #"create_new_user",
     "login_user",
     "oauth_callback",
-    "logout_user",
-    "reissue_user_token",
+    # "logout_user", 
+    #"reissue_user_token",
     "fetch_user_bookmarks",
     "handle_bookmark",
     "initialize_global_objects", # seom-j
+    "get_userinfo",
 ]

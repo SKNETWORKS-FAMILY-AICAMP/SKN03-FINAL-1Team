@@ -1,17 +1,20 @@
 from fastapi import HTTPException
-from fastapi.responses import JSONResponse
-from fastapi.responses import RedirectResponse
+from fastapi.responses import JSONResponse, RedirectResponse
 from .utils import googleOAuth, MySQLHandler
 import requests
+from uuid import uuid4
 
 # ********************************************* #
 # ***************  About  User  *************** #
 # ********************************************* #
 
-async def create_new_user(data):
-    """새로운 사용자 생성 로직"""
-    pass
+# async def create_new_user(data):
+#     """새로운 사용자 생성 로직"""
+#     #회원가입 기능 없애면서 주석처리
+#     pass
 
+
+# ***************  Oauth Logic  *************** #
 async def login_user(data):
     print("===  /login ===")
     oauth = googleOAuth()
@@ -19,66 +22,195 @@ async def login_user(data):
         f"{oauth.authorization_url}?response_type=code&client_id={oauth.client_id}&redirect_uri={oauth.redirect_uri}&scope=openid%20email%20profile"
     )
 
-async def oauth_callback(data):
-    print("=== GET /auth/callback ===")
-    try :
-        code = data.get("code")
-        print("code : ", code)
-    except Exception as e:
-        print(f"Missing key in parameters: {e}")
-        raise HTTPException(status_code=400, detail="Invalid parameters")
 
-    try :
+async def oauth_callback(code):
+    print("=== GET /auth/callback ===")
+    
+    try:
+        if not code:  # code None 또는 빈 문자열인 경우 처리
+            raise HTTPException(status_code=400)
+        
         oauth = googleOAuth()
+        print("oauth is success")
         token_response = requests.post(
-            oauth.token_url,
-            data={
-                "code": code,
-                "client_id": oauth.client_id,
-                "client_secret": oauth.client_secret,
-                "redirect_uri": oauth.redirect_uri,
-                "grant_type": "authorization_code",
+        oauth.token_url,
+        data={
+            "code": code,
+            "client_id": oauth.client_id,
+            "client_secret": oauth.client_secret,
+            "redirect_uri": oauth.redirect_uri,
+            "grant_type": "authorization_code",
             },
         )
+        
+        if token_response.status_code != 200:
+            print("Failed to get token")
+            raise HTTPException(status_code=token_response.status_code)
+        
         token_response_data = token_response.json()
-
         access_token = token_response_data.get("access_token")
+        
         if not access_token:
-            raise HTTPException(status_code=400, detail="Invalid token")
+            print("Invalid token")
+            raise HTTPException(status_code=404)
 
+        # 구글에게 Access Token을 통해 사용자 정보 요청
         user_info_response = requests.get(
             oauth.user_info_url, headers={"Authorization": f"Bearer {access_token}"}
         )
+        if user_info_response.status_code != 200:
+            print("Failed to get user info")
+            raise HTTPException(status_code=user_info_response.status_code)  
+        
+
+        
+        
+    
+    except HTTPException as he:
+        if he.status_code == 404:
+            return JSONResponse(
+            status_code=404,
+            content={
+                "resultCode" : 404,
+                "errorCode": "Invalid token",
+                "message": "The Toekn is Invaild."
+            }
+        )
+        elif he.status_code == 400:
+            return JSONResponse(
+            status_code=400,
+            content={
+                "resultCode" : 400,
+                "errorCode": "INVALID PARAMETER",
+                "message": "Parameter is Invalid. Check the input"
+            }
+        )
+        else:
+            return JSONResponse(
+            status_code=he.status_code,
+            content={
+                "resultCode" : he.status_code,
+                "errorCode": "UNEXPECTED_ERROR",
+                "message": "An unexpected error occurred while processing your request."
+            }
+        )
+
+
+    else:
         user_info = user_info_response.json()
 
-        name = user_info.get("name", "")
+        # 콘솔에 유저 정보 출력
+        print("User Info received from Google:", user_info)
+        # # 세션 ID를 생성하는 함수
+        def generate_session_id():
+            numeric_id = int(uuid4().int % 10**15)  # 숫자 15자리 제한
+            return numeric_id
+        # 세션 생성
+        session_id = generate_session_id()
         email = user_info.get("email", "")
-
-    except Exception as e:
-        print(f"Error in OAuth callback: {e}")
-        raise HTTPException(status_code=500, detail="OAuth callback error")
+        name = user_info.get("name", "")
+        try: 
+            #싱글톤 시 수정
+            db_handler = MySQLHandler()
+            db_handler.connect()
+            insert_query = "INSERT INTO DOCUMENTO.user (user_id, email, name) VALUES (%s, %s, %s)"
+            db_handler.execute_query(insert_query, (session_id, email, name))
+        except Exception as e:
+            print(f"Error with insert to MySQL: {e}")
         
-    try :
-        db_handler = MySQLHandler()
-        db_handler.connect()
-        insert_query = "INSERT INTO DOCUMENTO.user_tb (email, name) VALUES (%s, %s)"
-        db_handler.execute_query(insert_query, (email, name))
-        print(f"Inserted email: {email}, name: {name} into DOCUMENTO.user_tb")
-    except Exception as e:
-        print(f"Error with insert to MySQL: {e}")
+        
+        
+        # 쿠키로 세션 아이디를 전달
+        response = RedirectResponse(url="https://www.documento.click/")
+        response.set_cookie(key="session_id", 
+                            value=session_id, 
+                            httponly=True, 
+                            path="/",
+                            max_age=3600 * 60,)
+
+        # 쿠키 설정 검증 출력
+        print("Set-Cookie Header:", response.headers.get("set-cookie"))
+        return response
+    
     finally:
         db_handler.disconnect()
+  
+async def get_userinfo(ssid):
+    print("=== GET /user_info ===")
     
-    output_data = {}
-    return JSONResponse(content=output_data, status_code=200)
+    try:
+        if not ssid:  # ssid None 또는 빈 문자열인 경우 처리
+            raise HTTPException(status_code=401)
+        #ssid = 1111
+        ssid = int(ssid) 
+        
+        #싱글톤 시 수정
+        db_handler = MySQLHandler()
+        db_handler.connect()
+        insert_query = "SELECT * FROM user WHERE user_id = %s"
+        result = db_handler.fetch_one(insert_query, (ssid, ))
+        print(type(result))
+        if not result:
+            raise HTTPException(status_code=404)
+        
+        print("RESULT : ",  result)
+        
+    except HTTPException as he:
+        if he.status_code == 404:
+            return JSONResponse(
+            status_code=404,
+            content={
+                "resultCode" : 404,
+                "errorCode": "NO_RESULTS",
+                "message": "No results found. ."
+            }
+        )
+        elif he.status_code == 401:
+            return JSONResponse(
+            status_code=401,
+            content={
+                "resultCode" : 401,
+                "errorCode": "NO SSID",
+                "message": "No session id. There is No ssid in Cookies"
+            }
+        )
+        else:
+            return JSONResponse(
+            status_code=he.status_code,
+            content={
+                "resultCode" : he.status_code,
+                "errorCode": "UNEXPECTED_ERROR",
+                "message": "An unexpected error occurred while processing your request."
+            }
+        )
 
-async def logout_user(data):
-    """사용자 로그아웃 처리 로직"""
-    pass
+    
+    else:
+        output = {
+            
+            
+        }
+        return JSONResponse(status_code=201, 
+                    content={
+                        "resultCode" : 201,
+                        "message" : "Bookmark list retrieved successfully.",
+                        "result" : "connection success"
+                    })
+    finally:
+        db_handler.disconnect()
 
-async def reissue_user_token(data):
-    """사용자 토큰 재발급 로직"""
-    pass
+
+# async def logout_user(data):
+#     """사용자 로그아웃 처리 로직"""
+#     # logout 기능 삭제
+#     pass
+
+# async def reissue_user_token(data):
+#     """사용자 토큰 재발급 로직"""
+#     pass
+
+
+
 
 
 # 5. bookmarks

@@ -1,6 +1,5 @@
-from fastapi import FastAPI, HTTPException, Query, Request
+from fastapi import FastAPI, HTTPException, Query, Request, Cookie
 from fastapi.exceptions import RequestValidationError
-
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import JSONResponse
 import uvicorn
@@ -8,32 +7,14 @@ from src import *
 from src.reqeust_model import *
 
 
-
-
 app = FastAPI(
-    title="Sucess : API",
+    title="Sucess : search, login, cookie",
     description="이것저것 변경됨",
-    version="2.3.2"
+    version="2.6.1"
 )
 
 
-# 커스텀 예외 처리: 422 유효성 검사 에러
-@app.exception_handler(RequestValidationError)
-async def validation_exception_handler(request: Request, exc: RequestValidationError):
-    return JSONResponse(
-        status_code=422,
-        content={
-            "resultCode": 422,
-            "errorCode": "VALIDATION_ERROR",
-            "message": "Validation failed. Please check your input.",
-        },
-    )
-
-
-
-#기본 baseurl : https://api.documento.click
-from fastapi.middleware.cors import CORSMiddleware
-
+# ******************  CORS 처리  ****************** #
 app.add_middleware(
     CORSMiddleware,
     allow_origins=["https://www.documento.click"],  # 프론트엔드 서브 도메인
@@ -43,21 +24,11 @@ app.add_middleware(
 )
 
 
-
 # ********************************************* #
 # ******************  Utils  ****************** #
 # ********************************************* #
 
-"""
-기본 리턴 형태
-"response" : {
-	"resultCode" : 200,
-	"message" : "Search completed successfully",
-	"result" : { .... }
-}
-"""
-
-
+# return handler
 async def handle_request(func, data=None):
     try:
         # 요청 처리 함수 실행
@@ -74,6 +45,21 @@ async def handle_request(func, data=None):
             },
         )
         
+        
+# 커스텀 예외 처리: 422 유효성 검사 에러
+@app.exception_handler(RequestValidationError)
+async def validation_exception_handler(request: Request, exc: RequestValidationError):
+    return JSONResponse(
+        status_code=422,
+        content={
+            "resultCode": 422,
+            "errorCode": "VALIDATION_ERROR",
+            "message": "Validation failed. Please check your input.",
+        },
+    )
+
+
+        
 
 @app.on_event("startup")
 async def initialize_globals():
@@ -88,29 +74,40 @@ async def initialize_globals():
 @app.on_event("shutdown")
 async def cleanup_resources():
     print("Cleaning up resources...")
+    
 
 # ********************************************* #
 # ***************  About  User  *************** #
 # ********************************************* #
 
 
-# 1. 회원가입
-@app.get("/users")
-async def create_user(request: Request):
-    data = await request.json()
-    return await handle_request(create_new_user, data)
+# # 1. 회원가입 -> 로그인과 동시에 Google에서 진행
+# @app.get("/users")
+# async def create_user(request: Request):
+#     data = await request.json()
+#     return await handle_request(create_new_user, data)
 
 
 # 2. 로그인
 @app.get("/login")
 async def login():
-    return await handle_request(login_user)
+    # Input parmeter 오류 처리 오류 
+    data = "success"
+    
+    return await handle_request(login_user,data)
 
-# 회원가입/로그인 용
+
+# 2-1. 회원가입/로그인 용
 @app.get("/auth/callback")
-async def auth_callback(code: str = Query(..., description="OAuth2 code for login")):
-    return await handle_request(oauth_callback, {"code": code})
+async def auth_callback(code: str = ""):
+    return await handle_request(oauth_callback, code)
 
+# # 2-2. 세션 저장용
+# @app.get("/user_info")
+# async def get_user_info(session_id: str | None = Cookie(default=None)):
+#     # if not session_id:
+#     #     session_id = 1111
+#     return await handle_request(get_userinfo, session_id)
 
 
 # ********************************************* #
