@@ -1,5 +1,5 @@
 from fastapi import FastAPI
-from utils import *
+from .utils import *
 
 
 async def initialize_global_objects(app): # seom-j

@@ -1,7 +1,7 @@
 from fastapi import HTTPException
 from fastapi.responses import JSONResponse
 from fastapi.responses import RedirectResponse
-from utils import googleOAuth, MySQLHandler
+from .utils import googleOAuth, MySQLHandler
 import requests
 
 # ********************************************* #

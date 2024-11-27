@@ -1,148 +1,141 @@
 from fastapi import HTTPException
 from fastapi.responses import JSONResponse
 from fastapi import APIRouter, Request
-from utils import *
+from .utils import *
 
 #이 부분은 실제 AI 모델 구축하면 변경
 from dummy import *
-
+import json
 
 
 # ********************************************* #
 # ***************  About Paper  *************** #
 # ********************************************* #
-
-# 3. 논문 검색
-async def process_search(data):
-
+async def process_search(data): # seom-j
     print("=== POST /papers/search ===")
     try:
-        user_keyword = data.userKeyword  # 요청 데이터에서 userKeyword 가져오기
-        if not user_keyword:  # user_keyword가 None 또는 빈 문자열인 경우 처리
+        user_keyword = data.get("data").userKeyword
+        if not user_keyword:
             raise HTTPException(status_code=400)
+        print("userKeyword : ", user_keyword)
 
-        searcher = data["request"].app.state.searcher
-        faiss_index = data["request"].app.state.faiss_index
-        faiss_ids = data["request"].app.state.faiss_ids
-
-        print("load global objects successfully.")
+        request = data.get("request")
+        searcher = request.app.state.searcher
+        faiss_index = request.app.state.faiss_index
+        faiss_ids = request.app.state.faiss_ids
 
         json_results = searcher.search_faiss_index(user_keyword, faiss_index, faiss_ids, similarity_threshold=75)
-        print("*"*50)
-        print(json_results)
-        print("*"*50)
 
-        # doi_list : [ {doi(str): similarity}]
-        doi_list = dummy_search(user_keyword)
-        """
-    DOI -> DB에서 
-    title, authors, publicationYear, publicationMonth, abstract, citation, venue 뽑고
-    그거 "paperList": [ {}, {}, ...] 붙히고
-    pagination
-        """
-        if not doi_list:
-            print(f"NO_RESULTS: {e}")
+        if isinstance(json_results, str):
+            json_results = json.loads(json_results)
+
+        if not isinstance(json_results, list):
+            raise ValueError("jsonResults is not a valid list")
+
+        doi_list = [
+            {"paper_doi": result["paper_doi"], "similarity": result["similarity"]}
+            for result in json_results[:3]
+        ]
+
+        db_handler = MySQLHandler()
+        db_handler.connect()
+
+        paper_list = []
+        for doi_item in doi_list:
+            paper_doi = doi_item["paper_doi"]
+
+            select_query = """
+            SELECT title, authors, venue, publication_year, publication_month, eng_abstract, citation 
+            FROM paper 
+            WHERE paper_doi = %s
+            """
+            paper_data = db_handler.fetch_one(select_query, (paper_doi,))
+
+            if paper_data:
+                paper_data["paperDoi"] = paper_doi
+                paper_data["similarity"] = doi_item["similarity"]
+                paper_list.append(paper_data)
+            else:
+                print(f"No data found for DOI: {paper_doi}")
+
+        db_handler.disconnect()
+
+        if not paper_list:
             raise HTTPException(status_code=404)
-        
-    
-    except Exception as e:  # 기타 예외 처리
+
+        current_page = 1  
+        page_size = 3  
+        total_results = len(paper_list)
+        total_pages = (total_results + page_size - 1) // page_size
+        has_next_page = current_page < total_pages
+        has_previous_page = current_page > 1
+
+        start_index = (current_page - 1) * page_size
+        end_index = start_index + page_size
+        paginated_paper_list = paper_list[start_index:end_index]
+
+        output_data = {
+            "paperList": paginated_paper_list,
+            "pagination": {
+                "currentPage": current_page,
+                "pageSize": page_size,
+                "totalPages": total_pages,
+                "totalResults": total_results,
+                "hasNextPage": has_next_page,
+                "hasPreviousPage": has_previous_page,
+            },
+        }
+
+        print("outputData : ", output_data)
+        print("=== FIN /papers/search ===")
+        return JSONResponse(
+            status_code=201,
+            content={
+                "resultCode": 201,
+                "message": "Search completed successfully",
+                "result": output_data,
+            },
+        )
+
+    except HTTPException as e:
+        if e.status_code == 404:
+            return JSONResponse(
+                status_code=404,
+                content={
+                    "resultCode": 404,
+                    "errorCode": "NO_RESULTS",
+                    "message": "No results found. Please refine your search.",
+                },
+            )
+        elif e.status_code == 400:
+            return JSONResponse(
+                status_code=400,
+                content={
+                    "resultCode": 400,
+                    "errorCode": "INVALID PARAMETER",
+                    "message": "Parameter is invalid. Check the input.",
+                },
+            )
+        else:
+            return JSONResponse(
+                status_code=e.status_code,
+                content={
+                    "resultCode": e.status_code,
+                    "errorCode": "UNEXPECTED_ERROR",
+                    "message": "An unexpected error occurred while processing your request.",
+                },
+            )
+    except Exception as e:
         print(f"Unexpected error: {e}")
         return JSONResponse(
             status_code=500,
             content={
-                "resultCode" : 500,
+                "resultCode": 500,
                 "errorCode": "UNEXPECTED_ERROR",
-                "message": "An unexpected error occurred while processing your request.??"
-            }
-        )
-    
-    except HTTPException as e:
-        if e.status_code == 404:
-            return JSONResponse(
-            status_code=404,
-            content={
-                "resultCode" : 404,
-                "errorCode": "NO_RESULTS",
-                "message": "No results found. Please refine your search."
-            }
-        )
-        elif e.status_code == 400:
-            return JSONResponse(
-            status_code=400,
-            content={
-                "resultCode" : 400,
-                "errorCode": "INVALID PARAMETER",
-                "message": "Parameter is Invalid. Check the input"
-            }
-        )
-        else:
-            return JSONResponse(
-            status_code=e.status_code,
-            content={
-                "resultCode" : e.status_code,
-                "errorCode": "UNEXPECTED_ERROR",
-                "message": "An unexpected error occurred while processing your request."
-            }
-        )
-
-
-    else:
-        
-    
-        output_data = {
-        "paperList": [
-            {
-                "paperDoi": "10.18653/v1/2023.nmt.1",
-                "title": "Advancements in Neural Machine Translation",
-                "authors": "John Doe, Jane Smith, Alex Johnson",
-                "venue": "venue",
-                "publicationYear": 2023,
-                "publicationMonth": "October",
-                "abstract": "This paper explores recent developments in neural machine translation, focusing on transformer models and their impact on translation quality.",
-                "citation": 120
+                "message": "An unexpected error occurred while processing your request.",
             },
-            {
-                "paperDoi": "10.18653/v1/2023.ai.2",
-                "title": "Artificial Intelligence in Healthcare",
-                "authors": "Emily Brown, Michael White",
-                "venue": "venue",
-                "publicationYear": 2022,
-                "publicationMonth": "June",
-                "abstract": "A comprehensive analysis of artificial intelligence applications in healthcare, highlighting benefits and ethical considerations.",
-                "citation": 95
-            },
-            {
-                "paperDoi": "10.18653/v1/2023.lm.3",
-                "title": "Large Language Models and Their Applications",
-                "authors": "Chris Green, Sarah Blue",
-                "venue": "venue",
-                "publicationYear": 2023,
-                "publicationMonth": "January",
-                "abstract": "This study examines large language models, their architecture, and how they are applied in real-world scenarios.",
-                "citation": 150
-            }
-        ],
-        "pagination": {
-        "currentPage": 999,
-        "pageSize": 999,
-        "totalPages": 999,
-        "totalResults": 999,
-        "hasNextPage": False,
-        "hasPreviousPage": False
-      }
-    }
-        print("outputData : ", output_data)
+        )
 
-        print("=== FIN /papers/search ===")
-        return JSONResponse(status_code=201, 
-                            content={
-                                "resultCode" : 201,
-                                "message" : "Search completed successfully???",
-                                "result" : output_data
-                            })
-    
-    
-    
 
     
 

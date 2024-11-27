@@ -75,9 +75,19 @@ async def handle_request(func, data=None):
         )
         
 
-@app.on_event("startup") # seom-j
+@app.on_event("startup")
 async def initialize_globals():
-    return await handle_request(initialize_global_objects, app)
+    try:
+        await initialize_global_objects(app)
+        print("Global objects initialized successfully.")
+    except Exception as e:
+        print(f"Error initializing global objects: {e}")
+        raise RuntimeError("Failed to initialize global objects during startup.")
+
+
+@app.on_event("shutdown")
+async def cleanup_resources():
+    print("Cleaning up resources...")
 
 # ********************************************* #
 # ***************  About  User  *************** #
@@ -109,9 +119,9 @@ async def auth_callback(code: str = Query(..., description="OAuth2 code for logi
 
 # 3. 논문검색
 @app.post("/papers/search/")
-async def search_papers(data: userKeyword):
-    #data = await request.json()
-    return await handle_request(process_search, data)
+async def search_papers(request: Request, data: userKeyword):
+    return await handle_request(process_search, {"data": data, "request": request})
+
 
 # 4. 키워드 최적화
 @app.post("/papers/transformation/")
