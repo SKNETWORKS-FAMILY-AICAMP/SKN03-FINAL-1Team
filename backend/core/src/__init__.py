@@ -4,6 +4,8 @@ from .paper import (
     process_summary,
     process_transformation,
     process_search,
+
+
 )
 
 from .user import (
@@ -13,8 +15,8 @@ from .user import (
     logout_user,
     reissue_user_token,
     fetch_user_bookmarks,
-    add_bookmark,
-    remove_bookmark,
+    handle_bookmark,
+
 )
 
 from .init import initialize_global_objects # seom-j
@@ -31,7 +33,6 @@ __all__ = [
     "logout_user",
     "reissue_user_token",
     "fetch_user_bookmarks",
-    "add_bookmark",
-    "remove_bookmark",
+    "handle_bookmark",
     "initialize_global_objects", # seom-j
 ]
