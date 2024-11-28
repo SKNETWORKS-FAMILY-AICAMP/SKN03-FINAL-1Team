@@ -1,12 +1,12 @@
 <script setup>
-import LeftSection from '@/components/Chatbot/LeftSection.vue'
+import SideComponent from '@/components/common/SideComponent.vue'
 import RightSection from '@/components/Chatbot/rightsection/RightSectionMain.vue'
 </script>
 
 <template>
   <div class="container-fluid d-flex flex-row m-0 p-0">
     <div class="p-0">
-      <left-section />
+      <SideComponent />
     </div>
     <div class="right-section-wrapper d-flex justify-content-center align-items-center p-0 m-0">
       <RightSection />

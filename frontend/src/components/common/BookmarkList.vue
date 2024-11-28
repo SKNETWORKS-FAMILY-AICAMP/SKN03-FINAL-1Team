@@ -1,6 +1,6 @@
 <template>
   <div class="book-mark d-flex flex-column">
-    <div class="bookmark-list mt-5 text-start">북마크 리스트</div>
+    <div class="bookmark-list mt-5 text-start">북마크 리dd스트</div>
     <div class="content my-2"></div>
   </div>
 </template>

@@ -3,7 +3,7 @@ import { ref, onMounted } from 'vue'
 import { useRoute } from 'vue-router'
 import axios from '@/axiosConfig'
 
-import LeftSection from '@/components/Chatbot/LeftSection.vue'
+import SideComponent from '@/components/common/SideComponent.vue'
 import DropIcon from '@/assets/DropIcon.png'
 import PdfViewer from '@/components/PdfViewer.vue'
 import PaperDetail from '@/components/common/PaperDetail.vue'
@@ -77,7 +77,7 @@ const fetchPdf = async (url) => {
 <template>
   <div class="container-fluid d-flex flex-row m-0 p-0">
     <div class="p-0">
-      <LeftSection />
+      <SideComponent />
     </div>
     <div class="main d-flex align-items-center justify-content-center w-100">
       <div v-if="showPdfViewer">

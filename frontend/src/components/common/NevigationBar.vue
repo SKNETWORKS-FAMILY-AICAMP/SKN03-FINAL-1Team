@@ -1,7 +1,6 @@
 <script setup>
-import { ref, defineEmits } from 'vue'
-import { useRouter } from 'vue-router' // Vue Router 사용
-
+import { ref } from 'vue'
+import { useNavbarStore } from '@/stores/navbarStore'
 import DocumentIcon from '@/assets/IconBar/DocumentIcon.png'
 import LogoIcon from '@/assets/logo.png'
 import HamburgerIcon from '@/assets/IconBar/HamburgerIcon.png'
@@ -9,41 +8,35 @@ import SettingIcon from '@/assets/IconBar/SettingIcon.png'
 import HomeIcon from '@/assets/IconBar/HomeIcon.png'
 import TreeIcon from '@/assets/IconBar/TreeIcon.png'
 
-const emit = defineEmits(['show-paper-detail'])
-
-const router = useRouter()
+const navbarStore = useNavbarStore()
+const handleIconClick = (view) => {
+  navbarStore.setSelectedNavItem(view)
+}
 
 const mainIcons = ref([
-  { id: 'bookmark', src: HamburgerIcon, action: () => router.push('/main') },
-  {
-    id: 'summary',
-    src: DocumentIcon,
-    action: () => {
-      // 라우터를 사용하는 대신 이벤트를 부모에게 전달
-      emit('show-paper-detail')
-    },
-  },
-  { id: 'tree', src: TreeIcon, action: () => router.push('/paper') },
+  { id: 'bookmark', src: HamburgerIcon, view: 'bookmark' },
+  { id: 'summary', src: DocumentIcon, view: 'paper-detail' },
+  { id: 'tree', src: TreeIcon, view: 'tree' },
 ])
 
 const footerIcons = ref([
-  { id: 1, src: DocumentIcon },
-  { id: 2, src: HomeIcon, action: () => router.push('/') }, // HomeIcon 클릭 시 메인 화면으로 이동
-  { id: 3, src: SettingIcon },
+  { id: 1, src: DocumentIcon, view: 'footer1' },
+  { id: 2, src: HomeIcon, view: 'home' },
+  { id: 3, src: SettingIcon, view: 'settings' },
 ])
 </script>
 
 <template>
   <div class="icon-bar-container">
-    <img :src="LogoIcon" alt="Logo" class="logo mb-3" @click="router.push('/')" />
+    <img :src="LogoIcon" alt="Logo" class="logo mb-3" @click="handleIconClick('home')" />
     <div class="icon-list">
       <!-- 메인 아이콘들 -->
       <div
         v-for="icon in mainIcons"
         :key="icon.id"
         class="icon"
-        :class="{ 'logo-icon-bg': icon.id === 1 }"
-        @click="icon.action && icon.action()"
+        :class="{ 'logo-icon-bg': icon.id === 'bookmark' }"
+        @click="handleIconClick(icon.view)"
       >
         <img v-if="icon.src" :src="icon.src" alt="Icon" class="icon-image" />
         <span v-else>{{ icon.name }}</span>
@@ -56,7 +49,7 @@ const footerIcons = ref([
           :key="icon.id"
           class="icon"
           :class="{ 'footer-icon-special': icon.id === 1 }"
-          @click="icon.action && icon.action()"
+          @click="handleIconClick(icon.view)"
         >
           <!-- 아이콘 이미지를 렌더링 -->
           <img :src="icon.src" alt="Footer Icon" class="icon-image" />
