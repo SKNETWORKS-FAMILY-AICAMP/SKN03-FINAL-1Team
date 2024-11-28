@@ -2,7 +2,6 @@
 import { ref } from 'vue'
 
 import NevigationBar from '@/components/common/NevigationBar.vue'
-import PaperItem from './LeftSection/PaperItem.vue'
 
 import AccodionButtonImage from '@/assets/accordion-button.png'
 
