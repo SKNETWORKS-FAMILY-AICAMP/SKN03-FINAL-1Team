@@ -151,8 +151,7 @@ const requestPaperByDoi = async (doi) => {
 
 <style scoped>
 .main-container {
-  overflow-x: auto; /* 가로 스크롤 추가 */
-  max-width: 100%; /* 컨테이너의 최대 너비를 부모에 맞춤 */
+  /* 필요한 스타일을 여기에 추가하세요 */
 }
 
 .input-area {
