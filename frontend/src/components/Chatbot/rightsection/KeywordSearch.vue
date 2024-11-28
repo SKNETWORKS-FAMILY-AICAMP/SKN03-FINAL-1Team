@@ -5,10 +5,12 @@ import axios from '@/axiosConfig' // 설정한 axios 인스턴스를 가져옵�
 
 const inputPrompt = ref('')
 const generatedResults = ref(null)
+const loading = ref(false) // 로딩 상태 추가
 const router = useRouter()
 
 // 키워드 최적화 요청 (POST 요청)
 const optimizeKeywords = async () => {
+  loading.value = true // 로딩 시작
   try {
     const response = await axios.post('/papers/transformation/', {
       userPrompt: inputPrompt.value,
@@ -17,6 +19,8 @@ const optimizeKeywords = async () => {
     console.log('Optimized Results:', generatedResults.value)
   } catch (error) {
     console.error('Failed to optimize keywords:', error)
+  } finally {
+    loading.value = false // 로딩 종료
   }
 }
 
@@ -63,8 +67,18 @@ const requestPaperByDoi = async (doi) => {
         class="form-control"
         placeholder="논문 프롬프트를 입력하세요."
         @keyup.enter="handleOptimization"
+        :disabled="loading"
       />
-      <button class="btn btn-primary" @click="handleOptimization">최적화</button>
+      <button class="btn btn-primary" @click="handleOptimization" :disabled="loading">
+        최적화
+      </button>
+    </div>
+
+    <!-- 로딩 스피너 -->
+    <div v-if="loading" class="text-center mb-4">
+      <div class="spinner-border text-primary" role="status">
+        <span class="visually-hidden">로딩 중...</span>
+      </div>
     </div>
 
     <!-- Step 2: 최적화된 키워드 및 논문 표시 -->
