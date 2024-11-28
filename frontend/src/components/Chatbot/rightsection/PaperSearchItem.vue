@@ -19,7 +19,11 @@ const props = defineProps({
         <h2>{{ paper.citation }} Citations</h2>
       </div>
     </div>
-    <router-link to="/paper" class="text-start" style="text-decoration: none; color: inherit">
+    <router-link
+      :to="{ path: '/paper', query: { paperDoi: paper.paperDoi } }"
+      class="text-start"
+      style="text-decoration: none; color: inherit"
+    >
       <div>
         <h5>{{ paper.title }}</h5>
         <p class="my-1">
