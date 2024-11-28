@@ -19,14 +19,16 @@ const props = defineProps({
         <h2>{{ paper.citation }} Citations</h2>
       </div>
     </div>
-    <div class="text-start">
-      <h5>{{ paper.title }}</h5>
-      <p class="my-1">
-        {{ paper.publicationMonth }} {{ paper.publicationYear }} | {{ paper.authors }}
-      </p>
-      <p class="no-margin">DOI: {{ paper.paperDoi }}</p>
-      <p class="no-margin">Abstract: {{ paper.abstract }}</p>
-    </div>
+    <router-link to="/paper" class="text-start" style="text-decoration: none; color: inherit">
+      <div>
+        <h5>{{ paper.title }}</h5>
+        <p class="my-1">
+          {{ paper.publicationMonth }} {{ paper.publicationYear }} | {{ paper.authors }}
+        </p>
+        <p class="no-margin">DOI: {{ paper.paperDoi }}</p>
+        <p class="no-margin">Abstract: {{ paper.abstract }}</p>
+      </div>
+    </router-link>
   </div>
 </template>
 

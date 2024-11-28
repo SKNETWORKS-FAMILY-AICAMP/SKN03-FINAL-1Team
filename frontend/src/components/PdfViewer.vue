@@ -18,9 +18,9 @@ const props = defineProps({
   display: flex;
   justify-content: center;
   align-items: center;
-  width: 70vw; /* Viewport 너비 */
-  height: 100vh; /* Viewport 높이 */
-  overflow: hidden; /* 필요 시 스크롤 숨김 */
+  width: 70vw;
+  height: 100vh;
+  overflow: hidden;
 }
 
 .pdf-viewer {
