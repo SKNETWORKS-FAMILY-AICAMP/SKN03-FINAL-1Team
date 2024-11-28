@@ -1,6 +1,6 @@
 from fastapi import HTTPException
 from fastapi.responses import JSONResponse, RedirectResponse
-from .utils import googleOAuth, MySQLHandler
+from .utils import googleOAuth, MySQLHandler, S3Handler
 import requests, json
 from uuid import uuid4
 
@@ -436,3 +436,29 @@ async def handle_bookmark(request_data):
     # print("=== FIN /users/bookmarks ===")
 
     # return return_obj
+
+
+
+async def testing(request_data): 
+    s3_handler = S3Handler()
+
+
+    
+    prefix_path = "https://documento-s3.s3.ap-northeast-2.amazonaws.com/papers/"
+    db_handler.connect()
+                
+    insert_query = "SELECT s3_path FROM DOCUMENTO.paper WHERE paper_doi = %s"
+    request_result = db_handler.fetch_one(insert_query, (request_data, ))
+
+    if request_result['s3_path']:
+        public_path = prefix_path + request_result["s3_path"]
+        url = s3_handler.s3_client.generate_presigned_url(
+        ClientMethod='get_object',
+        Params={
+            'Bucket': "documento-s3",
+            'Key': "papers/" + request_result["s3_path"],
+        },
+        # url 유효기간 (단위:second)
+        ExpiresIn=10 * 60
+        )   
+        print(url)

@@ -89,6 +89,10 @@ async def cleanup_resources():
 #     data = await request.json()
 #     return await handle_request(create_new_user, data)
 
+@app.get("/test")
+async def login():
+    data = "10.18653/v1/2020.acl-demos.1"
+    return await handle_request(testing,data)
 
 # 2. 로그인
 @app.get("/login")
