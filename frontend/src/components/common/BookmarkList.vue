@@ -4,7 +4,7 @@
   <div class="book-mark d-flex flex-column">
     <div class="bookmark-list mt-5 text-start">북마크 리스트</div>
     <div class="content my-2">10.18653/v1/2020.acl-demos.10</div>
-    <div class="content my-2">뭔가 자연어 처리에 관한 서비스를 만들고 싶어</div>
+    <div class="content my-2">뭔가 자연어 처리에 관한 서비스를 만들고 싶어!</div>
   </div>
 </template>
 
