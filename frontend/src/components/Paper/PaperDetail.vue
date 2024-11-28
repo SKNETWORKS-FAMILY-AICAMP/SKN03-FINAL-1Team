@@ -1,8 +1,10 @@
 <script setup>
 import { ref, onMounted } from 'vue'
+import { useRoute } from 'vue-router'
 import axios from '@/axiosConfig' // 설정한 axios 인스턴스를 가져옵니다.
 
-const paperDoi = '?paperDoi=10.18653/v1/2020.acl-demos.10' // 실제 paperDoi 값을 사용하세요.
+const route = useRoute()
+const paperDoi = route.query.paperDoi || '' // 쿼리 파라미터에서 paperDoi 가져오기
 const summary = ref('')
 const priorPapers = ref([])
 
@@ -30,12 +32,9 @@ const fetchPaperDetails = async () => {
     }
 
     // 선행 논문 정보 요청
-    const priorPapersResponse = await axios.get(
-      '/papers/priorpapers/?paperDoi=10.18653/v1/2020.acl-demos.10',
-      {
-        params: { paperDoi: paperDoi, default: '' },
-      },
-    )
+    const priorPapersResponse = await axios.get('/papers/priorpapers/', {
+      params: { paperDoi: paperDoi, default: '' },
+    })
     if (priorPapersResponse.data.resultCode === 201) {
       priorPapers.value = priorPapersResponse.data.result.paperList
     } else {
