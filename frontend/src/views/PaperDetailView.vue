@@ -14,6 +14,7 @@ const showPdfViewer = ref(false)
 const pdfUrl = ref('')
 const paperS3Path = ref('')
 const pdfFile = ref(null) // 추가
+const priorPapers = ref(null) // 추가: priorPapers 데이터를 저장할 변수
 
 const togglePdfViewer = () => {
   showPdfViewer.value = !showPdfViewer.value
@@ -43,6 +44,22 @@ onMounted(async () => {
     }
   } else {
     console.error('paperId가 유효하지 않습니다.')
+  }
+
+  // paperDoi 쿼리 파라미터 읽기
+  const paperDoi = route.query.paperDoi
+  if (paperDoi) {
+    try {
+      const priorResponse = await axios.get('/papers/priorpapers/', {
+        params: { paperDoi },
+      })
+      priorPapers.value = priorResponse.data
+      console.log('Prior papers:', priorPapers.value)
+    } catch (error) {
+      console.error('Error fetching prior papers:', error)
+    }
+  } else {
+    console.warn('paperDoi 쿼리 파라미터가 없습니다.')
   }
 })
 
