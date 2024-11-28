@@ -111,3 +111,61 @@ class paperSearcher:
 
         results = sorted(results, key=lambda x: x["similarity"], reverse=True)
         return json.dumps(results, indent=4)
+    
+    def search_faiss_index_top_n(
+        self,
+        query: str,
+        index,
+        ids: List[str],
+        max_results: int = 3,
+        similarity_threshold: float = 70.0,
+        max_distance: float = 500.0,
+        chunk_size: int = 2048
+    ) -> str:
+        """
+        Search the FAISS index for the given query and return the top N matching results in JSON format.
+
+        Args:
+            query (str): The query text to search for.
+            index: The FAISS index object.
+            ids (List[str]): A list of IDs corresponding to the FAISS index entries.
+            max_results (int): Maximum number of top results to return.
+            similarity_threshold (float): Minimum similarity score to consider a match (0-100).
+            max_distance (float): Maximum allowable distance for 100% similarity.
+            chunk_size (int): Number of index entries to process per chunk.
+
+        Returns:
+            str: JSON string with a list of dictionaries containing "paper_doi" and "similarity".
+        """
+        query_embedding = self.embed_text(query).astype(np.float32)
+
+        total_results = len(ids)
+        results = []
+
+        for i in range(0, total_results, chunk_size):
+            chunk_start = i
+            chunk_end = min(i + chunk_size, total_results)
+
+            chunk_embeddings = np.array(
+                [index.reconstruct(idx) for idx in range(chunk_start, chunk_end)]
+            )
+
+            chunk_index = faiss.IndexFlatL2(query_embedding.shape[0])
+            chunk_index.add(chunk_embeddings)
+
+            distances, indices = chunk_index.search(query_embedding.reshape(1, -1), len(chunk_embeddings))
+
+            chunk_results = [
+                {
+                    "paper_doi": ids[chunk_start + idx],
+                    "similarity": round(max(0, (1 - (dist / max_distance)) * 100), 2)
+                }
+                for idx, dist in zip(indices[0], distances[0])
+                if max(0, (1 - (dist / max_distance)) * 100) >= similarity_threshold
+            ]
+
+            results.extend(chunk_results)
+
+        results = sorted(results, key=lambda x: x["similarity"], reverse=True)
+        top_results = results[:max_results]
+        return json.dumps(top_results, indent=4)

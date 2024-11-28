@@ -58,9 +58,6 @@ async def validation_exception_handler(request: Request, exc: RequestValidationE
         },
     )
 
-
-        
-
 @app.on_event("startup")
 async def initialize_globals():
     try:
@@ -122,11 +119,9 @@ async def search_papers(request: Request, data: userKeyword):
 
 # 4. 키워드 최적화
 @app.post("/papers/transformation/")
-async def create_paper_transformation(data: userPrompt):
+async def create_paper_transformation(request: Request, data: userPrompt):
     #data = await request.json()
-    return await handle_request(process_transformation, data)
-
-
+    return await handle_request(process_transformation, {"data": data, "request": request})
 
 # ***************  5. bookmark  *************** #
 # 5.1. 북마크 리스트

@@ -150,52 +150,91 @@ async def process_transformation(data):
     """
     print("=== POST /papers/transformation ===")
     try :
-        user_prompt = data.userPrompt
+        user_prompt = data.get("data").userPrompt
         print("userPrompt : ", user_prompt)
     except Exception as e:
         print(f"Missing key in parameters: {e}")
         raise HTTPException(status_code=400, detail="Invalid parameters")
+    
+    try :
+        chatbot = openaiHandler()
+        openai_output = chatbot.get_keywords(user_prompt)
+        openai_output = json.loads(openai_output)
+        eng_keywords_to_search = [
+            item["eng"] for item in openai_output
+            if isinstance(item, dict) and "eng" in item
+        ]
+        keywords = [
+            f"{item['eng']} [{item['kor']}]"
+            for item in openai_output
+            if isinstance(item, dict) and "eng" in item and "kor" in item
+        ]
+    except Exception as e:
+        print(f"Error processing data: {e}")
+        raise HTTPException(status_code=500, detail="Error processing data")
+    
+    try:
+        request = data.get("request")
+        searcher = request.app.state.searcher
+        faiss_index = request.app.state.faiss_index
+        faiss_ids = request.app.state.faiss_ids
+        db_handler = MySQLHandler()
+        db_handler.connect()
+
+        generated_keyword_listm = []
+
+        for idx, eng_keyword in enumerate(eng_keywords_to_search):
+            top_results = searcher.search_faiss_index_top_n(eng_keyword, faiss_index, faiss_ids)
+            if isinstance(top_results, str):
+                try:
+                    top_results = json.loads(top_results)
+                except json.JSONDecodeError as e:
+                    print(f"Error decoding top_results JSON: {e}")
+                    top_results = []
+
+            doi_list = [
+                {"paper_doi": result["paper_doi"], "similarity": result["similarity"]}
+                for result in top_results
+            ]
+
+            paper_list = []
+            for doi_item in doi_list:
+                paper_doi = doi_item["paper_doi"]
+                select_query = """
+                SELECT title, eng_abstract, citation 
+                FROM paper 
+                WHERE paper_doi = %s
+                """
+                paper_data = db_handler.fetch_one(select_query, (paper_doi,))
+                if paper_data:
+                    paper_data_dict = {
+                        "paperDoi": paper_doi,
+                        "title": paper_data["title"],
+                        "engAbstract": paper_data["eng_abstract"],
+                        "citation": paper_data["citation"]
+                    }
+                    paper_list.append(paper_data_dict)
+                else:
+                    print(f"No data found for DOI: {paper_doi}")
+            
+            generated_keyword_listm.append({
+                "generatedKeyword": keywords[idx], 
+                "paperList": paper_list
+            })
+        db_handler.disconnect()
+        filtered_keyword_listm = [item for item in generated_keyword_listm if item["paperList"]]
+        limited_keyword_listm = filtered_keyword_listm[:5]
+    except Exception as e:
+        print(f"Error processing data: {e}")
+        raise HTTPException(status_code=500, detail="Error processing data")
+    
+    if not limited_keyword_listm :
+        raise HTTPException(status_code=404, detail="No results found. Please refine your search.")
 
     output_data = {
-        "generatedPrompt": "Neural Machine Translation and Transformer Models",
-        "generatedKeywordList": [
-            {
-            "generatedKeyword": "neural translation",
-            "paperList": [
-                {
-                "paperDoi": "10.1234/v1/2023.nmt.1",
-                "title": "Advancements in Neural Machine Translation",
-                "korAbstract": "This paper explores recent developments in neural machine translation, focusing on transformer models and their applications.",
-                "citation": 120
-                },
-                {
-                "paperDoi": "10.1234/v1/2023.nmt.2",
-                "title": "Challenges in Multilingual Neural Translation Systems",
-                "korAbstract": "A detailed analysis of challenges faced by multilingual neural translation systems, including resource constraints and training data requirements.",
-                "citation": 95
-                }
-            ]
-            },
-            {
-            "generatedKeyword": "transformer architecture",
-            "paperList": [
-                {
-                "paperDoi": "10.5678/v1/2023.trans.1",
-                "title": "Understanding Transformer Models in NLP",
-                "korAbstract": "An overview of transformer architecture and its significance in natural language processing tasks.",
-                "citation": 150
-                },
-                {
-                "paperDoi": "10.5678/v1/2023.trans.2",
-                "title": "Optimizing Transformer Models for Low-Resource Languages",
-                "korAbstract": "This study proposes optimization techniques for transformer models to enhance performance in low-resource languages.",
-                "citation": 80
-                }
-            ]
-            }
-        ]
+        "generatedPrompt": f"\"{user_prompt}\"의 키워드 검색 결과입니다.\n\n",
+        "generatedKeywordList": limited_keyword_listm
     }
-
     print("outputData : ", output_data)
 
     print("=== FIN /papers/transformation ===")
