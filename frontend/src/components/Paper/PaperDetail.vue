@@ -30,9 +30,12 @@ const fetchPaperDetails = async () => {
     }
 
     // 선행 논문 정보 요청
-    const priorPapersResponse = await axios.get('/papers/priorpapers/', {
-      params: { paperDoi: paperDoi, default: '' },
-    })
+    const priorPapersResponse = await axios.get(
+      '/papers/priorpapers/?paperDoi=10.18653/v1/2020.acl-demos.10',
+      {
+        params: { paperDoi: paperDoi, default: '' },
+      },
+    )
     if (priorPapersResponse.data.resultCode === 201) {
       priorPapers.value = priorPapersResponse.data.result.paperList
     } else {
