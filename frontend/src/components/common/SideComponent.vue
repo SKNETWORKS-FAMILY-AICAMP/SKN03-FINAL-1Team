@@ -2,7 +2,6 @@
 import { ref } from 'vue'
 
 import NevigationBar from '@/components/common/NevigationBar.vue'
-import PaperItem from './LeftSection/PaperItem.vue'
 
 import AccodionButtonImage from '@/assets/accordion-button.png'
 
@@ -19,9 +18,7 @@ const toggleSidebar = () => {
       <NevigationBar />
       <div class="book-mark d-flex flex-column" v-if="isSidebarOpen">
         <div class="bookmark-list mt-5 text-start">북마크 리스트</div>
-        <div class="content my-2">
-          <!-- <PaperItem /> -->
-        </div>
+        <div class="content my-2"></div>
       </div>
       <div class="d-flex">
         <button class="accordion-button" @click="toggleSidebar">
