@@ -126,13 +126,12 @@ async def oauth_callback(code):
         finally:
             db_handler.disconnect()
         
-        
+        print("++++++++++++++++++++++++==SSID++++++++++++++++++++++++++++++++")
         # 쿠키로 세션 아이디를 전달
         response = RedirectResponse(url="https://www.documento.click/")
         response.set_cookie(key="session_id", 
                             value=session_id, 
                             httponly=True, 
-                            path="/",
                             max_age=3600 * 60,)
 
         # 쿠키 설정 검증 출력
@@ -154,6 +153,7 @@ async def get_userinfo(ssid):
         db_handler.connect()
         select_query = "SELECT * FROM user WHERE user_id = %s"
         result = db_handler.fetch_one(select_query, (ssid, ))
+        print("====================serch db====================")
         print(result)
         if not result:
             raise HTTPException(status_code=404)
