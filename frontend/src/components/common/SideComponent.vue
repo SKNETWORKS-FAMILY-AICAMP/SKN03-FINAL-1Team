@@ -1,23 +1,31 @@
 <script setup>
 import { ref } from 'vue'
+import { useNavbarStore } from '@/stores/navbarStore'
 
 import NavigationBar from '@/components/common/NavigationBar.vue'
 import BookmarkList from '@/components/common/BookmarkList.vue'
-
+import PriorPaperList from '@/components/common/PriorPaperList.vue'
+import PaperSummary from '@/components/common/PaperSummary.vue'
 import AccordionButtonImage from '@/assets/accordion-button.png'
 
 const isSidebarOpen = ref(true)
+const navbarStore = useNavbarStore()
 
 const toggleSidebar = () => {
   isSidebarOpen.value = !isSidebarOpen.value
 }
+
+const view = 'bookmark'
+navbarStore.setSelectedNavItem(view)
 </script>
 
 <template>
   <div class="container m-0 p-0 h-100">
     <div :class="['left-side-content', { collapsed: !isSidebarOpen }]">
       <NavigationBar />
-      <BookmarkList v-if="isSidebarOpen" />
+      <BookmarkList v-if="isSidebarOpen && navbarStore.selectedNavItem === 'bookmark'" />
+      <PaperSummary v-if="isSidebarOpen && navbarStore.selectedNavItem === 'paper-summary'" />
+      <PriorPaperList v-if="isSidebarOpen && navbarStore.selectedNavItem === 'prior-paper-list'" />
       <div class="d-flex">
         <button class="accordion-button" @click="toggleSidebar">
           <img :src="AccordionButtonImage" />

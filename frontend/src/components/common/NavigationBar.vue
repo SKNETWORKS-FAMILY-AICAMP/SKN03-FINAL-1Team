@@ -10,15 +10,14 @@ import TreeIcon from '@/assets/IconBar/TreeIcon.png'
 
 const navbarStore = useNavbarStore()
 
-const handleIconClick = (view, id) => {
+const handleIconClick = (view) => {
   navbarStore.setSelectedNavItem(view)
-  alert(id)
 }
 
 const mainIcons = ref([
   { id: 'bookmark', src: HamburgerIcon, view: 'bookmark' },
-  { id: 'summary', src: DocumentIcon, view: 'paper-detail' },
-  { id: 'tree', src: TreeIcon, view: 'tree' },
+  { id: 'summary', src: DocumentIcon, view: 'paper-summary' },
+  { id: 'tree', src: TreeIcon, view: 'prior-paper-list' },
 ])
 
 const footerIcons = ref([

@@ -1,14 +1,4 @@
-<script setup>
-import { defineProps } from 'vue'
-
-// props 정의
-const props = defineProps({
-  isSidebarOpen: {
-    type: Boolean,
-    required: true,
-  },
-})
-</script>
+<script setup></script>
 
 <template>
   <div class="book-mark d-flex flex-column">
@@ -19,7 +9,7 @@ const props = defineProps({
 
 <style scoped>
 .book-mark {
-  flex-grow: 1; /* 남은 공간을 차지하도록 설정 */
+  flex-grow: 1;
   display: flex;
   flex-direction: column;
   padding: 20px;
