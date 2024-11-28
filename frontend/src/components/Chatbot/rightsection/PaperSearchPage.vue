@@ -5,9 +5,11 @@ import PaperSearchItem from '@/components/Chatbot/rightsection/PaperSearchItem.v
 
 const inputText = ref('')
 const papers = ref([])
+const loading = ref(false) // 로딩 상태 추가
 
 // 논문 데이터 가져오기 (POST 요청)
 const fetchPapers = async () => {
+  loading.value = true // 로딩 시작
   try {
     const response = await axios.post('/papers/search/', {
       userKeyword: inputText.value,
@@ -16,6 +18,8 @@ const fetchPapers = async () => {
     console.log('Papers:', papers.value)
   } catch (error) {
     console.error('Failed to fetch papers:', error)
+  } finally {
+    loading.value = false // 로딩 종료
   }
 }
 
@@ -39,10 +43,17 @@ const sendMessage = () => {
         placeholder="탐색 키워드를 입력해보아요."
         @keyup.enter="sendMessage"
       />
-      <button class="btn send-button" @click="sendMessage">></button>
+      <button class="btn send-button" @click="sendMessage" :disabled="loading">></button>
     </div>
-    <div v-for="(paper, index) in papers" :key="index">
-      <PaperSearchItem :paper="paper" class="search-item" />
+    <div v-if="loading" class="d-flex justify-content-center my-3">
+      <div class="spinner-border text-primary" role="status">
+        <span class="visually-hidden">로딩 중...</span>
+      </div>
+    </div>
+    <div v-else>
+      <div v-for="(paper, index) in papers" :key="index">
+        <PaperSearchItem :paper="paper" class="search-item" />
+      </div>
     </div>
   </div>
 </template>
