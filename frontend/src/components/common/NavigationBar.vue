@@ -9,8 +9,10 @@ import HomeIcon from '@/assets/IconBar/HomeIcon.png'
 import TreeIcon from '@/assets/IconBar/TreeIcon.png'
 
 const navbarStore = useNavbarStore()
-const handleIconClick = (view) => {
+
+const handleIconClick = (view, id) => {
   navbarStore.setSelectedNavItem(view)
+  alert(id)
 }
 
 const mainIcons = ref([
@@ -28,7 +30,7 @@ const footerIcons = ref([
 
 <template>
   <div class="icon-bar-container">
-    <img :src="LogoIcon" alt="Logo" class="logo mb-3" @click="handleIconClick('home')" />
+    <img :src="LogoIcon" alt="Logo" class="logo mb-3" @click="handleIconClick('home', 'logo')" />
     <div class="icon-list">
       <!-- 메인 아이콘들 -->
       <div
@@ -36,7 +38,7 @@ const footerIcons = ref([
         :key="icon.id"
         class="icon"
         :class="{ 'logo-icon-bg': icon.id === 'bookmark' }"
-        @click="handleIconClick(icon.view)"
+        @click="handleIconClick(icon.view, icon.id)"
       >
         <img v-if="icon.src" :src="icon.src" alt="Icon" class="icon-image" />
         <span v-else>{{ icon.name }}</span>
@@ -49,7 +51,7 @@ const footerIcons = ref([
           :key="icon.id"
           class="icon"
           :class="{ 'footer-icon-special': icon.id === 1 }"
-          @click="handleIconClick(icon.view)"
+          @click="handleIconClick(icon.view, icon.id)"
         >
           <!-- 아이콘 이미지를 렌더링 -->
           <img :src="icon.src" alt="Footer Icon" class="icon-image" />
