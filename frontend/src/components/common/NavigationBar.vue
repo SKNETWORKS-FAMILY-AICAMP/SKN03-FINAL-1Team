@@ -22,7 +22,7 @@ const mainIcons = ref([
 
 const footerIcons = ref([
   { id: 1, src: DocumentIcon, view: 'footer1' },
-  { id: 2, src: HomeIcon, view: 'home' },
+  { id: 'home', src: HomeIcon, view: 'home' },
   { id: 3, src: SettingIcon, view: 'settings' },
 ])
 </script>
