@@ -71,76 +71,78 @@ const requestPaperByDoi = async (doi) => {
 </script>
 
 <template>
-  <div class="test-content">
-    <div class="input-area d-flex w-100 p-2">
-      <input
-        v-model="inputPrompt"
-        type="text"
-        class="form-control chat-input"
-        placeholder="원하는 논문의 내용을 자신만의 언어로 표현해보세요."
-        @keyup.enter="handleOptimization"
-        :disabled="loading"
-      />
-      <button class="btn send-button" @click="handleOptimization" :disabled="loading">></button>
-    </div>
-
-    <div v-if="loading" class="d-flex justify-content-center my-3">
-      <div class="spinner-border text-primary" role="status">
-        <span class="visually-hidden">로딩 중...</span>
-      </div>
-    </div>
-
-    <div v-else>
-      <div v-if="errorMessage" class="alert alert-danger text-center">
-        {{ errorMessage }}
+  <div class="main-container">
+    <div class="test-content">
+      <div class="input-area d-flex w-100 p-2">
+        <input
+          v-model="inputPrompt"
+          type="text"
+          class="form-control chat-input"
+          placeholder="원하는 논문의 내용을 자신만의 언어로 표현해보세요."
+          @keyup.enter="handleOptimization"
+          :disabled="loading"
+        />
+        <button class="btn send-button" @click="handleOptimization" :disabled="loading">></button>
       </div>
 
-      <div v-if="generatedResults" class="results-area mt-5">
-        <h3 class="mb-4">최적화된 키워드 및 논문:</h3>
-        <div class="mb-4">
-          <h4>생성된 프롬프트: {{ generatedResults.generatedPrompt }}</h4>
+      <div v-if="loading" class="d-flex justify-content-center my-3">
+        <div class="spinner-border text-primary" role="status">
+          <span class="visually-hidden">로딩 중...</span>
         </div>
-        <div
-          v-for="(keywordItem, index) in generatedResults.generatedKeywordList"
-          :key="index"
-          class="mb-4"
-        >
-          <h5 class="fw-bold">키워드: {{ keywordItem.generatedKeyword }}</h5>
+      </div>
+
+      <div v-else>
+        <div v-if="errorMessage" class="alert alert-danger text-center">
+          {{ errorMessage }}
+        </div>
+
+        <div v-if="generatedResults" class="results-area mt-5">
+          <h3 class="mb-4">최적화된 키워드 및 논문:</h3>
+          <div class="mb-4">
+            <h4>생성된 프롬프트: {{ generatedResults.generatedPrompt }}</h4>
+          </div>
           <div
-            v-for="(paper, paperIndex) in keywordItem.paperList"
-            :key="paperIndex"
-            class="card mb-3 shadow-sm"
-            @click="requestPaperByDoi(paper.paperDoi)"
-            style="cursor: pointer"
+            v-for="(keywordItem, index) in generatedResults.generatedKeywordList"
+            :key="index"
+            class="mb-4"
           >
-            <div class="card-body">
-              <h6>{{ paper.title }}</h6>
-              <p><strong>DOI:</strong> {{ paper.paperDoi }}</p>
-              <p><strong>초록:</strong> {{ paper.korAbstract }}</p>
-              <p><strong>인용 수:</strong> {{ paper.citation }}</p>
+            <h5 class="fw-bold">키워드: {{ keywordItem.generatedKeyword }}</h5>
+            <div
+              v-for="(paper, paperIndex) in keywordItem.paperList"
+              :key="paperIndex"
+              class="card mb-3 shadow-sm"
+              @click="requestPaperByDoi(paper.paperDoi)"
+              style="cursor: pointer"
+            >
+              <div class="card-body">
+                <h6>{{ paper.title }}</h6>
+                <p><strong>DOI:</strong> {{ paper.paperDoi }}</p>
+                <p><strong>초록:</strong> {{ paper.korAbstract }}</p>
+                <p><strong>인용 수:</strong> {{ paper.citation }}</p>
+              </div>
             </div>
           </div>
         </div>
-      </div>
 
-      <div v-if="showIntroAndSteps" class="intro-text text-center mb-4">
-        <p class="text-muted">논문 검색이 어려우신가요? <br /></p>
-        <p class="text-muted">
-          도큐멘토와 함께 검색 키워드를 정의하고, <br />
-          읽어야 할, 읽을 수 있는 논문을 탐색해보아요!
-        </p>
+        <div v-if="showIntroAndSteps" class="intro-text text-center mb-4">
+          <p class="text-muted">논문 검색이 어려우신가요? <br /></p>
+          <p class="text-muted">
+            도큐멘토와 함께 검색 키워드를 정의하고, <br />
+            읽어야 할, 읽을 수 있는 논문을 탐색해보아요!
+          </p>
+        </div>
       </div>
-    </div>
-    <div v-if="showIntroAndSteps" class="steps-container">
-      <div class="d-flex justify-content-between mt-5">
-        <div
-          class="p-3 bg-light rounded shadow text-center m-2"
-          v-for="step in steps"
-          :key="step.id"
-          style="flex: 1"
-        >
-          <h5>Step {{ step.id }}</h5>
-          <p>{{ step.text }}</p>
+      <div v-if="showIntroAndSteps" class="steps-container">
+        <div class="d-flex justify-content-between mt-5">
+          <div
+            class="p-3 bg-light rounded shadow text-center m-2"
+            v-for="step in steps"
+            :key="step.id"
+            style="flex: 1"
+          >
+            <h5>Step {{ step.id }}</h5>
+            <p>{{ step.text }}</p>
+          </div>
         </div>
       </div>
     </div>
@@ -148,6 +150,11 @@ const requestPaperByDoi = async (doi) => {
 </template>
 
 <style scoped>
+.main-container {
+  overflow-x: auto; /* 가로 스크롤 추가 */
+  max-width: 100%; /* 컨테이너의 최대 너비를 부모에 맞춤 */
+}
+
 .input-area {
   border: 1px solid #a04747;
   border-radius: 50px;
