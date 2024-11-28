@@ -17,13 +17,7 @@ const toggleSidebar = () => {
   <div class="container m-0 p-0 h-100">
     <div :class="['left-side-content', { collapsed: !isSidebarOpen }]">
       <NavigationBar />
-      <BookmarkList />
-      <div class="book-mark d-flex flex-column" v-if="isSidebarOpen">
-        <div class="bookmark-list mt-5 text-start">북마크 리스트</div>
-        <div class="content my-2">
-          <!-- <PaperItem /> -->
-        </div>
-      </div>
+      <BookmarkList v-if="isSidebarOpen" />
       <div class="d-flex">
         <button class="accordion-button" @click="toggleSidebar">
           <img :src="AccordionButtonImage" />
@@ -68,31 +62,6 @@ const toggleSidebar = () => {
   font-size: 20px;
   padding: 10px;
   margin: 10px;
-}
-
-.book-mark {
-  flex-grow: 1;
-  display: flex;
-  flex-direction: column;
-  padding: 20px;
-}
-
-.bookmark-list {
-  position: relative;
-  margin-top: 20px;
-  padding: 10px 0;
-  font-size: 20px;
-  color: white;
-}
-
-.bookmark-list::after {
-  content: '';
-  position: absolute;
-  bottom: 0;
-  left: 0;
-  width: 100%;
-  height: 1px;
-  background-color: white;
 }
 
 .paper-entry {

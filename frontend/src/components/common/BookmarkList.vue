@@ -11,7 +11,7 @@ const props = defineProps({
 </script>
 
 <template>
-  <div class="book-mark d-flex flex-column" v-if="props.isSidebarOpen">
+  <div class="book-mark d-flex flex-column">
     <div class="bookmark-list mt-5 text-start">북마크 리스트</div>
     <div class="content my-2"></div>
   </div>
@@ -41,9 +41,5 @@ const props = defineProps({
   width: 100%;
   height: 1px;
   background-color: white;
-}
-
-.content {
-  /* 추가 스타일이 필요하면 여기에 작성하세요 */
 }
 </style>
