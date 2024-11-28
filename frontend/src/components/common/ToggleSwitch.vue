@@ -12,8 +12,8 @@ const toggleChat = () => {
 <template>
   <div class="toggle-switch" @click="toggleChat">
     <div :class="['toggle-knob', { toggled: props.isToggled }]"></div>
-    <span :class="['left-label', { inactive: props.isToggled }]">기술상담</span>
-    <span :class="['right-label', { inactive: !props.isToggled }]">논문탐색</span>
+    <span :class="['left-label', { inactive: props.isToggled }]">키워드 변환</span>
+    <span :class="['right-label', { inactive: !props.isToggled }]">논문 탐색</span>
   </div>
 </template>
 
