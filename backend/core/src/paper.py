@@ -277,8 +277,22 @@ async def fetch_paper_details(data):
         # get s3 path & create output
         s3_path = paper_data["s3_path"]
         print("s3Path : ", s3_path)
-        output_data = {
-            "paperS3Path": s3_path
+        s3_handler = S3Handler()  
+        url = s3_handler.s3_client.generate_presigned_url(
+
+        ClientMethod='get_object', #object를 가져오겠다
+        
+        Params={
+            'Bucket': "documento-s3", #버켓 이름
+            'Key': "papers/" + s3_path,
+            # aws에 있는 object의 key 값 ( 그림 참조 )
+
+        },
+        # url 유효기간 (단위:second)
+        ExpiresIn=60 * 60 #1시간
+        )  
+        output_data = { 
+            "paperS3Path": url
         }
     except Exception as e:
         print(f"Error processing data: {e}")
