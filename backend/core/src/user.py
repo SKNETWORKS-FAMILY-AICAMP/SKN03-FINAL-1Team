@@ -123,20 +123,22 @@ async def oauth_callback(code):
                 db_handler.execute_query(insert_query, (session_id, email, name))
         except Exception as e:
             print(f"Error with insert to MySQL: {e}")
-        finally:
-            db_handler.disconnect()
+        else:
         
-        print("++++++++++++++++++++++++==SSID++++++++++++++++++++++++++++++++")
-        # 쿠키로 세션 아이디를 전달
-        response = RedirectResponse(url="https://www.documento.click/")
-        response.set_cookie(key="session_id", 
-                            value=session_id, 
-                            httponly=True, 
-                            max_age=3600 * 60,)
+            print("++++++++++++++++++++++++==SSID++++++++++++++++++++++++++++++++")
+            # 쿠키로 세션 아이디를 전달
+            response = RedirectResponse(url="https://www.documento.click/")
+            response.set_cookie(key="session_id", 
+                                value=session_id, 
+                                httponly=True, 
+                                max_age=3600 * 60,)
 
         # 쿠키 설정 검증 출력
-        print("Set-Cookie Header:", response.headers.get("set-cookie"))
-        return response
+            print("Set-Cookie Header:", response.headers.get("set-cookie"))
+            return response
+        
+        finally:
+            db_handler.disconnect()
     
     
   

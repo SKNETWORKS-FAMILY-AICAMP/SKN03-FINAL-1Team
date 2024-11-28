@@ -104,7 +104,7 @@ async def auth_callback(code: str = ""):
     return await handle_request(oauth_callback, code)
 
 # 2-2. 세션 저장용
-@app.get("/user_info/")
+@app.get("/user_info")
 async def user_info(session_id :  Annotated[str | None, Cookie()] = None):
     print("++++++++++++++++++++++ user_info ++++++++++++++++++++++++++")
     
