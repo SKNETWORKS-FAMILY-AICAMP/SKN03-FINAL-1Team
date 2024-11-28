@@ -1,5 +1,5 @@
 <script setup>
-import { ref } from 'vue'
+import { ref, defineEmits } from 'vue'
 import { useRouter } from 'vue-router' // Vue Router 사용
 
 import DocumentIcon from '@/assets/IconBar/DocumentIcon.png'
@@ -9,11 +9,20 @@ import SettingIcon from '@/assets/IconBar/SettingIcon.png'
 import HomeIcon from '@/assets/IconBar/HomeIcon.png'
 import TreeIcon from '@/assets/IconBar/TreeIcon.png'
 
+const emit = defineEmits(['show-paper-detail'])
+
 const router = useRouter()
 
 const mainIcons = ref([
   { id: 'bookmark', src: HamburgerIcon, action: () => router.push('/main') },
-  { id: 'summary', src: DocumentIcon, action: () => router.push('/paper') },
+  {
+    id: 'summary',
+    src: DocumentIcon,
+    action: () => {
+      // 라우터를 사용하는 대신 이벤트를 부모에게 전달
+      emit('show-paper-detail')
+    },
+  },
   { id: 'tree', src: TreeIcon, action: () => router.push('/paper') },
 ])
 

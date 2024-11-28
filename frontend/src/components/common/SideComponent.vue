@@ -3,21 +3,28 @@ import { ref } from 'vue'
 
 import NevigationBar from '@/components/common/NevigationBar.vue'
 import BookmarkList from '@/components/common/BookmarkList.vue'
+import PaperDetail from '@/components/paper/PaperDetail.vue'
 
 import AccodionButtonImage from '@/assets/accordion-button.png'
 
 const isSidebarOpen = ref(true)
+const showPaperDetail = ref(false)
 
 const toggleSidebar = () => {
   isSidebarOpen.value = !isSidebarOpen.value
+}
+
+const handleShowPaperDetail = () => {
+  showPaperDetail.value = true
 }
 </script>
 
 <template>
   <div class="container m-0 p-0 h-100">
     <div :class="['left-side-content', { collapsed: !isSidebarOpen }]">
-      <NevigationBar />
-      <BookmarkList v-if="isSidebarOpen" />
+      <NevigationBar @show-paper-detail="handleShowPaperDetail" />
+      <BookmarkList v-if="isSidebarOpen && !showPaperDetail" />
+      <PaperDetail v-else-if="isSidebarOpen && showPaperDetail" />
       <div class="d-flex">
         <button class="accordion-button" @click="toggleSidebar">
           <img :src="AccodionButtonImage" />
