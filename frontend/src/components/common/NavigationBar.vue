@@ -1,5 +1,6 @@
 <script setup>
-import { ref } from 'vue'
+import { ref, computed } from 'vue'
+import { useRouter } from 'vue-router'
 import { useNavbarStore } from '@/stores/navbarStore'
 import DocumentIcon from '@/assets/IconBar/DocumentIcon.png'
 import LogoIcon from '@/assets/logo.png'
@@ -9,9 +10,14 @@ import HomeIcon from '@/assets/IconBar/HomeIcon.png'
 import TreeIcon from '@/assets/IconBar/TreeIcon.png'
 
 const navbarStore = useNavbarStore()
+const router = useRouter()
 
 const handleIconClick = (view) => {
-  navbarStore.setSelectedNavItem(view)
+  if (view === 'home') {
+    router.push('/')
+  } else {
+    navbarStore.setSelectedNavItem(view)
+  }
 }
 
 const mainIcons = ref([
@@ -25,6 +31,8 @@ const footerIcons = ref([
   { id: 'home', src: HomeIcon, view: 'home' },
   { id: 3, src: SettingIcon, view: 'settings' },
 ])
+
+const selectedNavItem = computed(() => navbarStore.selectedNavItem)
 </script>
 
 <template>
@@ -36,7 +44,10 @@ const footerIcons = ref([
         v-for="icon in mainIcons"
         :key="icon.id"
         class="icon"
-        :class="{ 'logo-icon-bg': icon.id === 'bookmark' }"
+        :class="{
+          'logo-icon-bg': icon.id === 'bookmark',
+          'selected-icon-bg': icon.view === selectedNavItem,
+        }"
         @click="handleIconClick(icon.view, icon.id)"
       >
         <img v-if="icon.src" :src="icon.src" alt="Icon" class="icon-image" />
@@ -84,7 +95,6 @@ const footerIcons = ref([
 .icon {
   margin: 10px 0;
   padding: 8px;
-  background-color: #ffffff; /* 아이콘의 배경 색상을 흰색으로 설정 */
   border-radius: 50%;
   display: flex;
   align-items: center;
@@ -94,6 +104,10 @@ const footerIcons = ref([
 
 .logo-icon-bg {
   background-color: #a04747; /* LogoIcon의 배경 색상을 빨간색으로 설정 */
+}
+
+.selected-icon-bg {
+  background-color: #ffffff; /* 선택된 아이콘의 배경 색상을 흰색으로 설정 */
 }
 
 .footer-icon-special {
