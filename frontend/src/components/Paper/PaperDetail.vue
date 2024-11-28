@@ -2,7 +2,7 @@
 import { ref, onMounted } from 'vue'
 import axios from '@/axiosConfig' // 설정한 axios 인스턴스를 가져옵니다.
 
-const paperDoi = 'your-paper-doi' // 실제 paperDoi 값을 사용하세요.
+const paperDoi = '?paperDoi=10.18653/v1/2020.acl-demos.10' // 실제 paperDoi 값을 사용하세요.
 const summary = ref('')
 const priorPapers = ref([])
 
