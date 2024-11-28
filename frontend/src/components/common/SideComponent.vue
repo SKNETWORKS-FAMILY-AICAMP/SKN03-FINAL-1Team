@@ -2,6 +2,7 @@
 import { ref } from 'vue'
 
 import NevigationBar from '@/components/common/NevigationBar.vue'
+import BookmarkList from '@/components/common/BookmarkList.vue'
 
 import AccodionButtonImage from '@/assets/accordion-button.png'
 
@@ -16,10 +17,7 @@ const toggleSidebar = () => {
   <div class="container m-0 p-0 h-100">
     <div :class="['left-side-content', { collapsed: !isSidebarOpen }]">
       <NevigationBar />
-      <div class="book-mark d-flex flex-column" v-if="isSidebarOpen">
-        <div class="bookmark-list mt-5 text-start">북마크 리스트</div>
-        <div class="content my-2"></div>
-      </div>
+      <BookmarkList v-if="isSidebarOpen" />
       <div class="d-flex">
         <button class="accordion-button" @click="toggleSidebar">
           <img :src="AccodionButtonImage" />
@@ -28,6 +26,7 @@ const toggleSidebar = () => {
     </div>
   </div>
 </template>
+
 <style scoped>
 .container {
   height: 100vh;
@@ -54,6 +53,7 @@ const toggleSidebar = () => {
 .left-side-content.collapsed {
   width: 80px; /* 접히면 너비 감소 */
 }
+
 .accordion-button {
   background-color: transparent;
   border: none;
@@ -62,49 +62,6 @@ const toggleSidebar = () => {
   font-size: 20px;
   padding: 10px;
   margin: 10px;
-}
-
-.book-mark {
-  flex-grow: 1; /* 남은 공간을 차지하도록 설정 */
-  display: flex;
-  flex-direction: column;
-  padding: 20px;
-}
-
-.bookmark-list {
-  position: relative;
-  margin-top: 20px;
-  padding: 10px 0;
-  font-size: 20px;
-  color: white;
-}
-
-.bookmark-list::after {
-  content: '';
-  position: absolute;
-  bottom: 0;
-  left: 0;
-  width: 100%;
-  height: 1px;
-  background-color: white;
-}
-
-.paper-entry {
-  margin-top: 10px;
-}
-
-.pagination button {
-  background-color: #fff;
-  border: 1px solid #ccc;
-  color: #333;
-  padding: 10px 15px;
-  margin: 0 5px;
-  cursor: pointer;
-}
-
-.pagination button.active {
-  background-color: #a04747;
-  color: white;
 }
 
 .accordion-button {
