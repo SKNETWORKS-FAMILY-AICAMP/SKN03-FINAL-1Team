@@ -33,7 +33,6 @@ const toggleChat = () => {
   padding: 40px; /* 내부 여백을 크게 추가 */
   display: flex;
   flex-direction: column;
-  justify-content: space-between; /* 상단과 하단으로 공간 분배 */
   align-items: center; /* 수평 중앙 정렬 */
   max-width: 900px;
 }
@@ -43,11 +42,5 @@ const toggleChat = () => {
   transition:
     opacity 0.5s,
     transform 0.5s;
-}
-
-.slide-fade-enter,
-.slide-fade-leave-to {
-  opacity: 0;
-  transform: translateY(-20px);
 }
 </style>
