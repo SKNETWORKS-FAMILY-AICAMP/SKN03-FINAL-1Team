@@ -11,8 +11,8 @@ import HomeIcon from '@/assets/IconBar/HomeIcon.png'
 const router = useRouter()
 
 const mainIcons = ref([
-  { id: 2, src: HamburgerIcon, action: () => router.push('/chatbot') },
-  { id: 3, src: DocumentIcon, action: () => router.push('/paper') }, // DocumentIcon 클릭 시 /paper로 이동
+  { id: 'bookmark', src: HamburgerIcon, action: () => router.push('/chatbot') },
+  { id: 'summary', src: DocumentIcon, action: () => router.push('/paper') }, // summary 아이콘 클릭 시 /paper로 이동
 ])
 
 const footerIcons = ref([

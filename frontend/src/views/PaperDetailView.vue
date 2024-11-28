@@ -6,7 +6,7 @@ import axios from '@/axiosConfig'
 import LeftSection from '@/components/Chatbot/LeftSection.vue'
 import DropIcon from '@/assets/DropIcon.png'
 import PdfViewer from '@/components/PdfViewer.vue'
-import PaperDetail from '@/components/Paper/PaperDetail.vue'
+import PaperDetail from '@/components/common/PaperDetail.vue'
 
 const paper = ref(null)
 const route = useRoute()
