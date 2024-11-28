@@ -3,11 +3,14 @@ import { ref } from 'vue'
 import { useRouter } from 'vue-router'
 import axios from '@/axiosConfig' // 설정한 axios 인스턴스를 가져옵니다.
 
+const router = useRouter()
+
 const inputPrompt = ref('')
 const generatedResults = ref(null)
 const loading = ref(false) // 로딩 상태 추가
 const errorMessage = ref('') // 에러 메시지 상태 추가
-const router = useRouter()
+
+const showIntroAndSteps = ref(true)
 
 const steps = [
   { id: 1, text: '키워드 변환을 통해 내가 원하는 논문 검색에 필요한 키워드를 추출하세요.' },
@@ -17,6 +20,7 @@ const steps = [
 
 // 키워드 최적화 요청 (POST 요청)
 const optimizeKeywords = async () => {
+  showIntroAndSteps.value = false
   loading.value = true // 로딩 시작
   errorMessage.value = '' // 기존 에러 메시지 초기화
   try {
@@ -119,7 +123,7 @@ const requestPaperByDoi = async (doi) => {
         </div>
       </div>
 
-      <div class="intro-text text-center mb-4">
+      <div v-if="showIntroAndSteps" class="intro-text text-center mb-4">
         <p class="text-muted">논문 검색이 어려우신가요? <br /></p>
         <p class="text-muted">
           도큐멘토와 함께 검색 키워드를 정의하고, <br />
@@ -127,7 +131,7 @@ const requestPaperByDoi = async (doi) => {
         </p>
       </div>
     </div>
-    <div class="steps-container">
+    <div v-if="showIntroAndSteps" class="steps-container">
       <div class="d-flex justify-content-between mt-5">
         <div
           class="p-3 bg-light rounded shadow text-center m-2"
