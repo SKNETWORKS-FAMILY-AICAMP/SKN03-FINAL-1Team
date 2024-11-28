@@ -1,13 +1,21 @@
+<script setup>
+import { defineProps } from 'vue'
+
+// props 정의
+const props = defineProps({
+  isSidebarOpen: {
+    type: Boolean,
+    required: true,
+  },
+})
+</script>
+
 <template>
-  <div class="book-mark d-flex flex-column">
-    <div class="bookmark-list mt-5 text-start">북마크 리dd스트</div>
+  <div class="book-mark d-flex flex-column" v-if="props.isSidebarOpen">
+    <div class="bookmark-list mt-5 text-start">북마크 리스트</div>
     <div class="content my-2"></div>
   </div>
 </template>
-
-<script setup>
-// 필요에 따라 스크립트 로직을 추가하세요.
-</script>
 
 <style scoped>
 .book-mark {

@@ -1,9 +1,10 @@
 <script setup>
 import { ref } from 'vue'
 
-import NevigationBar from '@/components/common/NevigationBar.vue'
+import NavigationBar from '@/components/common/NavigationBar.vue'
+import BookmarkList from '@/components/common/BookmarkList.vue'
 
-import AccodionButtonImage from '@/assets/accordion-button.png'
+import AccordionButtonImage from '@/assets/accordion-button.png'
 
 const isSidebarOpen = ref(true)
 
@@ -15,7 +16,8 @@ const toggleSidebar = () => {
 <template>
   <div class="container m-0 p-0 h-100">
     <div :class="['left-side-content', { collapsed: !isSidebarOpen }]">
-      <NevigationBar />
+      <NavigationBar />
+      <BookmarkList />
       <div class="book-mark d-flex flex-column" v-if="isSidebarOpen">
         <div class="bookmark-list mt-5 text-start">북마크 리스트</div>
         <div class="content my-2">
@@ -24,12 +26,13 @@ const toggleSidebar = () => {
       </div>
       <div class="d-flex">
         <button class="accordion-button" @click="toggleSidebar">
-          <img :src="AccodionButtonImage" />
+          <img :src="AccordionButtonImage" />
         </button>
       </div>
     </div>
   </div>
 </template>
+
 <style scoped>
 .container {
   height: 100vh;
@@ -48,14 +51,15 @@ const toggleSidebar = () => {
   color: #ffffff;
   border-top-right-radius: 15px;
   border-bottom-right-radius: 15px;
-  box-shadow: 2px 0px 10px 4px #515151; /* 섀도우 속성 추가 */
+  box-shadow: 2px 0px 10px 4px #515151;
   margin-right: 20px;
-  transition: width 0.3s; /* 애니메이션 효과 */
+  transition: width 0.3s;
 }
 
 .left-side-content.collapsed {
-  width: 80px; /* 접히면 너비 감소 */
+  width: 80px;
 }
+
 .accordion-button {
   background-color: transparent;
   border: none;
@@ -67,7 +71,7 @@ const toggleSidebar = () => {
 }
 
 .book-mark {
-  flex-grow: 1; /* 남은 공간을 차지하도록 설정 */
+  flex-grow: 1;
   display: flex;
   flex-direction: column;
   padding: 20px;

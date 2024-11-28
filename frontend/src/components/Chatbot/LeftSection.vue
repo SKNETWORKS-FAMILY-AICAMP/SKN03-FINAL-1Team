@@ -1,7 +1,8 @@
 <script setup>
 import { ref } from 'vue'
 
-import NevigationBar from '@/components/common/NevigationBar.vue'
+import NevigationBar from '@/components/common/NavigationBar.vue'
+import BookmarkList from '@/components/common/BookmarkList.vue'
 
 import AccodionButtonImage from '@/assets/accordion-button.png'
 
@@ -16,10 +17,7 @@ const toggleSidebar = () => {
   <div class="container m-0 p-0 h-100">
     <div :class="['left-side-content', { collapsed: !isSidebarOpen }]">
       <NevigationBar />
-      <div class="book-mark d-flex flex-column" v-if="isSidebarOpen">
-        <div class="bookmark-list mt-5 text-start">북마크 리스트</div>
-        <div class="content my-2"></div>
-      </div>
+      <BookmarkList />
       <div class="d-flex">
         <button class="accordion-button" @click="toggleSidebar">
           <img :src="AccodionButtonImage" />
