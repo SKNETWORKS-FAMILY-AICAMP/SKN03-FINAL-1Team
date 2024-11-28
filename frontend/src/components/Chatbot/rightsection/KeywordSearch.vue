@@ -6,11 +6,13 @@ import axios from '@/axiosConfig' // 설정한 axios 인스턴스를 가져옵�
 const inputPrompt = ref('')
 const generatedResults = ref(null)
 const loading = ref(false) // 로딩 상태 추가
+const errorMessage = ref('') // 에러 메시지 상태 추가
 const router = useRouter()
 
 // 키워드 최적화 요청 (POST 요청)
 const optimizeKeywords = async () => {
   loading.value = true // 로딩 시작
+  errorMessage.value = '' // 기존 에러 메시지 초기화
   try {
     const response = await axios.post('/papers/transformation/', {
       userPrompt: inputPrompt.value,
@@ -18,7 +20,14 @@ const optimizeKeywords = async () => {
     generatedResults.value = response.data.result
     console.log('Optimized Results:', generatedResults.value)
   } catch (error) {
-    console.error('Failed to optimize keywords:', error)
+    if (error.response && error.response.status === 404) {
+      errorMessage.value = '그런건 없어요'
+    } else if (error.message && error.message.includes('CORS')) {
+      errorMessage.value = 'CORS 오류가 발생했습니다. 서버 설정을 확인해주세요.'
+    } else {
+      console.error('키워드 최적화에 실패했습니다:', error)
+      errorMessage.value = '키워드 최적화에 실패했습니다. 다시 시도해주세요.'
+    }
   } finally {
     loading.value = false // 로딩 종료
   }
@@ -45,7 +54,8 @@ const requestPaperByDoi = async (doi) => {
       })
     }
   } catch (error) {
-    console.error('Failed to fetch paper details:', error)
+    console.error('논문 세부 정보를 가져오는데 실패했습니다:', error)
+    errorMessage.value = '논문 정보를 불러오는 데 실패했습니다. 다시 시도해주세요.'
   }
 }
 </script>
@@ -79,6 +89,11 @@ const requestPaperByDoi = async (doi) => {
       <div class="spinner-border text-primary" role="status">
         <span class="visually-hidden">로딩 중...</span>
       </div>
+    </div>
+
+    <!-- 에러 메시지 표시 -->
+    <div v-if="errorMessage" class="alert alert-danger text-center">
+      {{ errorMessage }}
     </div>
 
     <!-- Step 2: 최적화된 키워드 및 논문 표시 -->
