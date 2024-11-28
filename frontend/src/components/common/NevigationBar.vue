@@ -7,12 +7,14 @@ import LogoIcon from '@/assets/logo.png'
 import HamburgerIcon from '@/assets/IconBar/HamburgerIcon.png'
 import SettingIcon from '@/assets/IconBar/SettingIcon.png'
 import HomeIcon from '@/assets/IconBar/HomeIcon.png'
+import TreeIcon from '@/assets/IconBar/TreeIcon.png'
 
 const router = useRouter()
 
 const mainIcons = ref([
-  { id: 'bookmark', src: HamburgerIcon, action: () => router.push('/chatbot') },
-  { id: 'summary', src: DocumentIcon, action: () => router.push('/paper') }, // summary 아이콘 클릭 시 /paper로 이동
+  { id: 'bookmark', src: HamburgerIcon, action: () => router.push('/main') },
+  { id: 'summary', src: DocumentIcon, action: () => router.push('/paper') },
+  { id: 'tree', src: TreeIcon, action: () => router.push('/paper') },
 ])
 
 const footerIcons = ref([
