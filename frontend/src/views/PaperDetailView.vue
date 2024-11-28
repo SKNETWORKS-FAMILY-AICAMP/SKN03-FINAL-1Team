@@ -6,7 +6,7 @@ import axios from '@/axiosConfig'
 import SideComponent from '@/components/common/SideComponent.vue'
 import DropIcon from '@/assets/DropIcon.png'
 import PdfViewer from '@/components/PdfViewer.vue'
-import PaperDetail from '@/components/common/PaperDetail.vue'
+import PaperDetail from '@/components/common/PaperSummary.vue'
 
 const paper = ref(null)
 const route = useRoute()
