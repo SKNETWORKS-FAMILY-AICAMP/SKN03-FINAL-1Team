@@ -63,14 +63,9 @@ docs/_build/
 
 # .gitignore 파일에 .env 파일 추가
 .env
-backend\.env
 backend/.env
 backend/.venv
-backend\.venv
 frontend/.env
-backend/.venv
-.env
-.venv
 .vscode
 
 frontend\src\axiosConfig.js
