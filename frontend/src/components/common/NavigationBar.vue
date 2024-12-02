@@ -24,7 +24,7 @@ const handleIconClick = (view) => {
 const mainIcons = computed(() => {
   const icons = [{ id: 'bookmark', src: HamburgerIcon, view: 'bookmark' }]
 
-  if (route.path === '/paper') {
+  if (route.path.startsWith('/paper')) {
     icons.push(
       { id: 'summary', src: DocumentIcon, view: 'paper-summary' },
       { id: 'tree', src: TreeIcon, view: 'prior-paper-list' },
