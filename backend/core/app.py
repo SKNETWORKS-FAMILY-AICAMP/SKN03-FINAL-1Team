@@ -1,18 +1,52 @@
-from fastapi import FastAPI, HTTPException, Query, Request, Header
+from fastapi import FastAPI, HTTPException, Query, Request, Cookie
 from fastapi.exceptions import RequestValidationError
-
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import JSONResponse
 import uvicorn
 from src import *
 from src.reqeust_model import *
+from typing import Annotated
+
 
 app = FastAPI(
-    title="Success : API",
-    description="이것저것 변경됨",
-    version="2.3.2"
+    title="Sucess : search, login, cookie",
+    description="유저부분 완료",
+    version="2.7.1"
 )
 
+
+# ******************  CORS 처리  ****************** #
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=["https://www.documento.click"],  # 프론트엔드 서브 도메인
+    allow_methods=["*"],  # 모든 HTTP 메서드 허용
+    allow_headers=["*"],  # 모든 헤더 허용
+    allow_credentials=True,  # 인증 정보 허용 (쿠키 등)
+)
+
+
+# ********************************************* #
+# ******************  Utils  ****************** #
+# ********************************************* #
+
+# return handler
+async def handle_request(func, data=None):
+    try:
+        # 요청 처리 함수 실행
+        return await func(data)
+    
+    except Exception as e:
+        # 예상치 못한 오류 처리
+        return JSONResponse(
+            status_code=500,
+            content={
+                "resultCode": 500,
+                "errorCode": "UNEXPECTED_ERROR : MAYBE SERVER",
+                "message": str(e),
+            },
+        )
+        
+        
 # 커스텀 예외 처리: 422 유효성 검사 에러
 @app.exception_handler(RequestValidationError)
 async def validation_exception_handler(request: Request, exc: RequestValidationError):
@@ -25,73 +59,56 @@ async def validation_exception_handler(request: Request, exc: RequestValidationE
         },
     )
 
-# CORS 설정
-origins = [
-    "http://localhost",
-    "http://localhost:8000",
-    "http://localhost:5173",
-    "https://localhost",
-    "https://localhost:8000",
-    "https://localhost:5173",
-    "https://api.documento.click",
-    "https://www.documento.click",
-]
-
-app.add_middleware(
-    CORSMiddleware,
-    allow_origins=origins,
-    allow_methods=["*"],
-    allow_headers=["*"],
-    allow_credentials=True,
-)
-
-# ********************************************* #
-# ******************  Utils  ****************** #
-# ********************************************* #
-
-"""
-기본 리턴 형태
-"response" : {
-    "resultCode" : 200,
-    "message" : "Search completed successfully",
-    "result" : { .... }
-}
-"""
-
-async def handle_request(func, data=None):
+@app.on_event("startup")
+async def initialize_globals():
     try:
-        # 요청 처리 함수 실행
-        return await func(data)
+        await initialize_global_objects(app)
+        print("Global objects initialized successfully.")
     except Exception as e:
-        # 예상치 못한 오류 처리
-        return JSONResponse(
-            status_code=500,
-            content={
-                "resultCode": 500,
-                "errorCode": "UNEXPECTED_ERROR : MAYBE SERVER",
-                "message": str(e),
-            },
-        )
+        print(f"Error initializing global objects: {e}")
+        raise RuntimeError("Failed to initialize global objects during startup.")
+
+
+@app.on_event("shutdown")
+async def cleanup_resources():
+    print("Cleaning up resources...")
+    
 
 # ********************************************* #
 # ***************  About  User  *************** #
 # ********************************************* #
 
-# 1. 회원가입
-@app.get("/users")
-async def create_user(request: Request):
-    data = await request.json()
-    return await handle_request(create_new_user, data)
+
+# # 1. 회원가입 -> 로그인과 동시에 Google에서 진행
+# @app.get("/users")
+# async def create_user(request: Request):
+#     data = await request.json()
+#     return await handle_request(create_new_user, data)
+
 
 # 2. 로그인
 @app.get("/login")
 async def login():
-    return await handle_request(login_user)
+    # Input parmeter 오류 처리 오류 
+    data = "success"
+    
+    return await handle_request(login_user,data)
 
-# 회원가입/로그인 용
+
+# 2-1. 회원가입/로그인 용
 @app.get("/auth/callback")
-async def auth_callback(code: str = Query(..., description="OAuth2 code for login")):
-    return await handle_request(oauth_callback, {"code": code})
+async def auth_callback(code: str = ""):
+    return await handle_request(oauth_callback, code)
+
+# 2-2. 세션 저장용
+@app.get("/user_info")
+async def user_info(session_id :  Annotated[str | None, Cookie()] = None):
+    print("++++++++++++++++++++++ user_info ++++++++++++++++++++++++++")
+    
+    print("Session id : ", session_id)
+    
+    return await handle_request(get_userinfo, session_id)
+
 
 # ********************************************* #
 # ***************  About Paper  *************** #
@@ -99,45 +116,52 @@ async def auth_callback(code: str = Query(..., description="OAuth2 code for logi
 
 # 3. 논문검색
 @app.post("/papers/search/")
-async def search_papers(data: userKeyword):
-    return await handle_request(process_search, data)
+async def search_papers(request: Request, data: userKeyword):
+    return await handle_request(process_search, {"data": data, "request": request})
+
 
 # 4. 키워드 최적화
 @app.post("/papers/transformation/")
-async def create_paper_transformation(data: userPrompt):
-    return await handle_request(process_transformation, data)
+async def create_paper_transformation(request: Request, data: userPrompt):
+    #data = await request.json()
+    return await handle_request(process_transformation, {"data": data, "request": request})
 
+# ***************  5. bookmark  *************** #
 # 5.1. 북마크 리스트
 @app.get("/users/bookmarks/")
-async def get_user_bookmarks(request: Request):
-    headers = request.headers
-    return await handle_request(fetch_user_bookmarks, headers)
+async def get_user_bookmarks(session_id :  Annotated[str | None, Cookie()] = None):
+
+    return await handle_request(fetch_user_bookmarks, session_id)
+
 
 # 멘토님 曰 : 추가와 삭제는 같은 방식의 post
 @app.post("/users/bookmarks/")
-async def add_to_bookmarks(request: Request):
-    body = await request.body()
-    if not body:
-        raise HTTPException(status_code=400, detail="Request body is empty")
+#쿼리문 형태 : ?paperDoi=”string”
+async def add_to_bookmarks(request: Request, session_id :  Annotated[str | None, Cookie()] = None):
     
-    data = await request.json()
-    headers = request.headers
-    return await handle_request(handle_bookmark, headers, data)
+    return await handle_request(handle_bookmark, {"ssid": session_id, "request": request})
+
+# ********************************************* #
 
 # 6. 논문 선택
-@app.get("/papers/select/")
-async def get_paper_by_doi(paperDoi: str = "default"):
+# notion에는 /papers/?paperDoi=”string” 이렇게 적혀있음 
+@app.get("/papers/")
+async def get_paper_by_doi(paperDoi: str = ""):
+    
     return await handle_request(fetch_paper_details, paperDoi)
 
-# 7. 논문 요약
+#7. 논문 요약
 @app.post("/papers/summary/")
 async def create_paper_summary(data: paperDoi):
     return await handle_request(process_summary, data)
 
-# 8. 선행 논문 리스트
+#8. 선행 논문 리스트
 @app.get("/papers/priorpapers/")
+#쿼리문 : ?paperDoi=”string”
 async def get_prior_papers(paperDoi: str = "default"):
     return await handle_request(fetch_prior_papers, paperDoi)
+
+
 
 # ********************************************* #
 # ***************  health check *************** #

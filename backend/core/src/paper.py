@@ -1,138 +1,146 @@
 from fastapi import HTTPException
 from fastapi.responses import JSONResponse
-from utils import *
+from fastapi import APIRouter, Request
+from .utils import *
 
 #이 부분은 실제 AI 모델 구축하면 변경
 from dummy import *
-
+import json
 
 
 # ********************************************* #
 # ***************  About Paper  *************** #
 # ********************************************* #
-
-# 3. 논문 검색
-async def process_search(data):
-
+async def process_search(data): # seom-j
     print("=== POST /papers/search ===")
     try:
-        user_keyword = data.userKeyword  # 요청 데이터에서 userKeyword 가져오기
-        if not user_keyword:  # user_keyword가 None 또는 빈 문자열인 경우 처리
+        # get data
+        user_keyword = data.get("data").userKeyword
+        if not user_keyword:
             raise HTTPException(status_code=400)
+        print("userKeyword : ", user_keyword)
 
-        # doi_list : [ {doi(str): similarity}]
-        doi_list = dummy_search(user_keyword)
-        """
-    DOI -> DB에서 
-    title, authors, publicationYear, publicationMonth, abstract, citation, venue 뽑고
-    그거 "paperList": [ {}, {}, ...] 붙히고
-    pagination
-        """
-        if not doi_list:
-            print(f"NO_RESULTS: {e}")
+        # get searcher, faiss_index, faiss_ids (global variables)
+        request = data.get("request")
+        searcher = request.app.state.searcher
+        faiss_index = request.app.state.faiss_index
+        faiss_ids = request.app.state.faiss_ids
+
+        # search (utils/paperSearcher.py)
+        json_results = searcher.search_faiss_index(user_keyword, faiss_index, faiss_ids, similarity_threshold=75)
+
+        if isinstance(json_results, str):
+            json_results = json.loads(json_results)
+        if not isinstance(json_results, list):
+            raise ValueError("jsonResults is not a valid list")
+
+        # parse results
+        doi_list = [
+            {"paper_doi": result["paper_doi"], "similarity": result["similarity"]}
+            for result in json_results[:3]
+        ]
+
+        # fetch paper data from MySQL & create output
+        db_handler = MySQLHandler()
+        db_handler.connect()
+
+        paper_list = []
+        for doi_item in doi_list:
+            paper_doi = doi_item["paper_doi"]
+
+            select_query = """
+            SELECT title, authors, venue, publication_year, publication_month, eng_abstract, citation 
+            FROM paper 
+            WHERE paper_doi = %s
+            """
+            paper_data = db_handler.fetch_one(select_query, (paper_doi,))
+
+            if paper_data:
+                paper_data["paperDoi"] = paper_doi
+                paper_data["similarity"] = doi_item["similarity"]
+                paper_list.append(paper_data)
+            else:
+                print(f"No data found for DOI: {paper_doi}")
+
+        db_handler.disconnect()
+
+        if not paper_list:
             raise HTTPException(status_code=404)
-        
-    
-    except Exception as e:  # 기타 예외 처리
+
+        # pagination
+        current_page = 1  
+        page_size = 3  
+        total_results = len(paper_list)
+        total_pages = (total_results + page_size - 1) // page_size
+        has_next_page = current_page < total_pages
+        has_previous_page = current_page > 1
+
+        start_index = (current_page - 1) * page_size
+        end_index = start_index + page_size
+        paginated_paper_list = paper_list[start_index:end_index]
+
+        # output
+        output_data = {
+            "paperList": paginated_paper_list,
+            "pagination": {
+                "currentPage": current_page,
+                "pageSize": page_size,
+                "totalPages": total_pages,
+                "totalResults": total_results,
+                "hasNextPage": has_next_page,
+                "hasPreviousPage": has_previous_page,
+            },
+        }
+
+        print("outputData : ", output_data)
+        print("=== FIN /papers/search ===")
+        return JSONResponse(
+            status_code=201,
+            content={
+                "resultCode": 201,
+                "message": "Search completed successfully",
+                "result": output_data,
+            },
+        )
+
+    except HTTPException as e:
+        if e.status_code == 404:
+            return JSONResponse(
+                status_code=404,
+                content={
+                    "resultCode": 404,
+                    "errorCode": "NO_RESULTS",
+                    "message": "No results found. Please refine your search.",
+                },
+            )
+        elif e.status_code == 400:
+            return JSONResponse(
+                status_code=400,
+                content={
+                    "resultCode": 400,
+                    "errorCode": "INVALID PARAMETER",
+                    "message": "Parameter is invalid. Check the input.",
+                },
+            )
+        else:
+            return JSONResponse(
+                status_code=e.status_code,
+                content={
+                    "resultCode": e.status_code,
+                    "errorCode": "UNEXPECTED_ERROR",
+                    "message": "An unexpected error occurred while processing your request.",
+                },
+            )
+    except Exception as e:
         print(f"Unexpected error: {e}")
         return JSONResponse(
             status_code=500,
             content={
-                "resultCode" : 500,
+                "resultCode": 500,
                 "errorCode": "UNEXPECTED_ERROR",
-                "message": "An unexpected error occurred while processing your request.??"
-            }
-        )
-    
-    except HTTPException as e:
-        if e.status_code == 404:
-            return JSONResponse(
-            status_code=404,
-            content={
-                "resultCode" : 404,
-                "errorCode": "NO_RESULTS",
-                "message": "No results found. Please refine your search."
-            }
-        )
-        elif e.status_code == 400:
-            return JSONResponse(
-            status_code=400,
-            content={
-                "resultCode" : 400,
-                "errorCode": "INVALID PARAMETER",
-                "message": "Parameter is Invalid. Check the input"
-            }
-        )
-        else:
-            return JSONResponse(
-            status_code=e.status_code,
-            content={
-                "resultCode" : e.status_code,
-                "errorCode": "UNEXPECTED_ERROR",
-                "message": "An unexpected error occurred while processing your request."
-            }
-        )
-
-
-    else:
-        
-    
-        output_data = {
-        "paperList": [
-            {
-                "paperDoi": "10.18653/v1/2023.nmt.1",
-                "title": "Advancements in Neural Machine Translation",
-                "authors": "John Doe, Jane Smith, Alex Johnson",
-                "venue": "venue",
-                "publicationYear": 2023,
-                "publicationMonth": "October",
-                "abstract": "This paper explores recent developments in neural machine translation, focusing on transformer models and their impact on translation quality.",
-                "citation": 120
+                "message": "An unexpected error occurred while processing your request.",
             },
-            {
-                "paperDoi": "10.18653/v1/2023.ai.2",
-                "title": "Artificial Intelligence in Healthcare",
-                "authors": "Emily Brown, Michael White",
-                "venue": "venue",
-                "publicationYear": 2022,
-                "publicationMonth": "June",
-                "abstract": "A comprehensive analysis of artificial intelligence applications in healthcare, highlighting benefits and ethical considerations.",
-                "citation": 95
-            },
-            {
-                "paperDoi": "10.18653/v1/2023.lm.3",
-                "title": "Large Language Models and Their Applications",
-                "authors": "Chris Green, Sarah Blue",
-                "venue": "venue",
-                "publicationYear": 2023,
-                "publicationMonth": "January",
-                "abstract": "This study examines large language models, their architecture, and how they are applied in real-world scenarios.",
-                "citation": 150
-            }
-        ],
-        "pagination": {
-        "currentPage": 999,
-        "pageSize": 999,
-        "totalPages": 999,
-        "totalResults": 999,
-        "hasNextPage": False,
-        "hasPreviousPage": False
-      }
-    }
-        print("outputData : ", output_data)
-
-        print("=== FIN /papers/search ===")
-        return JSONResponse(status_code=201, 
-                            content={
-                                "resultCode" : 201,
-                                "message" : "Search completed successfully???",
-                                "result" : output_data
-                            })
-    
-    
-    
-
-    
+        )
 
 # 4. 키워드 최적화
 async def process_transformation(data):
@@ -142,52 +150,91 @@ async def process_transformation(data):
     """
     print("=== POST /papers/transformation ===")
     try :
-        user_prompt = data.userPrompt
+        user_prompt = data.get("data").userPrompt
         print("userPrompt : ", user_prompt)
     except Exception as e:
         print(f"Missing key in parameters: {e}")
         raise HTTPException(status_code=400, detail="Invalid parameters")
+    
+    try :
+        chatbot = openaiHandler()
+        openai_output = chatbot.get_keywords(user_prompt)
+        openai_output = json.loads(openai_output)
+        eng_keywords_to_search = [
+            item["eng"] for item in openai_output
+            if isinstance(item, dict) and "eng" in item
+        ]
+        keywords = [
+            f"{item['eng']} [{item['kor']}]"
+            for item in openai_output
+            if isinstance(item, dict) and "eng" in item and "kor" in item
+        ]
+    except Exception as e:
+        print(f"Error processing data: {e}")
+        raise HTTPException(status_code=500, detail="Error processing data")
+    
+    try:
+        request = data.get("request")
+        searcher = request.app.state.searcher
+        faiss_index = request.app.state.faiss_index
+        faiss_ids = request.app.state.faiss_ids
+        db_handler = MySQLHandler()
+        db_handler.connect()
+
+        generated_keyword_listm = []
+
+        for idx, eng_keyword in enumerate(eng_keywords_to_search):
+            top_results = searcher.search_faiss_index_top_n(eng_keyword, faiss_index, faiss_ids)
+            if isinstance(top_results, str):
+                try:
+                    top_results = json.loads(top_results)
+                except json.JSONDecodeError as e:
+                    print(f"Error decoding top_results JSON: {e}")
+                    top_results = []
+
+            doi_list = [
+                {"paper_doi": result["paper_doi"], "similarity": result["similarity"]}
+                for result in top_results
+            ]
+
+            paper_list = []
+            for doi_item in doi_list:
+                paper_doi = doi_item["paper_doi"]
+                select_query = """
+                SELECT title, eng_abstract, citation 
+                FROM paper 
+                WHERE paper_doi = %s
+                """
+                paper_data = db_handler.fetch_one(select_query, (paper_doi,))
+                if paper_data:
+                    paper_data_dict = {
+                        "paperDoi": paper_doi,
+                        "title": paper_data["title"],
+                        "engAbstract": paper_data["eng_abstract"],
+                        "citation": paper_data["citation"]
+                    }
+                    paper_list.append(paper_data_dict)
+                else:
+                    print(f"No data found for DOI: {paper_doi}")
+            
+            generated_keyword_listm.append({
+                "generatedKeyword": keywords[idx], 
+                "paperList": paper_list
+            })
+        db_handler.disconnect()
+        filtered_keyword_listm = [item for item in generated_keyword_listm if item["paperList"]]
+        limited_keyword_listm = filtered_keyword_listm[:5]
+    except Exception as e:
+        print(f"Error processing data: {e}")
+        raise HTTPException(status_code=500, detail="Error processing data")
+    
+    if not limited_keyword_listm :
+        raise HTTPException(status_code=404, detail="No results found. Please refine your search.")
 
     output_data = {
-        "generatedPrompt": "Neural Machine Translation and Transformer Models",
-        "generatedKeywordList": [
-            {
-            "generatedKeyword": "neural translation",
-            "paperList": [
-                {
-                "paperDoi": "10.1234/v1/2023.nmt.1",
-                "title": "Advancements in Neural Machine Translation",
-                "korAbstract": "This paper explores recent developments in neural machine translation, focusing on transformer models and their applications.",
-                "citation": 120
-                },
-                {
-                "paperDoi": "10.1234/v1/2023.nmt.2",
-                "title": "Challenges in Multilingual Neural Translation Systems",
-                "korAbstract": "A detailed analysis of challenges faced by multilingual neural translation systems, including resource constraints and training data requirements.",
-                "citation": 95
-                }
-            ]
-            },
-            {
-            "generatedKeyword": "transformer architecture",
-            "paperList": [
-                {
-                "paperDoi": "10.5678/v1/2023.trans.1",
-                "title": "Understanding Transformer Models in NLP",
-                "korAbstract": "An overview of transformer architecture and its significance in natural language processing tasks.",
-                "citation": 150
-                },
-                {
-                "paperDoi": "10.5678/v1/2023.trans.2",
-                "title": "Optimizing Transformer Models for Low-Resource Languages",
-                "korAbstract": "This study proposes optimization techniques for transformer models to enhance performance in low-resource languages.",
-                "citation": 80
-                }
-            ]
-            }
-        ]
+        "generatedPrompt": f"\"{user_prompt}\"의 키워드 검색 결과입니다.\n\n",
+        "generatedKeywordList": limited_keyword_listm
     }
-
     print("outputData : ", output_data)
 
     print("=== FIN /papers/transformation ===")
@@ -209,21 +256,56 @@ async def fetch_paper_details(data):
     except Exception as e:
         print(f"Missing key in parameters: {e}")
         raise HTTPException(status_code=400, detail="Invalid parameters")
-    """
-    doi -> 논문 찾기 -> S3 path
-    """
-    output_data = {
-                    "paperS3Path": "THIS/IS/DUMMY/PATH"
-                    }
-    return JSONResponse(status_code=201, 
+    
+
+    try :
+        # fetch paper data from MySQL & create output
+        db_handler = MySQLHandler()
+        db_handler.connect()
+        select_query = """
+        SELECT s3_path 
+        FROM paper 
+        WHERE paper_doi = %s
+        """
+        paper_data = db_handler.fetch_one(select_query, (paper_doi,))
+        db_handler.disconnect()
+    except Exception as e:
+        print(f"MySQL error: {e}")
+        raise HTTPException(status_code=500, detail="Error fetching data from MySQL")
+    
+    try :
+        # get s3 path & create output
+        s3_path = paper_data["s3_path"]
+        print("s3Path : ", s3_path)
+        s3_handler = S3Handler()  
+        url = s3_handler.s3_client.generate_presigned_url(
+
+        ClientMethod='get_object', #object를 가져오겠다
+        
+        Params={
+            'Bucket': "documento-s3", #버켓 이름
+            'Key': "papers/" + s3_path,
+            # aws에 있는 object의 key 값 ( 그림 참조 )
+
+        },
+        # url 유효기간 (단위:second)
+        ExpiresIn=60 * 60 #1시간
+        )  
+        output_data = { 
+            "paperS3Path": url
+        }
+    except Exception as e:
+        print(f"Error processing data: {e}")
+        raise HTTPException(status_code=500, detail="Error processing data")
+
+    return JSONResponse(status_code=200, 
                     content={
-                        "resultCode" : 201,
-                        "message" : "fetch_bookmark completed successfully",
+                        "resultCode" : 200,
+                        "message" : "PDF provided successfully.",
                         "result" : output_data
                     })
-    
-# 7. 논문요약
 
+# 7. 논문요약
 async def process_summary(data):
     print("=== POST /papers/summary ===")
     try :
@@ -232,7 +314,6 @@ async def process_summary(data):
     except Exception as e:
         print(f"Missing key in parameters: {e}")
         raise HTTPException(status_code=400, detail="Invalid parameters")
-    
 
     output_data = {
         "title": "Advancements in Neural Machine Translation",
@@ -256,7 +337,6 @@ async def process_summary(data):
     
 
 #8. 선행 논문 리스트
-
 async def fetch_prior_papers(data):
     print("=== GET /papers/priorpapers ===")
     try :
@@ -266,27 +346,47 @@ async def fetch_prior_papers(data):
         print(f"Missing key in parameters: {e}")
         raise HTTPException(status_code=400, detail="Invalid parameters")
     
-    """
-    
-    """
+    try :
+        # fetch paper data from MySQL & create output
+        db_handler = MySQLHandler()
+        db_handler.connect()
+        select_query = """
+        SELECT reference_papers 
+        FROM paper 
+        WHERE paper_doi = %s
+        """
+        paper_data = db_handler.fetch_one(select_query, (paper_doi,))
+
+        # parse reference papers & fetch data
+        reference_papers = (json.loads(paper_data["reference_papers"]) if paper_data else [])[:10]
+        paper_list = []
+        for ref in reference_papers:
+            ref_doi = ref["paper_doi"]
+
+            select_query = """
+            SELECT paper_doi, title, generated_keyword 
+            FROM paper 
+            WHERE paper_doi = %s
+            """
+            ref_data = db_handler.fetch_one(select_query, (ref_doi,))
+
+            # create output
+            if ref_data:
+                paper_list.append({
+                    "paperDoi": ref_data["paper_doi"],
+                    "parentPaperDoi": paper_doi,
+                    "title": ref_data["title"],
+                    "generatedKeyword": ref_data.get("generated_keyword", ""),
+                    "similarity": ref["similarity"],
+                })
+        db_handler.disconnect()
+    except Exception as e:
+        print(f"MySQL error: {e}")
+        raise HTTPException(status_code=500, detail="Error fetching data from MySQL")
+
     output_data = {
-        "paperList": [
-            {
-            "paperDoi": "10.18653/v1/2020.acl-demos.1",
-            "parentPaperDoi": "10.18653/v1/2020.acl-demos.10",
-            "title": "Xiaomingbot: A Multilingual Robot News Reporter",
-            "generatedKeyword": "multilingual news generation",
-            "similarity": 0.92
-            },
-            {
-            "paperDoi": "10.18653/v1/2020.acl-demos.10",
-            "parentPaperDoi": "10.18653/v1/2020.acl-demos.1",
-            "title": "SyntaxGym: An Online Platform for Targeted Evaluation of Language Models",
-            "generatedKeyword": "language model evaluation",
-            "similarity": 0.85
-            }
-        ]
-    }
+            "paperList": paper_list
+        }
     print("outputData : ", output_data)
 
     print("=== FIN /papers/priorpapers ===")
