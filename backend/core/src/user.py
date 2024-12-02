@@ -45,6 +45,7 @@ async def oauth_callback(code):
             raise HTTPException(status_code=token_response.status_code)
         
         token_response_data = token_response.json()
+        print("token_response : " token_response_data)
         access_token = token_response_data.get("access_token")
         
         if not access_token:
