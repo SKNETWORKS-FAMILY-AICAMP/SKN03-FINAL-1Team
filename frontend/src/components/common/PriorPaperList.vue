@@ -1,5 +1,5 @@
 <script setup>
-import { ref } from 'vue'
+import { ref, onMounted } from 'vue'
 import { useRoute } from 'vue-router' // Vue Router에서 useRoute를 가져옵니다.
 import axios from '@/axiosConfig' // 설정한 axios 인스턴스를 가져옵니다.
 
@@ -23,6 +23,10 @@ const fetchPriorPapers = async () => {
     console.error('선행 논문을 가져오는 중 오류 발생:', error)
   }
 }
+
+onMounted(() => {
+  fetchPriorPapers()
+})
 </script>
 
 <template>
