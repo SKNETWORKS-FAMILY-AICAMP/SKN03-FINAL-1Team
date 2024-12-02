@@ -1,5 +1,5 @@
 <script setup>
-import { ref, onMounted } from 'vue'
+import { ref } from 'vue'
 import axios from 'axios'
 
 const papers = ref([])
@@ -18,21 +18,25 @@ const fetchPriorPapers = async () => {
     console.error('선행 논문을 가져오는 중 오류 발생:', error)
   }
 }
-
-onMounted(fetchPriorPapers)
 </script>
 
 <template>
-  <div>
+  <div class="container mt-4">
     <h2>선행 논문 목록</h2>
-    <ul>
-      <li v-for="paper in papers" :key="paper.paperDoi">
-        {{ paper.title }} (유사도: {{ paper.similarity }})
+    <button class="btn btn-primary mb-3" @click="fetchPriorPapers">선행 논문 불러오기</button>
+    <ul class="list-group">
+      <li
+        v-for="paper in papers"
+        :key="paper.paperDoi"
+        class="list-group-item d-flex justify-content-between align-items-center"
+      >
+        {{ paper.title }}
+        <span class="badge bg-secondary">{{ paper.similarity }}</span>
       </li>
     </ul>
   </div>
 </template>
 
 <style scoped>
-/* 스타일을 여기에 추가할 수 있습니다 */
+/* 추가적인 스타일을 여기에 작성할 수 있습니다 */
 </style>
