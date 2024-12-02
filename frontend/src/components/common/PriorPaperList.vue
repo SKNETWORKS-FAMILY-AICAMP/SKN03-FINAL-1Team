@@ -20,7 +20,33 @@ const fetchPriorPapers = async () => {
       papers.value = response.data.result.paperList
     }
   } catch (error) {
+    const mockResponse = {
+      resultCode: 201,
+      message: 'Preceding papers retrieved successfully.',
+      result: {
+        paperList: [
+          {
+            paperDoi: 'test doi',
+            parentPaperDoi: '10.18653/v1/2020.acl-demos.10',
+            title: 'test title',
+            generatedKeyword: '테스트 키워드',
+            similarity: 92,
+          },
+          {
+            paperDoi: 'test doi',
+            parentPaperDoi: '10.18653/v1/2020.acl-demos.10',
+            title: 'test title',
+            generatedKeyword: '테스트 키워드',
+            similarity: 75,
+          },
+        ],
+      },
+    }
     console.error('선행 논문을 가져오는 중 오류 발생:', error)
+    // 에러가 발생했을 때 mockResponse를 사용하여 papers를 설정합니다.
+    if (mockResponse.resultCode === 201 && mockResponse.result.paperList) {
+      papers.value = mockResponse.result.paperList
+    }
   }
 }
 
@@ -30,24 +56,84 @@ onMounted(() => {
 </script>
 
 <template>
-  <div class="container mt-4">
-    <h2>선행 논문 목록</h2>
-    <button class="btn btn-primary mb-3" @click="fetchPriorPapers">선행 논문 불러오기</button>
+  <div class="prior-paper-container flex-column">
+    <div class="prior-paper-list mt-5 text-start">선행 논문 추천</div>
     <ul class="list-group">
       <li
         v-for="paper in papers"
         :key="paper.paperDoi"
-        class="list-group-item d-flex justify-content-between align-items-center"
+        class="list-group-item text-start my-2 rounded-4"
       >
-        <strong>{{ paper.title }}</strong
-        ><br />
-        <span class="badge bg-secondary">{{ paper.similarity }}</span>
-        <p>{{ paper.generatedKeyword }}</p>
+        <div class="row">
+          <div class="col-auto mt-2">
+            <div
+              class="progress-circle"
+              :style="{
+                background: `conic-gradient(#a04747 0% ${paper.similarity}%, lightgray ${paper.similarity}% 100%)`,
+              }"
+            >
+              <span>{{ paper.similarity }}%</span>
+            </div>
+          </div>
+          <div class="col mt-2">
+            <strong class="fst-italic">{{ paper.title }}</strong>
+            <p>{{ paper.generatedKeyword }}</p>
+          </div>
+        </div>
       </li>
     </ul>
   </div>
 </template>
 
 <style scoped>
-/* 추가적인 스타일을 여기에 작성할 수 있습니다 */
+.prior-paper-container {
+  flex-grow: 1;
+  display: flex;
+  flex-direction: column;
+  padding: 20px;
+}
+
+.prior-paper-list {
+  position: relative;
+  margin-top: 20px;
+  padding: 10px 0;
+  font-size: 20px;
+  color: white;
+}
+
+.prior-paper-list::after {
+  content: '';
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  width: 100%;
+  height: 1px;
+  background-color: white;
+}
+
+.progress-circle {
+  width: 50px;
+  height: 50px;
+  border-radius: 50%;
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 0.75em;
+  color: #a04747;
+}
+
+.progress-circle::before {
+  content: '';
+  position: absolute;
+  width: 85%;
+  height: 85%;
+  background-color: white;
+  border-radius: 50%;
+  z-index: 1;
+}
+
+.progress-circle span {
+  z-index: 2;
+}
 </style>

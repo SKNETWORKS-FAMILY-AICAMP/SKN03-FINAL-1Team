@@ -1,6 +1,6 @@
 <script setup>
 import { ref, computed } from 'vue'
-import { useRouter } from 'vue-router'
+import { useRouter, useRoute } from 'vue-router'
 import { useNavbarStore } from '@/stores/navbarStore'
 import DocumentIcon from '@/assets/IconBar/DocumentIcon.png'
 import LogoIcon from '@/assets/logo.png'
@@ -11,6 +11,7 @@ import TreeIcon from '@/assets/IconBar/TreeIcon.png'
 
 const navbarStore = useNavbarStore()
 const router = useRouter()
+const route = useRoute()
 
 const handleIconClick = (view) => {
   if (view === 'home') {
@@ -20,11 +21,18 @@ const handleIconClick = (view) => {
   }
 }
 
-const mainIcons = ref([
-  { id: 'bookmark', src: HamburgerIcon, view: 'bookmark' },
-  { id: 'summary', src: DocumentIcon, view: 'paper-summary' },
-  { id: 'tree', src: TreeIcon, view: 'prior-paper-list' },
-])
+const mainIcons = computed(() => {
+  const icons = [{ id: 'bookmark', src: HamburgerIcon, view: 'bookmark' }]
+
+  if (route.path === '/paper') {
+    icons.push(
+      { id: 'summary', src: DocumentIcon, view: 'paper-summary' },
+      { id: 'tree', src: TreeIcon, view: 'prior-paper-list' },
+    )
+  }
+
+  return icons
+})
 
 const footerIcons = ref([
   { id: 1, src: DocumentIcon, view: 'footer1' },
@@ -37,7 +45,7 @@ const selectedNavItem = computed(() => navbarStore.selectedNavItem)
 
 <template>
   <div class="icon-bar-container">
-    <img :src="LogoIcon" alt="Logo" class="logo mb-3" @click="handleIconClick('home', 'logo')" />
+    <img :src="LogoIcon" alt="Logo" class="logo mb-3" @click="handleIconClick('home')" />
     <div class="icon-list">
       <!-- 메인 아이콘들 -->
       <div
@@ -48,7 +56,7 @@ const selectedNavItem = computed(() => navbarStore.selectedNavItem)
           'logo-icon-bg': icon.id === 'bookmark',
           'selected-icon-bg': icon.view === selectedNavItem,
         }"
-        @click="handleIconClick(icon.view, icon.id)"
+        @click="handleIconClick(icon.view)"
       >
         <img v-if="icon.src" :src="icon.src" alt="Icon" class="icon-image" />
         <span v-else>{{ icon.name }}</span>
@@ -61,7 +69,7 @@ const selectedNavItem = computed(() => navbarStore.selectedNavItem)
           :key="icon.id"
           class="icon"
           :class="{ 'footer-icon-special': icon.id === 1 }"
-          @click="handleIconClick(icon.view, icon.id)"
+          @click="handleIconClick(icon.view)"
         >
           <!-- 아이콘 이미지를 렌더링 -->
           <img :src="icon.src" alt="Footer Icon" class="icon-image" />
