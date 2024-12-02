@@ -1,14 +1,19 @@
 <script setup>
 import { ref } from 'vue'
+import { useRoute } from 'vue-router' // Vue Router에서 useRoute를 가져옵니다.
 import axios from '@/axiosConfig' // 설정한 axios 인스턴스를 가져옵니다.
 
+const DEFAULT_DOI = '기본 DOI 값' // 기본 DOI 값을 정의합니다.
+
 const papers = ref([])
+const route = useRoute() // 현재 라우트 정보를 가져옵니다.
 
 const fetchPriorPapers = async () => {
   try {
+    const paperDoi = route.query.paperDoi || DEFAULT_DOI // 기본 DOI 값을 사용합니다.
     const response = await axios.get('/papers/priorpapers/', {
       params: {
-        paperDoi: '10.18653/v1/2020.acl-demos.10',
+        paperDoi: paperDoi,
       },
     })
     if (response.data.resultCode === 201 && response.data.result.paperList) {
