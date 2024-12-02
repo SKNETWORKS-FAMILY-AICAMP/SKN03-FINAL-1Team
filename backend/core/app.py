@@ -1,4 +1,4 @@
-from fastapi import FastAPI, HTTPException, Query, Request, Cookie
+from fastapi import FastAPI, HTTPException, Query, Request, Cookie, Depends
 from fastapi.exceptions import RequestValidationError
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import JSONResponse
@@ -6,6 +6,7 @@ import uvicorn
 from src import *
 from src.reqeust_model import *
 from typing import Annotated
+from fastapi.security import HTTPBearer, HTTPAuthorizationCredentials
 
 
 app = FastAPI(
@@ -45,11 +46,13 @@ async def handle_request(func, data=None):
                 "message": str(e),
             },
         )
-        
+
+# 토큰 유효성 검사       
         
 # 커스텀 예외 처리: 422 유효성 검사 에러
 @app.exception_handler(RequestValidationError)
 async def validation_exception_handler(request: Request, exc: RequestValidationError):
+    print(request)
     return JSONResponse(
         status_code=422,
         content={
@@ -129,26 +132,26 @@ async def create_paper_transformation(request: Request, data: userPrompt):
 # ***************  5. bookmark  *************** #
 # 5.1. 북마크 리스트
 @app.get("/users/bookmarks/")
-async def get_user_bookmarks(session_id :  Annotated[str | None, Cookie()] = None):
+async def get_user_bookmarks(reuqest:Request):
 
-    return await handle_request(fetch_user_bookmarks, session_id)
+    return await handle_request(fetch_user_bookmarks, reuqest)
 
 
 # 멘토님 曰 : 추가와 삭제는 같은 방식의 post
 @app.post("/users/bookmarks/")
 #쿼리문 형태 : ?paperDoi=”string”
-async def add_to_bookmarks(request: Request, session_id :  Annotated[str | None, Cookie()] = None):
+async def add_to_bookmarks(request:Request):
     
-    return await handle_request(handle_bookmark, {"ssid": session_id, "request": request})
+    return await handle_request(handle_bookmark, request)
 
 # ********************************************* #
 
 # 6. 논문 선택
 # notion에는 /papers/?paperDoi=”string” 이렇게 적혀있음 
 @app.get("/papers/")
-async def get_paper_by_doi(paperDoi: str = ""):
+async def get_paper_by_doi(data: paperDoi):
     
-    return await handle_request(fetch_paper_details, paperDoi)
+    return await handle_request(fetch_paper_details, data)
 
 #7. 논문 요약
 @app.post("/papers/summary/")
@@ -158,8 +161,8 @@ async def create_paper_summary(data: paperDoi):
 #8. 선행 논문 리스트
 @app.get("/papers/priorpapers/")
 #쿼리문 : ?paperDoi=”string”
-async def get_prior_papers(paperDoi: str = "default"):
-    return await handle_request(fetch_prior_papers, paperDoi)
+async def get_prior_papers(data: paperDoi):
+    return await handle_request(fetch_prior_papers, data)
 
 
 

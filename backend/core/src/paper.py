@@ -251,7 +251,7 @@ async def process_transformation(data):
 async def fetch_paper_details(data):
     print("=== GET /papers ===")
     try :
-        paper_doi = data
+        paper_doi = data.paperDoi
         print("paperDoi : ", paper_doi)
     except Exception as e:
         print(f"Missing key in parameters: {e}")
@@ -340,7 +340,7 @@ async def process_summary(data):
 async def fetch_prior_papers(data):
     print("=== GET /papers/priorpapers ===")
     try :
-        paper_doi = data
+        paper_doi = data.paperDoi
         print("paperDoi : ", paper_doi)
     except Exception as e:
         print(f"Missing key in parameters: {e}")
