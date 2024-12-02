@@ -11,7 +11,7 @@ const fetchPriorPapers = async () => {
         paperDoi: '10.18653/v1/2020.acl-demos.10',
       },
     })
-    if (response.data.result && response.data.result.paperList) {
+    if (response.data.resultCode === 201 && response.data.result.paperList) {
       papers.value = response.data.result.paperList
     }
   } catch (error) {
@@ -30,8 +30,10 @@ const fetchPriorPapers = async () => {
         :key="paper.paperDoi"
         class="list-group-item d-flex justify-content-between align-items-center"
       >
-        {{ paper.title }}
+        <strong>{{ paper.title }}</strong
+        ><br />
         <span class="badge bg-secondary">{{ paper.similarity }}</span>
+        <p>{{ paper.generatedKeyword }}</p>
       </li>
     </ul>
   </div>
