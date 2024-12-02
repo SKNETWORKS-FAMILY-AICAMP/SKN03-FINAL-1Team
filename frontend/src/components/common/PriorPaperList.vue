@@ -1,6 +1,6 @@
 <script setup>
 import { ref } from 'vue'
-import axios from 'axios'
+import axios from '@/axiosConfig' // 설정한 axios 인스턴스를 가져옵니다.
 
 const papers = ref([])
 
