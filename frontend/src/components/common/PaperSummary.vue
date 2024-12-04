@@ -30,12 +30,12 @@ const mockResponse = {
 const fetchPaperSummary = async () => {
   try {
     console.log('test입니다.')
-    // const summaryResponse = await axios.post('/papers/summary/', { paperDoi })
-    // if (summaryResponse.data.resultCode === 201) {
-    paperSummarys.value = mockResponse.result
-    // } else {
-    // paperSummarys.value = 'Error: Invalid response code for summary'
-    // }
+    const summaryResponse = await axios.post('/papers/summary/', { paperDoi })
+    if (summaryResponse.data.resultCode === 201) {
+      paperSummarys.value = mockResponse.result
+    } else {
+      paperSummarys.value = 'Error: Invalid response code for summary'
+    }
   } catch (error) {
     console.error('에러발생', error)
     paperSummarys.value = mockResponse.result
