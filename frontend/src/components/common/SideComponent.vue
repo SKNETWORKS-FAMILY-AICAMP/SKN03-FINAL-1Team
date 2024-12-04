@@ -20,7 +20,7 @@ navbarStore.setSelectedNavItem(view)
 </script>
 
 <template>
-  <div class="container m-0 p-0 h-100">
+  <div class="container m-0 p-0 vh-100">
     <div :class="['left-side-content', { collapsed: !isSidebarOpen }]">
       <NavigationBar />
       <BookmarkList v-if="isSidebarOpen && navbarStore.selectedNavItem === 'bookmark'" />
@@ -37,19 +37,13 @@ navbarStore.setSelectedNavItem(view)
 
 <style scoped>
 .container {
-  height: 100vh;
-  margin: 0;
-  padding: 0;
   display: flex;
-  flex-direction: row;
 }
 
 .left-side-content {
   display: flex;
-  flex-direction: row; /* 가로 정렬 */
   background-color: #a04747;
   width: 435px;
-  height: 100%;
   color: #ffffff;
   border-top-right-radius: 15px;
   border-bottom-right-radius: 15px;
@@ -70,24 +64,6 @@ navbarStore.setSelectedNavItem(view)
   font-size: 20px;
   padding: 10px;
   margin: 10px;
-}
-
-.paper-entry {
-  margin-top: 10px;
-}
-
-.pagination button {
-  background-color: #fff;
-  border: 1px solid #ccc;
-  color: #333;
-  padding: 10px 15px;
-  margin: 0 5px;
-  cursor: pointer;
-}
-
-.pagination button.active {
-  background-color: #a04747;
-  color: white;
 }
 
 .accordion-button {

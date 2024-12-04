@@ -22,7 +22,14 @@ const mockResponse = {
         title: '북마크 타이틀입니다.',
         bookmarkTitle: 'test doi',
         parentPaperDoi: '10.18653/v1/2020.acl-demos.10',
-        generatedKeyword: '테스트 키워드',
+        generatedKeyword: '10.18653/v1/2020.acl-demos.10',
+        similarity: 75,
+      },
+      {
+        title: '북마크 타이틀입니다.',
+        bookmarkTitle: 'test doi',
+        parentPaperDoi: '10.18653/v1/2020.acl-demos.10',
+        generatedKeyword: '뭔가 자연어 처리에 관한 서비스를 만들고 싶어!',
         similarity: 75,
       },
     ],
@@ -63,10 +70,6 @@ onMounted(() => {
         <p>{{ bookmark.generatedKeyword }}</p>
       </li>
     </ul>
-    <div class="temp-test">
-      <div class="content my-2">10.18653/v1/2020.acl-demos.10</div>
-      <div class="content my-2">뭔가 자연어 처리에 관한 서비스를 만들고 싶어!</div>
-    </div>
   </div>
 </template>
 
@@ -76,12 +79,6 @@ onMounted(() => {
   display: flex;
   flex-direction: column;
   padding: 20px;
-}
-
-.bookmark-btn {
-  border: none;
-  background-color: transparent;
-  color: red;
 }
 
 .bookmark-list {
@@ -100,9 +97,5 @@ onMounted(() => {
   width: 100%;
   height: 1px;
   background-color: white;
-}
-
-.list-group {
-  color: black;
 }
 </style>

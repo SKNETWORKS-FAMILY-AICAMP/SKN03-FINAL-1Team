@@ -84,7 +84,7 @@ const fetchPdf = async (url) => {
         <PdfViewer :src="pdfFile" />
         <!-- src를 pdfFile로 변경 -->
       </div>
-      <div v-else class="d-flex align-items-center dotted-box" @click="togglePdfViewer">
+      <!-- <div v-else class="d-flex align-items-center dotted-box" @click="togglePdfViewer">
         <div>
           <img :src="DropIcon" class="flex-row align-items-center" />
           <p>S3 Path: {{ paperS3Path }}</p>
@@ -92,19 +92,12 @@ const fetchPdf = async (url) => {
             좌측 리스트의 파일을 Drag&Drop하거나 업로드하세요.
           </p>
         </div>
-      </div>
-    </div>
-    <div>
-      <PaperDetail />
+      </div> -->
     </div>
   </div>
 </template>
 
 <style scoped>
-.paper-detail {
-  padding: 20px;
-}
-
 h1 {
   margin-bottom: 20px;
 }

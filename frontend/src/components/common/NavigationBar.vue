@@ -44,10 +44,9 @@ const selectedNavItem = computed(() => navbarStore.selectedNavItem)
 </script>
 
 <template>
-  <div class="icon-bar-container">
+  <div class="icon-bar-container vh-100">
     <img :src="LogoIcon" alt="Logo" class="logo mb-3" @click="handleIconClick('home')" />
     <div class="icon-list">
-      <!-- 메인 아이콘들 -->
       <div
         v-for="icon in mainIcons"
         :key="icon.id"
@@ -61,8 +60,6 @@ const selectedNavItem = computed(() => navbarStore.selectedNavItem)
         <img v-if="icon.src" :src="icon.src" alt="Icon" class="icon-image" />
         <span v-else>{{ icon.name }}</span>
       </div>
-
-      <!-- 푸터 아이콘들 -->
       <div class="icon-list justify-content-end">
         <div
           v-for="icon in footerIcons"
@@ -81,9 +78,6 @@ const selectedNavItem = computed(() => navbarStore.selectedNavItem)
 
 <style scoped>
 .icon-bar-container {
-  height: 100vh;
-  margin: 0;
-  padding: 0;
   display: flex;
   flex-direction: column;
   align-items: center;
@@ -103,7 +97,9 @@ const selectedNavItem = computed(() => navbarStore.selectedNavItem)
 .icon {
   margin: 10px 0;
   padding: 8px;
-  border-radius: 50%;
+  width: 40px; /* 아이콘의 고정된 너비 */
+  height: 40px; /* 아이콘의 고정된 높이 */
+  border-radius: 50%; /* 아이콘을 원형으로 설정 */
   display: flex;
   align-items: center;
   justify-content: center;
@@ -116,11 +112,6 @@ const selectedNavItem = computed(() => navbarStore.selectedNavItem)
 
 .selected-icon-bg {
   background-color: #ffffff; /* 선택된 아이콘의 배경 색상을 흰색으로 설정 */
-}
-
-.footer-icon-special {
-  background-color: #ffffff; /* id가 1인 아이콘의 배경 색상 설정 */
-  border-radius: 50%; /* id가 1인 아이콘을 동그랗게 설정 */
 }
 
 .icon-image {
