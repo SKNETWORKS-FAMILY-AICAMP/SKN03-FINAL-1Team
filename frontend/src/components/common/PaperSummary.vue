@@ -1,89 +1,66 @@
 <script setup>
 import { ref, onMounted } from 'vue'
 import { useRoute } from 'vue-router'
-import axios from '@/axiosConfig' // 설정한 axios 인스턴스를 가져옵니다.
+import axios from '@/axiosConfig'
 
 const route = useRoute()
-const paperDoi = route.query.paperDoi || '' // 쿼리 파라미터에서 paperDoi 가져오기
+const paperDoi = route.query.paperDoi || ''
 const summary = ref('')
-const priorPapers = ref([])
+const paperSummarys = ref([]) // 배열로 초기화
 
-// 논문 요약 정보를 HTML 형식으로 생성하는 함수
-const createSummaryHTML = (result) => {
-  return `
-    <h1>${result.title}</h1>
-    <p><strong>Keywords:</strong> ${result.userKeyword}</p>
-    <p><strong>Authors:</strong> ${result.authors}</p>
-    <p><strong>Publication Year:</strong> ${result.publicationYear}</p>
-    <p><strong>Publication Month:</strong> ${result.publicationMonth}</p>
-    <p><strong>Generated Keyword:</strong> ${result.generatedKeyword}</p>
-    <p><strong>Core Method:</strong> ${result.generatedCoreMethod}</p>
-    <p><strong>Technologies:</strong> ${result.generatedTechnologies}</p>
-  `
+const mockResponse = {
+  resultCode: 201,
+  message: 'Summary retrieved successfully.',
+  result: [
+    {
+      title: 'Hierarchical Text-Conditional Image Generation with CLIP Latents',
+      userKeyword: '텍스트-이미지 생성',
+      Author: 'test작가',
+      publicationYear: 'publicationYear',
+      publicationMonth: 'publicationMonth',
+      generatedKeyword: '텍스트-이미지 생성 (Text to Image generation)',
+      generatedCoreMethod:
+        'DALL-E 2는 Diffusion Model과 CLIP의 조합으로 작동하여, 텍스트-이미지 생성에서 높은 수준의 성능을 보여줍니다. 텍스트 입력이 주어지면, CLIP은 이를 분석하여 관련된 이미지 특성을 파악하고, Diffusion Model은 이 정보에 따라 처음에는 노이즈 상태의 이미지에서 시작하여 점진적으로 텍스트에 맞는 이미지를 생성하게 됩니다.',
+      generatedTechnologies:
+        'Diffusion Model은 이미지를 점진적으로 변화시키는 과정에서 노이즈를 추가하고 제거하여 이미지를 생성하는 방식입니다. 처음에는 순수한 노이즈로부터 시작하여 단계적으로 노이즈를 제거함으로써 텍스트에서 묘사된 구체적인 형태의 이미지를 생성할 수 있습니다. 이러한 역방향 노이즈 제거 과정은 이미지를 점점 선명하고 세밀하게 만들어가며, 고해상도와 자연스러운 디테일을 확보하게 합니다.',
+    },
+  ],
 }
 
-// 테스트 데이터 설정 함수
-const setTestData = () => {
-  summary.value = `
-    <h1>테스트 논문 제목</h1>
-    <p><strong>Keywords:</strong> 테스트 키워드</p>
-    <p><strong>Authors:</strong> 테스트 저자</p>
-    <p><strong>Publication Year:</strong> 2023</p>
-    <p><strong>Publication Month:</strong> 10</p>
-    <p><strong>Generated Keyword:</strong> 테스트 생성 키워드</p>
-    <p><strong>Core Method:</strong> 테스트 핵심 방법</p>
-    <p><strong>Technologies:</strong> 테스트 기술</p>
-  `
-  priorPapers.value = [
-    { title: '테스트 논문 1', generatedKeyword: '테스트 키워드 1', similarity: 0.9 },
-  ]
-}
-
-// 논문 세부 정보를 가져오는 함수
-const fetchPaperDetails = async () => {
+const fetchPaperSummary = async () => {
   try {
-    const summaryResponse = await axios.post('/papers/summary/', { paperDoi })
-    if (summaryResponse.data.resultCode === 201) {
-      summary.value = createSummaryHTML(summaryResponse.data.result)
-    } else {
-      summary.value = 'Error: Invalid response code for summary'
-    }
-
-    const priorPapersResponse = await axios.get('/papers/priorpapers/', {
-      params: { paperDoi: paperDoi, default: '' },
-    })
-    if (priorPapersResponse.data.resultCode === 201) {
-      priorPapers.value = priorPapersResponse.data.result.paperList
-    } else {
-      console.error('Error: Invalid response code for prior papers')
-    }
+    console.log('test입니다.')
+    // const summaryResponse = await axios.post('/papers/summary/', { paperDoi })
+    // if (summaryResponse.data.resultCode === 201) {
+    paperSummarys.value = mockResponse.result
+    // } else {
+    // paperSummarys.value = 'Error: Invalid response code for summary'
+    // }
   } catch (error) {
-    console.error('Error fetching paper details:', error)
-    summary.value = 'Error fetching paper details' // 오류 발생 시 메시지 설정
-    setTestData() // 테스트 데이터 설정
+    console.error('에러발생', error)
+    paperSummarys.value = mockResponse.result
   }
 }
 
-// 컴포넌트가 로드되는 순간 POST 및 GET 요청 보내기
 onMounted(() => {
-  fetchPaperDetails()
+  fetchPaperSummary()
 })
 </script>
 
 <template>
-  <div class="paper-summary-container flex-column">
+  <div class="paper-summary-container">
     <div class="paper-summary mt-5 text-start">논문 핵심 요약</div>
-    <div v-text="summary"></div>
-    <!-- v-html 대신 v-text 사용 -->
-    <div v-if="priorPapers.length > 0">
-      <h2>Prior Papers</h2>
-      <ul>
-        <li v-for="paper in priorPapers" :key="paper.paperDoi">
-          <strong>Title:</strong> {{ paper.title }}<br />
-          <strong>Generated Keyword:</strong> {{ paper.generatedKeyword }}<br />
-          <strong>Similarity:</strong> {{ paper.similarity }}
-        </li>
-      </ul>
+    <div class="summary-detail-container flex-column mt-2 overflow-auto" style="max-height: 75vh">
+      <div v-if="paperSummarys.length > 0" class="list-group">
+        <ul class="list-group">
+          <li v-for="paper in paperSummarys" :key="paper.title" class="list-group-item">
+            <strong>{{ paper.title }}</strong> <br />
+            <strong>키워드:</strong> {{ paper.generatedKeyword }}<br />
+            <strong>핵심 방법론:</strong> {{ paper.generatedCoreMethod }}<br />
+            <strong>활용 기술:</strong> {{ paper.generatedTechnologies }}
+          </li>
+        </ul>
+      </div>
     </div>
   </div>
 </template>
@@ -112,5 +89,28 @@ onMounted(() => {
   width: 100%;
   height: 1px;
   background-color: white;
+}
+
+.summary-detail-container {
+  flex-grow: 1;
+  color: black;
+  background-color: white;
+}
+
+.summary-detail-container::-webkit-scrollbar {
+  width: 8px; /* 스크롤 바의 너비 */
+}
+
+.summary-detail-container::-webkit-scrollbar-thumb {
+  background-color: #da7e7e; /* 스크롤 바의 색상 (부트스트랩 기본색) */
+  border-radius: 4px; /* 스크롤 바의 모서리 둥글기 */
+}
+
+.summary-detail-container::-webkit-scrollbar-thumb:hover {
+  background-color: #8a9cce; /* 스크롤 바 호버 시 색상 */
+}
+
+.summary-detail-container::-webkit-scrollbar-track {
+  background-color: #f8f9fa; /* 스크롤 바 트랙의 배경색 */
 }
 </style>
