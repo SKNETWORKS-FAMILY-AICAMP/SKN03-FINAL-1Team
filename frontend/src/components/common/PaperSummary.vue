@@ -54,7 +54,7 @@ onMounted(() => {
       <div v-if="paperSummarys.length > 0" class="list-group">
         <ul class="list-group">
           <li v-for="paper in paperSummarys" :key="paper.title" class="list-group-item">
-            <strong>{{ paper.title }}</strong> <br />
+            <div class="text-start fw-bold fst-italic">{{ paper.title }} <br /></div>
             <strong>키워드:</strong> {{ paper.generatedKeyword }}<br />
             <strong>핵심 방법론:</strong> {{ paper.generatedCoreMethod }}<br />
             <strong>활용 기술:</strong> {{ paper.generatedTechnologies }}
