@@ -59,7 +59,7 @@ const requestPaperByDoi = async (doi) => {
     if (response.data.resultCode === 201) {
       const paperS3Path = response.data.result.paperS3Path
       router.push({
-        path: '/paper',
+        path: '/paper/select',
         query: { paperS3Path },
       })
     }
