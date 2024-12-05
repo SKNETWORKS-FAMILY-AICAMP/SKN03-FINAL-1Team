@@ -3,10 +3,6 @@ import { ref, onMounted } from 'vue'
 import { useRoute } from 'vue-router'
 import axios from '@/axiosConfig'
 
-import SideComponent from '@/components/common/SideComponent.vue'
-import DropIcon from '@/assets/DropIcon.png'
-import PdfViewer from '@/components/PdfViewer.vue'
-
 const paper = ref(null)
 const route = useRoute()
 const showPdfViewer = ref(false)
@@ -20,16 +16,19 @@ const togglePdfViewer = () => {
   showPdfViewer.value = !showPdfViewer.value
 }
 
-const fetchPaperDetails = async (paperId, s3Path) => {
+const fetchPaperDetails = async (paperDoi) => {
   try {
-    const response = await axios.get(`/papers/select/${paperId}`, {
+    const response = await axios.get(`/papers/select/`, {
+      params: { paperDoi },
       headers: {
         Authorization: `Bearer ${accessToken}`, // Authorization 헤더에 토큰 포함
       },
     })
-    paper.value = response.data
-    if (!s3Path && response.data.resultCode === 201) {
+    if (response.data && response.data.resultCode === 200) {
       paperS3Path.value = response.data.result.paperS3Path
+      fetchPdf(response.data.result.paperS3Path) // PDF 파일 가져오기 함수 호출
+    } else {
+      console.error('Failed to fetch paper details')
     }
   } catch (error) {
     console.error('Error fetching paper details:', error)
@@ -46,19 +45,6 @@ const fetchPriorPapers = async (paperDoi) => {
     })
     priorPapers.value = priorResponse.data
     console.log('Prior papers:', priorPapers.value)
-
-    // paperDoi 값으로 PDF URL 설정
-    const paperDetailResponse = await axios.get(`/papers/detail/${paperDoi}`, {
-      headers: {
-        Authorization: `Bearer ${accessToken}`, // Authorization 헤더에 토큰 포함
-      },
-    })
-    if (paperDetailResponse.data && paperDetailResponse.data.pdfUrl) {
-      pdfUrl.value = paperDetailResponse.data.pdfUrl
-      fetchPdf(pdfUrl.value) // PDF 파일 가져오기 함수 호출
-    } else {
-      console.error('PDF URL을 가져오는데 실패했습니다.')
-    }
   } catch (error) {
     console.error('Error fetching prior papers:', error)
   }
@@ -75,20 +61,9 @@ const fetchPdf = async (url) => {
 }
 
 onMounted(async () => {
-  const paperId = route.params.id
-  const s3Path = route.query.paperS3Path
-  if (s3Path) {
-    paperS3Path.value = s3Path
-  }
-
-  if (paperId) {
-    await fetchPaperDetails(paperId, s3Path)
-  } else {
-    console.error('paperId가 유효하지 않습니다.')
-  }
-
   const paperDoi = route.query.paperDoi
   if (paperDoi) {
+    await fetchPaperDetails(paperDoi)
     await fetchPriorPapers(paperDoi)
   } else {
     console.warn('paperDoi 쿼리 파라미터가 없습니다.')
