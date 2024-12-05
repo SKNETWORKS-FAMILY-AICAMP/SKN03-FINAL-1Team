@@ -64,7 +64,7 @@ onMounted(async () => {
   const paperDoi = route.query.paperDoi
   if (paperDoi) {
     await fetchPaperDetails(paperDoi)
-    await fetchPriorPapers(paperDoi)
+    // await fetchPriorPapers(paperDoi)
   } else {
     console.warn('paperDoi 쿼리 파라미터가 없습니다.')
   }
