@@ -44,9 +44,9 @@
           <h3>개발자</h3>
           <p>SKN 3기 - DocuMento</p>
           <p>서민정 | git : 대충깃링크</p>
-          <p>박규택 | git : 대충깃링크</p>
-          <p>이준경 | git : 대충깃링크</p>
-          <p>진윤화 | git : https://github.com/JinYunhwa</p>
+          <p>박규택 pkt980816@naver.com | git : https://github.com/WhiteNBlackTiger</p>
+          <p>이준경 ljg980214@gmail.com | git : https://github.com/zelope</p>
+          <p>진윤화 dbsghk320@gmail.com | git : https://github.com/JinYunhwa</p>
         </div>
       </div>
       <div class="footer-info d-flex justify-content-center align-items-center">
