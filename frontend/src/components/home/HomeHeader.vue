@@ -41,6 +41,12 @@ const handleLogout = async () => {
   }
 }
 
+const menuItems = ref([
+  { name: 'Keyword', link: '/main' },
+  { name: 'Search', link: '/main' },
+  { name: 'Preview', link: '/main' },
+])
+
 onMounted(() => {
   fetchUserInfo()
 })
@@ -51,10 +57,10 @@ onMounted(() => {
     <a href="#" class="logo"><img alt="logo" src="@/assets/home-logo.png" width="170" /></a>
     <div class="menu-container">
       <div class="menuWrap">
-        <ul class="menu">
-          <li><a href="javascript:;">Search</a></li>
-          <li><a href="javascript:;">Review</a></li>
-          <li><a href="javascript:;">Mypage</a></li>
+        <ul class="menu align-center m-0">
+          <li v-for="item in menuItems" :key="item.name">
+            <a :href="item.link">{{ item.name }}</a>
+          </li>
         </ul>
       </div>
       <div id="userMenu" class="user-info">
@@ -136,7 +142,7 @@ header ul.menu li a:hover {
 }
 
 .styled-button {
-  background-color: #ff7043;
+  background-color: black;
   border: none;
   color: white;
   padding: 10px 20px;
@@ -150,7 +156,7 @@ header ul.menu li a:hover {
 }
 
 .styled-button:hover {
-  background-color: #ff5722; /* 호버 배경 색 */
+  background-color: #c65d5d; /* 호버 배경 색 */
 }
 
 .result {
