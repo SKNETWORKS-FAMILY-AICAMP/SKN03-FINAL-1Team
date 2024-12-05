@@ -18,15 +18,25 @@ const steps = [
   { id: 3, text: '검색된 논문들을 저장하고 논문 파악을 통해 논문의 난이도를 파악하세요.' },
 ]
 
+const accessToken = 'your-access-token' // 실제 토큰을 할당
+
 // 키워드 최적화 요청 (POST 요청)
 const optimizeKeywords = async () => {
   showIntroAndSteps.value = false
   loading.value = true // 로딩 시작
   errorMessage.value = '' // 기존 에러 메시지 초기화
   try {
-    const response = await axios.post('/papers/transformation/', {
-      userPrompt: inputPrompt.value,
-    })
+    const response = await axios.post(
+      '/papers/transformation/',
+      {
+        userPrompt: inputPrompt.value,
+      },
+      {
+        headers: {
+          Authorization: `Bearer ${accessToken}`, // Authorization 헤더에 토큰 포함
+        },
+      },
+    )
     generatedResults.value = response.data.result
     console.log('Optimized Results:', generatedResults.value)
   } catch (error) {
@@ -55,7 +65,11 @@ const handleOptimization = () => {
 // DOI 요청 핸들러 및 페이지 이동
 const requestPaperByDoi = async (doi) => {
   try {
-    const response = await axios.get(`/papers/select/?paperDoi=${doi}`)
+    const response = await axios.get(`/papers/select/?paperDoi=${doi}`, {
+      headers: {
+        Authorization: `Bearer ${accessToken}`, // Authorization 헤더에 토큰 포함
+      },
+    })
     if (response.data.resultCode === 201) {
       const paperS3Path = response.data.result.paperS3Path
       router.push({
