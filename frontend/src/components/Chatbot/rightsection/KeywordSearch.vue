@@ -18,7 +18,7 @@ const steps = [
   { id: 3, text: '검색된 논문들을 저장하고 논문 파악을 통해 논문의 난이도를 파악하세요.' },
 ]
 
-const accessToken = 'your-access-token' // 실제 토큰을 할당
+const accessToken = 'temp' // 실제 토큰을 할당
 
 // 키워드 최적화 요청 (POST 요청)
 const optimizeKeywords = async () => {
