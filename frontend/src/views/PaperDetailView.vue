@@ -12,7 +12,10 @@ const pdfFile = ref(null) // 추가
 const priorPapers = ref(null) // 추가: priorPapers 데이터를 저장할 변수
 const accessToken = 'temp' // 실제 토큰을 할당
 
-const togglePdfViewer = () => {
+const togglePdfViewer = async (url) => {
+  if (url) {
+    await fetchPdf(url)
+  }
   showPdfViewer.value = !showPdfViewer.value
 }
 
@@ -81,7 +84,11 @@ onMounted(async () => {
         <PdfViewer :src="pdfFile" />
         <!-- src를 pdfFile로 변경 -->
       </div>
-      <div v-else class="d-flex align-items-center dotted-box" @click="togglePdfViewer">
+      <div
+        v-else
+        class="d-flex align-items-center dotted-box"
+        @click="togglePdfViewer(paperS3Path)"
+      >
         <div>
           <img :src="DropIcon" class="flex-row align-items-center" />
           <p>S3 Path: {{ paperS3Path }}</p>
