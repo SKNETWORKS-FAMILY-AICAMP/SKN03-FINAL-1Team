@@ -34,31 +34,41 @@ const sendMessage = () => {
 </script>
 
 <template>
-  <div class="test-content">
-    <div class="input-area d-flex w-100 p-2">
-      <input
-        v-model="inputText"
-        type="text"
-        class="form-control chat-input"
-        placeholder="탐색 키워드를 입력해보아요."
-        @keyup.enter="sendMessage"
-      />
-      <button class="btn send-button" @click="sendMessage" :disabled="loading">></button>
-    </div>
-    <div v-if="loading" class="d-flex justify-content-center my-3">
-      <div class="spinner-border text-primary" role="status">
-        <span class="visually-hidden">로딩 중...</span>
+  <div class="main-container">
+    <div class="test-content">
+      <div class="input-area d-flex w-100 p-2">
+        <input
+          v-model="inputText"
+          type="text"
+          class="form-control chat-input"
+          placeholder="탐색 키워드를 입력해보아요."
+          @keyup.enter="sendMessage"
+        />
+        <button class="btn send-button" @click="sendMessage" :disabled="loading">></button>
       </div>
-    </div>
-    <div v-else>
-      <div v-for="(paper, index) in papers" :key="index">
-        <PaperSearchItem :paper="paper" class="search-item" />
+      <div v-if="loading" class="d-flex justify-content-center my-3">
+        <div class="spinner-border text-primary" role="status">
+          <span class="visually-hidden">로딩 중...</span>
+        </div>
+      </div>
+      <div v-else>
+        <div v-for="(paper, index) in papers" :key="index">
+          <PaperSearchItem :paper="paper" class="search-item" />
+        </div>
       </div>
     </div>
   </div>
 </template>
 
 <style scoped>
+.main-container {
+  width: 600px;
+}
+
+.test-content {
+  width: 600px;
+}
+
 .input-area {
   border: 1px solid #a04747;
   border-radius: 50px;

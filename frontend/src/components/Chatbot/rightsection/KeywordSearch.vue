@@ -151,7 +151,11 @@ const requestPaperByDoi = async (doi) => {
 
 <style scoped>
 .main-container {
-  /* 필요한 스타일을 여기에 추가하세요 */
+  width: 600px;
+}
+
+.test-content {
+  width: 600px;
 }
 
 .input-area {
