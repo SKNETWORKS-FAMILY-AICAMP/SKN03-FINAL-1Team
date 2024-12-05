@@ -1,19 +1,16 @@
-from fastapi import FastAPI, HTTPException, Query, Request, Cookie, Depends
+from fastapi import FastAPI, HTTPException, Request, Cookie, Depends
 from fastapi.exceptions import RequestValidationError
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import JSONResponse
 import uvicorn
 from src import *
 from src.reqeust_model import *
+
+
 from typing import Annotated
-from fastapi.security import HTTPBearer, HTTPAuthorizationCredentials
+from typing import Union
 
-
-app = FastAPI(
-    title="Sucess : search, login, cookie",
-    description="유저부분 완료",
-    version="2.7.1"
-)
+app = FastAPI()
 
 
 # ******************  CORS 처리  ****************** #
@@ -27,40 +24,43 @@ app.add_middleware(
 
 
 # ********************************************* #
-# ******************  Utils  ****************** #
+# ******************  공통 예외처리  ****************** #
 # ********************************************* #
 
-# return handler
-async def handle_request(func, data=None):
-    try:
-        # 요청 처리 함수 실행
-        return await func(data)
-    
-    except Exception as e:
-        # 예상치 못한 오류 처리
-        return JSONResponse(
-            status_code=500,
-            content={
-                "resultCode": 500,
-                "errorCode": "UNEXPECTED_ERROR : MAYBE SERVER",
-                "message": str(e),
-            },
-        )
-
-# 토큰 유효성 검사       
+# 403 예외 처리기 정의
+@app.exception_handler(HTTPException)
+async def custom_http_exception_handler(request: Request, exc: HTTPException):
+    if exc.status_code == 403:
+        return response_template(result="AUTHENTICATION_FAILED", message="Authentication failed. Please log_in with valid credentials.", http_code=exc.status_code)
         
-# 커스텀 예외 처리: 422 유효성 검사 에러
+    return await request.app.default_exception_handler(request, exc)
+
+
+# 422 예외 처리기 정의
 @app.exception_handler(RequestValidationError)
-async def validation_exception_handler(request: Request, exc: RequestValidationError):
-    print(request)
+async def custom_validation_exception_handler(request: Request, exc: RequestValidationError):
+    
+    error_list  = exc.errors()
+    error_set = set()
+    message = ""
+    
+    for error in error_list:
+        error_set.add(" " + error.get("type", ""))
+        message += f"{error['loc'][-1]} : {error['msg']} \n "
+    
+    errorCode = "".join(sorted(error_set))
+    errorCode = errorCode.upper()
+    
     return JSONResponse(
         status_code=422,
         content={
             "resultCode": 422,
-            "errorCode": "VALIDATION_ERROR",
-            "message": "Validation failed. Please check your input.",
+            "errorCode": errorCode,
+            "message": message,
         },
     )
+    
+
 
 @app.on_event("startup")
 async def initialize_globals():
@@ -75,18 +75,11 @@ async def initialize_globals():
 @app.on_event("shutdown")
 async def cleanup_resources():
     print("Cleaning up resources...")
-    
+
 
 # ********************************************* #
 # ***************  About  User  *************** #
 # ********************************************* #
-
-
-# # 1. 회원가입 -> 로그인과 동시에 Google에서 진행
-# @app.get("/users")
-# async def create_user(request: Request):
-#     data = await request.json()
-#     return await handle_request(create_new_user, data)
 
 
 # 2. 로그인
@@ -118,13 +111,14 @@ async def user_info(session_id :  Annotated[str | None, Cookie()] = None):
 # ********************************************* #
 
 # 3. 논문검색
-@app.post("/papers/search/")
+@app.post("/papers/search/",dependencies=[Depends(validate_token)])
 async def search_papers(request: Request, data: userKeyword):
+    
     return await handle_request(process_search, {"data": data, "request": request})
 
 
 # 4. 키워드 최적화
-@app.post("/papers/transformation/")
+@app.post("/papers/transformation/",dependencies=[Depends(validate_token)])
 async def create_paper_transformation(request: Request, data: userPrompt):
     #data = await request.json()
     return await handle_request(process_transformation, {"data": data, "request": request})
@@ -132,37 +126,38 @@ async def create_paper_transformation(request: Request, data: userPrompt):
 # ***************  5. bookmark  *************** #
 # 5.1. 북마크 리스트
 @app.get("/users/bookmarks/")
-async def get_user_bookmarks(reuqest:Request):
+async def get_user_bookmarks(uuid: str = Depends(validate_token)):
 
-    return await handle_request(fetch_user_bookmarks, reuqest)
+    return await handle_request(fetch_user_bookmarks, uuid)
 
 
 # 멘토님 曰 : 추가와 삭제는 같은 방식의 post
 @app.post("/users/bookmarks/")
-#쿼리문 형태 : ?paperDoi=”string”
-async def add_to_bookmarks(request:Request):
-    
-    return await handle_request(handle_bookmark, request)
+async def add_to_bookmarks(data: bookMarking, uuid: str = Depends(validate_token)):
+    print(data.json())
+    request_data = {"request_data":data,"uuid":uuid }
+    return await handle_request(handle_bookmark, request_data)
 
 # ********************************************* #
 
 # 6. 논문 선택
-# notion에는 /papers/?paperDoi=”string” 이렇게 적혀있음 
-@app.get("/papers/")
-async def get_paper_by_doi(data: paperDoi):
+# notion에는 /papers/select/?paperDoi=”string” 이렇게 적혀있음 
+
+@app.get("/papers/select/",dependencies=[Depends(validate_token)])
+async def get_paper_by_doi(paperDoi: str=""):
     
-    return await handle_request(fetch_paper_details, data)
+    return await handle_request(fetch_paper_details, paperDoi)
 
 #7. 논문 요약
-@app.post("/papers/summary/")
+@app.post("/papers/summary/",dependencies=[Depends(validate_token)])
 async def create_paper_summary(data: paperDoi):
     return await handle_request(process_summary, data)
 
 #8. 선행 논문 리스트
-@app.get("/papers/priorpapers/")
+@app.get("/papers/priorpapers/",dependencies=[Depends(validate_token)])
 #쿼리문 : ?paperDoi=”string”
-async def get_prior_papers(data: paperDoi):
-    return await handle_request(fetch_prior_papers, data)
+async def get_prior_papers(paperDoi: str=""):
+    return await handle_request(fetch_prior_papers, paperDoi)
 
 
 

@@ -1,11 +1,14 @@
-from fastapi import HTTPException, Request
+from fastapi import HTTPException
 from fastapi.responses import JSONResponse, RedirectResponse
 from .utils import googleOAuth, MySQLHandler
-
+from .error_template import *
 import requests, json
 from uuid import uuid4
+from fastapi.encoders import jsonable_encoder
 
-db_handler = MySQLHandler()
+
+
+
 # ********************************************* #
 # ***************  About  User  *************** #
 # ********************************************* #
@@ -107,8 +110,8 @@ async def oauth_callback(code):
         email = user_info.get("email", "")
         name = user_info.get("name", "")
         try: 
-            #싱글톤 시 수정
-            
+
+            db_handler = MySQLHandler()
             db_handler.connect()
             
             insert_query = "SELECT * FROM DOCUMENTO.user WHERE email = %s"
@@ -124,17 +127,17 @@ async def oauth_callback(code):
             print(f"Error with insert to MySQL: {e}")
         else:
         
-            print("++++++++++++++++++++++++==SSID++++++++++++++++++++++++++++++++")
-            # 쿠키로 세션 아이디를 전달
-            response = RedirectResponse(url="https://www.documento.click/")
-            response.set_cookie(key="session_id", 
-                                value=session_id, 
-                                httponly=True, 
-                                max_age=3600 * 60,)
+        #     print("++++++++++++++++++++++++==SSID++++++++++++++++++++++++++++++++")
+        #     # 쿠키로 세션 아이디를 전달
+        #     response = RedirectResponse(url="https://www.documento.click/")
+        #     response.set_cookie(key="session_id", 
+        #                         value=session_id, 
+        #                         httponly=True, 
+        #                         max_age=3600 * 60,)
 
-        # 쿠키 설정 검증 출력
-            print("Set-Cookie Header:", response.headers.get("set-cookie"))
-            return response
+        # # 쿠키 설정 검증 출력
+        #     print("Set-Cookie Header:", response.headers.get("set-cookie"))
+            return {"accessToken": access_token}
         
         finally:
             db_handler.disconnect()
@@ -150,7 +153,7 @@ async def get_userinfo(ssid):
         ssid = int(ssid) 
         
         #싱글톤 시 수정
-        
+        db_handler = MySQLHandler()
         db_handler.connect()
         select_query = "SELECT * FROM user WHERE user_id = %s"
         result = db_handler.fetch_one(select_query, (ssid, ))
@@ -208,123 +211,53 @@ async def get_userinfo(ssid):
         db_handler.disconnect()
 
 
-# async def logout_user(data):
-#     """사용자 로그아웃 처리 로직"""
-#     # logout 기능 삭제
-#     pass
 
-# async def reissue_user_token(data):
-#     """사용자 토큰 재발급 로직"""
-#     pass
-
-
-
-
-
+# ***************  Bookmark Logic  *************** #
 # 5. bookmarks
 # 5.1. 북마크 리스트
-async def fetch_user_bookmarks(request:Request):
-    
-    # 1. Data 검증 : 없음
-    
-    # 2. Auth 검증
+async def fetch_user_bookmarks(uuid):
+    print(uuid)
+    print("=== GET /users/bookmarks ===")
     try:
-        print("=== Checking Auth ===")
-        authorization: str = request.headers.get("Authorization")
-        if not authorization or not authorization.startswith("Bearer "):
-            raise HTTPException(status_code=401, detail="There is No Acess Token in Header")
-        token = authorization.split(" ")[1]  # "Bearer " 이후의 토큰 값만 추출
-
+        db_handler = MySQLHandler()
         db_handler.connect()
-        insert_query = "SELECT user_id FROM DOCUMENTO.auth WHERE access_token = %s"
-        request_result = db_handler.fetch_one(insert_query, (token, ))
+        insert_query = "SELECT bookmarked_papers FROM DOCUMENTO.user WHERE user_id = %s"
+        request_result = db_handler.fetch_one(insert_query, (uuid, ))
 
-        if not request_result: 
-            raise HTTPException(status_code=401, detail="Invaild User. Pleasr sign up first")
+        print("reuqest_result : ", request_result)
         
-        uuid = request_result['user_id']
-
-    
-    # 2-1. Auth error 코드
-    except HTTPException as he:
-        if he.status_code == 401:
-                return JSONResponse(
-                status_code=401,
-                content={
-                    "resultCode" : 401,
-                    "errorCode": "Invaild Token",
-                    "message": he.detail
-                }
-            )
-        else:
-                return JSONResponse(
-                status_code=he.status_code,
-                content={
-                    "resultCode" : he.status_code,
-                    "errorCode": "UNEXPECTED_HTTP ERROR",
-                    "message": "An unexpected error occurred while processing your request."
-                }
-            )
+        if not request_result['bookmarked_papers'] or not request_result:
+            raise HTTPException(status_code=404, detail="No bookmarks found. Add papers to your bookmarks to see them here.")       
+        bookmark_datas = json.loads(request_result['bookmarked_papers'])
         
-                
-    else:
-    # 3. 프로세스
-        print("=== GET /users/bookmarks ===")
-        try:
-
-            db_handler.connect()
-            insert_query = "SELECT bookmarked_papers FROM DOCUMENTO.user WHERE user_id = %s"
-            request_result = db_handler.fetch_one(insert_query, (uuid, ))
-
-            print("reuqest_result : ", request_result)
-            
-            if not request_result['bookmarked_papers'] or not request_result:
-                raise HTTPException(status_code=404)       
-            bookmark_datas = json.loads(request_result['bookmarked_papers'])
-            
-            output_data = []
-            for bkm in bookmark_datas:
-                bookmark = dict()
-                bookmark["userKeyword"] = bkm.get("userKeyword")
-                bookmark["paperDoi"] = bkm.get("paperDoi")
-                insert_query = "SELECT title FROM DOCUMENTO.paper WHERE paper_doi = %s"
-                response_result = db_handler.fetch_one(insert_query, (bookmark["paperDoi"] , ))
-                if not response_result:
-                    bookmark["title"] = "We Don't have this Paper Yet"
-                else:
-                    bookmark["title"] = response_result['title']
-
-                output_data.append(bookmark)
-            
-        # 3-1. 프로세스 에러코드
-        except HTTPException as he:
-            if he.status_code == 404:
-                    return JSONResponse(
-            status_code=404,
-            content={
-                "resultCode" : 404,
-                "errorCode": "NO_BOOKMARKS",
-                "message": "No bookmarks found. Add papers to your bookmarks to see them here.",
-                    }
-                )
+        output_data = []
+        for bkm in bookmark_datas:
+            bookmark = dict()
+            bookmark["userKeyword"] = bkm.get("userKeyword")
+            bookmark["paperDoi"] = bkm.get("paperDoi")
+            insert_query = "SELECT title FROM DOCUMENTO.paper WHERE paper_doi = %s"
+            response_result = db_handler.fetch_one(insert_query, (bookmark["paperDoi"] , ))
+            if not response_result:
+                bookmark["title"] = "We Don't have this Paper Yet"
             else:
-                return JSONResponse(
-                status_code=he.status_code,
-                content={
-                    "resultCode" : he.status_code,
-                    "errorCode": "UNEXPECTED_HTTP ERROR",
-                    "message": "An unexpected error occurred while processing your request."
-                }
-            )
-                
+                bookmark["title"] = response_result['title']
+
+            output_data.append(bookmark)
+        
+    except HTTPException as http_e:
+        if http_e.status_code == 404:
+            return response_template(result="NO_BOOKMARKS", message=http_e.detail, http_code=http_e.status_code)
+        
         else:
-            print("=== FIN GET - /users/bookmarks ===")
-            return JSONResponse(status_code=200, 
-                        content={
-                            "resultCode" : 200,
-                            "message" : "Bookmark list retrieved successfully.",
-                            "result" : output_data
-                        })
+            return response_template(result="UNEXPECTED_HTTP_ERROR", message=http_e.detail, http_code=http_e.status_code)
+
+    except Exception as e:
+        print(f"MySQL error: {e}")
+        raise HTTPException(status_code=500, detail=f"Error fetching data from MySQL {e}")
+            
+    else:
+        print("=== FIN GET - /users/bookmarks ===")
+        return response_template(result=output_data, message="Bookmark list retrieved", http_code=200)
         
     finally:
         db_handler.disconnect()
@@ -334,195 +267,125 @@ async def fetch_user_bookmarks(request:Request):
     
     
 # 5.2. 북마크 추가 /삭제
-async def handle_bookmark(request:Request):
+async def handle_bookmark(data):
     print("=== POST /users/bookmarks ===")
     
     # 1. Data 검증 
     try :
         print("=== Check data annotation ===")
-        request_data = await request.json()
-        paperDoi = request_data.get("paperDoi", None)
-        userKeyword = request_data.get("userKeyword", None)
-        bookMark = request_data.get("bookMark", None)
+        request_data = data['request_data']
+        request_json = jsonable_encoder(request_data)
         
-        if not paperDoi or (type(paperDoi) != str):
-            raise HTTPException(status_code=404, detail= "There is Error with paperDoi")   
-        if not userKeyword or (type(userKeyword) != str):
-            raise HTTPException(status_code=404, detail= "There is Error with userKeyword")   
+        paperDoi = request_data.paperDoi
+        userKeyword = request_data.userKeyword
+        bookMark = request_data.bookMark
+        
+        data_check = ""
+        if not paperDoi:
+            data_check += "paperDoi "
+        if not userKeyword :
+            data_check += "userKeyword "  
         if (type(bookMark) != bool):
-            raise HTTPException(status_code=404, detail= "There is Error with bookMark") 
+            data_check += "bookMark "   
+        
+        if data_check:
+            raise HTTPException(status_code=400, detail= f"{data_check}Parmeter is Empty")   
+
+        print()
+        
     
     # 1-1. Data 오류 검증
-    except HTTPException as he:
-        if he.status_code == 404:
-                return JSONResponse(
-                status_code=404,
-                content={
-                    "resultCode" : 404,
-                    "errorCode": "Invaild Parameter",
-                    "message": he.detail
-                }
-            )
+    except HTTPException as http_e:
+        if http_e.status_code == 400:
+            return response_template(result="EMPTY_PARAMETER", message=http_e.detail, http_code=http_e.status_code)
         else:
-                return JSONResponse(
-                status_code=he.status_code,
-                content={
-                    "resultCode" : he.status_code,
-                    "errorCode": "UNEXPECTED_HTTP ERROR",
-                    "message": "An unexpected error occurred while processing your request."
-                }
-            )
+            return response_template(result="UNEXPECTED_HTTP_ERROR", message=http_e.detail, http_code=http_e.status_code)
+    except Exception as un_expc:
+        raise HTTPException(status_code=500, detail=f"Error processing data: {un_expc}")
     
+
+    # 3. 프로세스
+    try:
+        db_handler = MySQLHandler()
+        uuid = data['uuid']
+        db_handler.connect()
+        insert_query = "SELECT bookmarked_papers FROM DOCUMENTO.user WHERE user_id = %s"
+        result = db_handler.fetch_one(insert_query, (uuid, ))
+        bookmark_data = result.get('bookmarked_papers', None)
+
+        
+        # True, 즉 추가하는 기능
+        if bookMark:
+
+            bookmark_list = json.loads(bookmark_data)
+            if len(bookmark_list) > 1000:
+                raise HTTPException(status_code=400, detail="Bookmark limit exceeded. Please remove existing bookmarks to add new ones.")
+            if bookmark_list:
+                for bml in bookmark_list:
+                    if bml["paperDoi"] == paperDoi:
+                        bml["userKeyword"] = userKeyword
+                        break
+                else:
+                    bookmark_list.append(request_json)
+            else:
+                bookmark_list = [request_json]
+            
+            update_query = "UPDATE DOCUMENTO.user SET bookmarked_papers = %s WHERE user_id = %s"
+            db_handler.execute_query(update_query, (json.dumps(bookmark_list), uuid))
+
+            output_data = {
+                "paperDoi" : paperDoi,
+                "bookMark" : bookMark
+            }
+            
+            response_json =  response_template(result=output_data, message="Bookmark save", http_code=201)
+                
+                
+        # False, 즉 삭제하는 기능    
+        else:
+            bookmark_list = json.loads(bookmark_data)
+            if  not bookmark_list:
+                raise HTTPException(status_code=400, detail="Bookmark is Empty. You cannot delete from it")
+            
+            else:
+                del_cnt = -99
+                for i, bml in enumerate(bookmark_list):
+                    if bml["paperDoi"] == paperDoi:
+                        del_cnt = i-1
+                if del_cnt == -99 :
+                    raise HTTPException(status_code=404, detail="The item is not bookmarked. Cannot remove a non-existent bookmark.")
+                else:
+                    bookmark_list.pop(i)
+                            
+            update_query = "UPDATE DOCUMENTO.user SET bookmarked_papers = %s WHERE user_id = %s"
+            db_handler.execute_query(update_query, (json.dumps(bookmark_list), uuid))
+
+            output_data = {
+                "paperDoi" : paperDoi,
+                "bookMark" : bookMark
+            }
+            
+            response_json =  response_template(result=output_data, message="Bookmark removed", http_code=201)
+            
+    
+    except HTTPException as http_e:
+        if http_e.status_code == 404:
+            return response_template(result="NOT_A_BOOKMARK", message=http_e.detail, http_code=http_e.status_code)
+        
+        elif http_e.status_code == 400:
+            return response_template(result="BOOKMARK_LIMIT", message=http_e.detail, http_code=http_e.status_code)
+        
+        else:
+            return response_template(result="UNEXPECTED_HTTP_ERROR", message=http_e.detail, http_code=http_e.status_code)
+
+    except Exception as un_expc:
+        print(f"Unexpected error: {un_expc}")
+        return response_template(message=un_expc, http_code=500)
     
     else:
-        
-        # 2. Auth 검증
-        try:
-            print("=== Checking Auth ===")
-            authorization: str = request.headers.get("Authorization")
-            if not authorization or not authorization.startswith("Bearer "):
-                raise HTTPException(status_code=401, detail="There is No Acess Token in Header")
-            token = authorization.split(" ")[1]  # "Bearer " 이후의 토큰 값만 추출
-
-            db_handler.connect()
-            insert_query = "SELECT user_id FROM DOCUMENTO.auth WHERE access_token = %s"
-            request_result = db_handler.fetch_one(insert_query, (token, ))
-
-            if not request_result: 
-                raise HTTPException(status_code=401, detail="Invaild User. Pleasr sign up first")
-            
-            uuid = request_result['user_id']
-
-        
-        # 2-1. Auth error 코드
-        except HTTPException as he:
-            if he.status_code == 401:
-                    return JSONResponse(
-                    status_code=401,
-                    content={
-                        "resultCode" : 401,
-                        "errorCode": "Invaild Token",
-                        "message": he.detail
-                    }
-                )
-            else:
-                    return JSONResponse(
-                    status_code=he.status_code,
-                    content={
-                        "resultCode" : he.status_code,
-                        "errorCode": "UNEXPECTED_HTTP ERROR",
-                        "message": "An unexpected error occurred while processing your request."
-                    }
-                )
-        
-        
-        else:
-            
-            # 3. 프로세스
-            try:
-                db_handler.connect()
-                insert_query = "SELECT bookmarked_papers FROM DOCUMENTO.user WHERE user_id = %s"
-                result = db_handler.fetch_one(insert_query, (uuid, ))
-                bookmark_data = result.get('bookmarked_papers', None)
-                
-                # True, 즉 추가하는 기능
-                if bookMark:
-                    bookmark_list = json.loads(bookmark_data)
-                    if bookmark_list:
-                        for bml in bookmark_list:
-                            if bml["paperDoi"] == paperDoi:
-                                bml["userKeyword"] = userKeyword
-                                break
-                        else:
-                            bookmark_list.append(request_data)
-                    else:
-                        bookmark_list = [request_data]
-                    
-                    update_query = "UPDATE DOCUMENTO.user SET bookmarked_papers = %s WHERE user_id = %s"
-                    db_handler.execute_query(update_query, (json.dumps(bookmark_list), uuid))
-
-                    output_data = {
-                        "paperDoi" : paperDoi,
-                        "bookMark" : bookMark
-                    }
-                    
-                    response_json = JSONResponse(status_code=201, 
-                                content={
-                                    "resultCode" : 201,
-                                    "message" : "Bookmark save successfully.",
-                                    "result" : output_data
-                                })
-                        
-                        
-                # False, 즉 삭제하는 기능    
-                else:
-                    
-                    bookmark_list = json.loads(bookmark_data)
-                    if  not bookmark_list:
-
-                        raise HTTPException(status_code=400, detail="Bookmark is Empty. You cannot delete from it")
-                    else:
-                        del_cnt = -99
-                        for i, bml in enumerate(bookmark_list):
-                            if bml["paperDoi"] == paperDoi:
-                                del_cnt = i-1
-                        if del_cnt == -99 :
-                            raise HTTPException(status_code=400, detail="The item is not bookmarked. Cannot remove a non-existent bookmark.")
-                        else:
-                            bookmark_list.pop(i)
-                                    
-                    update_query = "UPDATE DOCUMENTO.user SET bookmarked_papers = %s WHERE user_id = %s"
-                    db_handler.execute_query(update_query, (json.dumps(bookmark_list), uuid))
-
-                    output_data = {
-                        "paperDoi" : paperDoi,
-                        "bookMark" : bookMark
-                    }
-                    
-                    response_json = JSONResponse(status_code=201, 
-                                content={
-                                    "resultCode" : 201,
-                                    "message" : "Bookmark removed successfully.",
-                                    "result" : output_data
-                                })
-            
-            # 3-1 프로세스 error 코드
-            except HTTPException as he:
-            #오류코드도 TRUE False 나누어서
-                # True, 즉 추가하는 기능
-                if not bookMark:
-                    if he.status_code == 400:
-                        return JSONResponse(
-                        status_code=400,
-                        content={
-                            "resultCode" : 400,
-                            "errorCode": "NOT_A_BOOKMARK",
-                            "message": he.detail,
-                        }
-                    )
-                elif he.status_code == 404:
-                    return JSONResponse(
-                    status_code=404,
-                    content={
-                        "resultCode" : 404,
-                        "errorCode": "PAPER_NOT_FOUND",
-                        "message": "Paper not found in BookMark. Please check the DOI."
-                    }
-                )
-                    
-                else:
-                    return JSONResponse(
-                    status_code=he.status_code,
-                    content={
-                        "resultCode" : he.status_code,
-                        "errorCode": "UNEXPECTED_ERROR",
-                        "message": "An unexpected error occurred while processing your request."
-                    }
-                )
-            
-            else:
-                print("=== FIN /users/bookmarks ===")
-                return response_json
+        print("=== FIN /users/bookmarks ===")
+        return response_json
+    
     finally:
         db_handler.disconnect()
             

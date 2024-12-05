@@ -1,25 +1,24 @@
 from fastapi import HTTPException
-from fastapi.responses import JSONResponse
-from fastapi import APIRouter, Request
 from .utils import *
-
-#이 부분은 실제 AI 모델 구축하면 변경
-from dummy import *
+from .error_template import *
 import json
 
 
 # ********************************************* #
 # ***************  About Paper  *************** #
 # ********************************************* #
+
+# 3. 논문검색
+
 async def process_search(data): # seom-j
     print("=== POST /papers/search ===")
+    
     try:
         # get data
         user_keyword = data.get("data").userKeyword
         if not user_keyword:
-            raise HTTPException(status_code=400)
-        print("userKeyword : ", user_keyword)
-
+            raise HTTPException(status_code=400, detail="Parameter is Empty. Check the userKeyword input.")
+        
         # get searcher, faiss_index, faiss_ids (global variables)
         request = data.get("request")
         searcher = request.app.state.searcher
@@ -65,9 +64,24 @@ async def process_search(data): # seom-j
         db_handler.disconnect()
 
         if not paper_list:
-            raise HTTPException(status_code=404)
+            raise HTTPException(status_code=404, detail="No results found. Please refine your search.")
+        
+    except HTTPException as http_e:
+        if http_e.status_code == 404:
+            return response_template(result="NO_RESULTS", message=http_e.detail, http_code=http_e.status_code)
+        
+        elif http_e.status_code == 400:
+            return response_template(result="EMPTY_PARAMETER", message=http_e.detail, http_code=http_e.status_code)
+        
+        else:
+            return response_template(result="UNEXPECTED_HTTP_ERROR", message=http_e.detail, http_code=http_e.status_code)
 
-        # pagination
+    except Exception as un_expc:
+        print(f"Unexpected error: {un_expc}")
+        return response_template(message=un_expc, http_code=500)
+    
+    else:
+                # pagination 페이지네이션
         current_page = 1  
         page_size = 3  
         total_results = len(paper_list)
@@ -94,69 +108,23 @@ async def process_search(data): # seom-j
 
         print("outputData : ", output_data)
         print("=== FIN /papers/search ===")
-        return JSONResponse(
-            status_code=201,
-            content={
-                "resultCode": 201,
-                "message": "Search completed successfully",
-                "result": output_data,
-            },
-        )
-
-    except HTTPException as e:
-        if e.status_code == 404:
-            return JSONResponse(
-                status_code=404,
-                content={
-                    "resultCode": 404,
-                    "errorCode": "NO_RESULTS",
-                    "message": "No results found. Please refine your search.",
-                },
-            )
-        elif e.status_code == 400:
-            return JSONResponse(
-                status_code=400,
-                content={
-                    "resultCode": 400,
-                    "errorCode": "INVALID PARAMETER",
-                    "message": "Parameter is invalid. Check the input.",
-                },
-            )
-        else:
-            return JSONResponse(
-                status_code=e.status_code,
-                content={
-                    "resultCode": e.status_code,
-                    "errorCode": "UNEXPECTED_ERROR",
-                    "message": "An unexpected error occurred while processing your request.",
-                },
-            )
-    except Exception as e:
-        print(f"Unexpected error: {e}")
-        return JSONResponse(
-            status_code=500,
-            content={
-                "resultCode": 500,
-                "errorCode": "UNEXPECTED_ERROR",
-                "message": "An unexpected error occurred while processing your request.",
-            },
-        )
+        return response_template(result=output_data, message="Search", http_code=201)
+        
 
 # 4. 키워드 최적화
 async def process_transformation(data):
     """
     OPENAI로 출력된 결과로 output 수정 
-    
     """
     print("=== POST /papers/transformation ===")
     try :
+
         user_prompt = data.get("data").userPrompt
         print("userPrompt : ", user_prompt)
-    except Exception as e:
-        print(f"Missing key in parameters: {e}")
-        raise HTTPException(status_code=400, detail="Invalid parameters")
-    
-    try :
+        if not user_prompt:
+            raise HTTPException(status_code=400, detail="Parameter is Empty. Check the userPrompt input.")
+
+
         chatbot = openaiHandler()
         openai_output = chatbot.get_keywords(user_prompt)
         openai_output = json.loads(openai_output)
@@ -169,9 +137,16 @@ async def process_transformation(data):
             for item in openai_output
             if isinstance(item, dict) and "eng" in item and "kor" in item
         ]
-    except Exception as e:
-        print(f"Error processing data: {e}")
-        raise HTTPException(status_code=500, detail="Error processing data")
+        
+
+    except HTTPException as http_e:
+        if http_e.status_code == 400:
+            return response_template(result="EMPTY_PARAMETER", message=http_e.detail, http_code=http_e.status_code)
+        else:
+            return response_template(result="UNEXPECTED_HTTP_ERROR", message=http_e.detail, http_code=http_e.status_code)
+    except Exception as un_expc:
+        raise HTTPException(status_code=500, detail=f"Error processing data: {un_expc}")
+    
     
     try:
         request = data.get("request")
@@ -224,38 +199,46 @@ async def process_transformation(data):
         db_handler.disconnect()
         filtered_keyword_listm = [item for item in generated_keyword_listm if item["paperList"]]
         limited_keyword_listm = filtered_keyword_listm[:5]
-    except Exception as e:
-        print(f"Error processing data: {e}")
-        raise HTTPException(status_code=500, detail="Error processing data")
+        
+        if not limited_keyword_listm :
+            raise HTTPException(status_code=404, detail="No results found. Please refine your search.")
+        
+
+    except HTTPException as http_e:
+        if http_e.status_code == 404:
+            return response_template(result="NO_RESULTS", message=http_e.detail, http_code=http_e.status_code)
+        else:
+            return response_template(result="UNEXPECTED_HTTP_ERROR", message=http_e.detail, http_code=http_e.status_code)
+    except Exception as un_expc:
+        raise HTTPException(status_code=500, detail=f"Error processing data: {un_expc}")    
     
-    if not limited_keyword_listm :
-        raise HTTPException(status_code=404, detail="No results found. Please refine your search.")
+    else:
+        output_data = {
+            "generatedPrompt": f"\"{user_prompt}\"의 키워드 검색 결과입니다.\n\n",
+            "generatedKeywordList": limited_keyword_listm
+        }
+        print("outputData : ", output_data)
 
-    output_data = {
-        "generatedPrompt": f"\"{user_prompt}\"의 키워드 검색 결과입니다.\n\n",
-        "generatedKeywordList": limited_keyword_listm
-    }
-    print("outputData : ", output_data)
-
-    print("=== FIN /papers/transformation ===")
-    return JSONResponse(status_code=201, 
-                    content={
-                        "resultCode" : 201,
-                        "message" : "Keyword optimization successful.",
-                        "result" : output_data
-                    })
+        print("=== FIN /papers/transformation ===")
+        return response_template(result=output_data, message="Keyword", http_code=201)
 
 
 
 # 6. 논문 선택
-async def fetch_paper_details(data):
-    print("=== GET /papers ===")
+async def fetch_paper_details(data:str):
+    print("=== GET /papers/select ===")
     try :
-        paper_doi = data.paperDoi
-        print("paperDoi : ", paper_doi)
-    except Exception as e:
-        print(f"Missing key in parameters: {e}")
-        raise HTTPException(status_code=400, detail="Invalid parameters")
+        paper_doi = data
+        if not paper_doi:
+            raise HTTPException(status_code=400, detail="Parameter is Empty. Check the paperDoi Query.")
+        
+    except HTTPException as http_e:
+        if http_e.status_code == 400:
+            return response_template(result="EMPTY_PARAMETER", message=http_e.detail, http_code=http_e.status_code)
+        else:
+            return response_template(result="UNEXPECTED_HTTP_ERROR", message=http_e.detail, http_code=http_e.status_code)
+    except Exception as un_expc:
+        raise HTTPException(status_code=500, detail=f"Error processing data: {un_expc}")
     
 
     try :
@@ -269,14 +252,21 @@ async def fetch_paper_details(data):
         """
         paper_data = db_handler.fetch_one(select_query, (paper_doi,))
         db_handler.disconnect()
+        
     except Exception as e:
-        print(f"MySQL error: {e}")
-        raise HTTPException(status_code=500, detail="Error fetching data from MySQL")
+        raise HTTPException(status_code=500, detail=f"Error fetching data from MySQL {e}")
     
     try :
         # get s3 path & create output
         s3_path = paper_data["s3_path"]
-        print("s3Path : ", s3_path)
+        
+        modified_doi = paper_doi.replace("/", "_")
+        print("modified_doi : ", modified_doi)
+        
+        parts = s3_path.split("/", 2)  # 최대 3개의 조각으로 분리
+        modified_s3_path = "/".join(parts[:2])  # 첫 두 조각만 다시 결합
+        print("modified_s3_path : ", modified_s3_path)
+        
         s3_handler = S3Handler()  
         url = s3_handler.s3_client.generate_presigned_url(
 
@@ -284,67 +274,77 @@ async def fetch_paper_details(data):
         
         Params={
             'Bucket': "documento-s3", #버켓 이름
-            'Key': "papers/" + s3_path,
+            'Key': "papers/" + modified_s3_path + "/" + modified_doi + ".pdf",
             # aws에 있는 object의 key 값 ( 그림 참조 )
 
         },
         # url 유효기간 (단위:second)
         ExpiresIn=60 * 60 #1시간
         )  
+        
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Error processing data {e}")
+    
+    else:
         output_data = { 
             "paperS3Path": url
         }
-    except Exception as e:
-        print(f"Error processing data: {e}")
-        raise HTTPException(status_code=500, detail="Error processing data")
 
-    return JSONResponse(status_code=200, 
-                    content={
-                        "resultCode" : 200,
-                        "message" : "PDF provided successfully.",
-                        "result" : output_data
-                    })
+        return response_template(result=output_data, message="PDF provided", http_code=200)
+
 
 # 7. 논문요약
 async def process_summary(data):
     print("=== POST /papers/summary ===")
     try :
         paper_doi = data.paperDoi
-        print("paperDoi : ", paper_doi)
-    except Exception as e:
-        print(f"Missing key in parameters: {e}")
-        raise HTTPException(status_code=400, detail="Invalid parameters")
+        paper_doi = data
+        if not paper_doi :
+            raise HTTPException(status_code=400, detail="Parameter is empty. Check the paperDoi input.")
+        
+    except HTTPException as http_e:
+        if http_e.status_code == 400:
+            return response_template(result="EMPTY_PARAMETER", message=http_e.detail, http_code=http_e.status_code)
+        else:
+            return response_template(result="UNEXPECTED_HTTP_ERROR", message=http_e.detail, http_code=http_e.status_code)
+    except Exception as un_expc:
+        raise HTTPException(status_code=500, detail=f"Error processing data: {un_expc}")
+    
+    else:
+        #삭제예정
+        output_data = {
+            "title": "dummy dummy dummy",
+            "userKeyword" : "NLP",
+            "authors": "John Doe, Jane Smith, Alex Johnson",
+            "publicationYear": 2023,
+            "publicationMonth": "October",
+            "generatedKeyword": "Neural Machine Translation and AI",
+            "generatedCoreMethod" : "Method",
+            "generatedTechnologies": "This paper explores recent advancements in neural machine translation, highlighting improvements in accuracy and speed using transformer-based architectures. It discusses practical applications and potential challenges in multilingual systems."
+        }
+        print("outputData : ", output_data)
 
-    output_data = {
-        "title": "Advancements in Neural Machine Translation",
-        "userKeyword" : "NLP",
-        "authors": "John Doe, Jane Smith, Alex Johnson",
-        "publicationYear": 2023,
-        "publicationMonth": "October",
-        "generatedKeyword": "Neural Machine Translation and AI",
-        "generatedCoreMethod" : "Method",
-        "generatedTechnologies": "This paper explores recent advancements in neural machine translation, highlighting improvements in accuracy and speed using transformer-based architectures. It discusses practical applications and potential challenges in multilingual systems."
-    }
-    print("outputData : ", output_data)
-
-    print("=== FIN /papers/summary ===")
-    return JSONResponse(status_code=201, 
-                    content={
-                        "resultCode" : 201,
-                        "message" : "Paper summary and details provided successfully.",
-                        "result" : output_data
-                    })
+        print("=== FIN /papers/summary ===")
+        return response_template(result=output_data, message="Paper summary and details provided", http_code=201)
     
 
 #8. 선행 논문 리스트
 async def fetch_prior_papers(data):
     print("=== GET /papers/priorpapers ===")
     try :
-        paper_doi = data.paperDoi
+        paper_doi = data
         print("paperDoi : ", paper_doi)
-    except Exception as e:
-        print(f"Missing key in parameters: {e}")
-        raise HTTPException(status_code=400, detail="Invalid parameters")
+        if not paper_doi:
+            raise HTTPException(status_code=400, detail="Parameter is Empty. Check the paperDoi Query.")
+        
+
+    except HTTPException as http_e:
+        if http_e.status_code == 400:
+            return response_template(result="EMPTY_PARAMETER", message=http_e.detail, http_code=http_e.status_code)
+        else:
+            return response_template(result="UNEXPECTED_HTTP_ERROR", message=http_e.detail, http_code=http_e.status_code)
+    except Exception as un_expc:
+        raise HTTPException(status_code=500, detail=f"Error processing data: {un_expc}")
     
     try :
         # fetch paper data from MySQL & create output
@@ -380,20 +380,27 @@ async def fetch_prior_papers(data):
                     "similarity": ref["similarity"],
                 })
         db_handler.disconnect()
+        if not paper_list:
+            raise HTTPException(status_code=404, detail="No previous papers found.")
+    
+    
+    except HTTPException as http_e:
+        if http_e.status_code == 404:
+            return response_template(result="NO_PREVIOUS_PAPERS", message=http_e.detail, http_code=http_e.status_code)
+        
+        else:
+            return response_template(result="UNEXPECTED_HTTP_ERROR", message=http_e.detail, http_code=http_e.status_code)
+
     except Exception as e:
         print(f"MySQL error: {e}")
-        raise HTTPException(status_code=500, detail="Error fetching data from MySQL")
+        raise HTTPException(status_code=500, detail=f"Error fetching data from MySQL {e}")
 
-    output_data = {
-            "paperList": paper_list
-        }
-    print("outputData : ", output_data)
-
-    print("=== FIN /papers/priorpapers ===")
-    return JSONResponse(status_code=201, 
-                    content={
-                        "resultCode" : 201,
-                        "message" : "Preceding papers retrieved successfully.",
-                        "result" : output_data
-                    })
+    else: 
+        output_data = {
+                "paperList": paper_list
+            }
+        print("outputData : ", output_data)
+        
+        print("=== FIN /papers/priorpapers ===")
+        return response_template(result=output_data, message="Preceding papers retrieved", http_code=200)
 

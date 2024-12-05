@@ -2,45 +2,36 @@ import mysql.connector
 from mysql.connector import Error
 import json
 import boto3
+import os
 from botocore.exceptions import BotoCoreError, ClientError
 
 
 class MySQLHandler:
-    _instance = None  # 싱글톤 인스턴스 저장 변수
-
-    def __new__(cls, *args, **kwargs):
-        # 싱글톤 인스턴스가 없을 경우 생성
-        if not cls._instance:
-            cls._instance = super(MySQLHandler, cls).__new__(cls, *args, **kwargs)
-        return cls._instance
-
     def __init__(self):
         """
         Initialize MySQLHandler with connection details from aws ssm.
         """
-        if not hasattr(self, "_initialized"):
-            self._initialized = True  # 중복 초기화를 방지하기 위한 플래그
-            self.connection = None
-            self._load_credentials()
+        self.connection = None
+        self._load_credentials()
 
     def _load_credentials(self):
         """
         Load MySQL credentials from aws ssm and initialize connection details.
         """
         try:
-            ssm = boto3.client("ssm")
+            ssm = boto3.client('ssm')
 
-            parameter = ssm.get_parameter(Name="/DOCUMENTO/KEY/MYSQL_ACCESS_KEY/HOST", WithDecryption=True)
-            self.host = parameter["Parameter"]["Value"]
+            parameter = ssm.get_parameter(Name='/DOCUMENTO/KEY/MYSQL_ACCESS_KEY/HOST', WithDecryption=True)
+            self.host = parameter['Parameter']['Value']
 
-            parameter = ssm.get_parameter(Name="/DOCUMENTO/KEY/MYSQL_ACCESS_KEY/USER", WithDecryption=True)
-            self.user = parameter["Parameter"]["Value"]
+            parameter = ssm.get_parameter(Name='/DOCUMENTO/KEY/MYSQL_ACCESS_KEY/USER', WithDecryption=True)
+            self.user = parameter['Parameter']['Value']
 
-            parameter = ssm.get_parameter(Name="/DOCUMENTO/KEY/MYSQL_ACCESS_KEY/PASSWORD", WithDecryption=True)
-            self.password = parameter["Parameter"]["Value"]
+            parameter = ssm.get_parameter(Name='/DOCUMENTO/KEY/MYSQL_ACCESS_KEY/PASSWORD', WithDecryption=True)
+            self.password = parameter['Parameter']['Value']
 
-            parameter = ssm.get_parameter(Name="/DOCUMENTO/KEY/MYSQL_ACCESS_KEY/DATABASE", WithDecryption=True)
-            self.database = parameter["Parameter"]["Value"]
+            parameter = ssm.get_parameter(Name='/DOCUMENTO/KEY/MYSQL_ACCESS_KEY/DATABASE', WithDecryption=True)
+            self.database = parameter['Parameter']['Value']
 
         except (BotoCoreError, ClientError) as e:
             print(f"Error retrieving parameter from SSM: {e}")
@@ -110,3 +101,18 @@ class MySQLHandler:
                 return cursor.fetchone()
         except Error as e:
             raise RuntimeError(f"Error fetching data: {e}")
+
+
+# if __name__ == "__main__":
+#     # Initialize and connect to MySQL
+#     db_handler = MySQLHandler()
+#     db_handler.connect()
+
+#     try:
+#         # Example query
+#         select_query = "SELECT * FROM paper_tb WHERE paper_doi = %s"
+#         user = db_handler.fetch_one(select_query, ("10.18653/v1/2024.acl-long.3",))
+#         print(user)
+#     finally:
+#         # Ensure the connection is closed
+#         db_handler.disconnect()

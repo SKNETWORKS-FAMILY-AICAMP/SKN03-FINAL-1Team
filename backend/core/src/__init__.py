@@ -9,16 +9,20 @@ from .paper import (
 )
 
 from .user import (
-    #create_new_user,
     login_user,
     oauth_callback,
-    #logout_user,
-    #reissue_user_token,
     fetch_user_bookmarks,
     handle_bookmark,
     get_userinfo,
 
 )
+
+from .error_template import(
+    handle_request,
+    validate_token,
+    response_template,
+)
+
 
 from .init import initialize_global_objects # seom-j
 
@@ -28,13 +32,13 @@ __all__ = [
     "process_summary",
     "process_transformation",
     "process_search",
-    #"create_new_user",
     "login_user",
     "oauth_callback",
-    # "logout_user", 
-    #"reissue_user_token",
     "fetch_user_bookmarks",
     "handle_bookmark",
     "initialize_global_objects", # seom-j
     "get_userinfo",
+    "handle_request",
+    "validate_token",
+    "response_template"
 ]
