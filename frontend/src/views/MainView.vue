@@ -15,6 +15,9 @@ import RightSection from '@/components/Chatbot/rightsection/RightSectionMain.vue
 </template>
 
 <style scoped>
+.container-fluid {
+  width: 100%;
+}
 .right-section-wrapper {
   flex-grow: 1; /* 나머지 공간을 차지하도록 설정 */
   display: flex;

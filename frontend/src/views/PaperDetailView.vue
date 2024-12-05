@@ -14,6 +14,7 @@ const pdfUrl = ref('')
 const paperS3Path = ref('')
 const pdfFile = ref(null) // 추가
 const priorPapers = ref(null) // 추가: priorPapers 데이터를 저장할 변수
+const accessToken = 'temp' // 실제 토큰을 할당
 
 const togglePdfViewer = () => {
   showPdfViewer.value = !showPdfViewer.value
@@ -33,7 +34,11 @@ onMounted(async () => {
 
   if (paperId) {
     try {
-      const response = await axios.get(`/papers/${paperId}`)
+      const response = await axios.get(`/papers/${paperId}`, {
+        headers: {
+          Authorization: `Bearer ${accessToken}`, // Authorization 헤더에 토큰 포함
+        },
+      })
       paper.value = response.data
       if (!s3Path && response.data.resultCode === 201) {
         paperS3Path.value = response.data.result.paperS3Path
@@ -51,9 +56,25 @@ onMounted(async () => {
     try {
       const priorResponse = await axios.get('/papers/priorpapers/', {
         params: { paperDoi },
+        headers: {
+          Authorization: `Bearer ${accessToken}`, // Authorization 헤더에 토큰 포함
+        },
       })
       priorPapers.value = priorResponse.data
       console.log('Prior papers:', priorPapers.value)
+
+      // paperDoi 값으로 PDF URL 설정
+      const paperDetailResponse = await axios.get(`/papers/detail/${paperDoi}`, {
+        headers: {
+          Authorization: `Bearer ${accessToken}`, // Authorization 헤더에 토큰 포함
+        },
+      })
+      if (paperDetailResponse.data && paperDetailResponse.data.pdfUrl) {
+        pdfUrl.value = paperDetailResponse.data.pdfUrl
+        fetchPdf(pdfUrl.value) // PDF 파일 가져오기 함수 호출
+      } else {
+        console.error('PDF URL을 가져오는데 실패했습니다.')
+      }
     } catch (error) {
       console.error('Error fetching prior papers:', error)
     }
