@@ -15,7 +15,12 @@ const toggleChat = () => {
   <div class="right-side-content d-flex flex-column align-items-center p-4">
     <toggle-switch :isToggled="isToggled" @toggleChat="toggleChat" />
     <transition name="slide-fade" mode="out-in">
-      <div :key="isToggled ? 'paper-search' : 'chat'" v-if="!isToggled" class="page">
+      <div
+        :key="isToggled ? 'paper-search' : 'chat'"
+        v-if="!isToggled"
+        class="page"
+        style="width: 100%"
+      >
         <keyword-search />
       </div>
       <div :key="isToggled ? 'chat' : 'paper-search'" v-else class="page">
@@ -34,7 +39,6 @@ const toggleChat = () => {
   display: flex;
   flex-direction: column;
   align-items: center; /* 수평 중앙 정렬 */
-  max-width: 900px;
 }
 
 .slide-fade-enter-active,

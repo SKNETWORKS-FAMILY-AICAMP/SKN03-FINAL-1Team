@@ -2,6 +2,7 @@
 import { ref } from 'vue'
 import { useRouter } from 'vue-router'
 import axios from '@/axiosConfig' // 설정한 axios 인스턴스를 가져옵니다.
+import BookmarkIcon from '@/assets/SideComponent/BookmarkIcon.png'
 
 const router = useRouter()
 
@@ -144,25 +145,33 @@ const mockResponse = {
   },
 }
 
+const apiTest = true // API 테스트 모드 추가
+
 // 키워드 최적화 요청 (POST 요청)
 const optimizeKeywords = async () => {
   showIntroAndSteps.value = false
   loading.value = true // 로딩 시작
   errorMessage.value = '' // 기존 에러 메시지 초기화
   try {
-    const response = await axios.post(
-      '/papers/transformation/',
-      {
-        userPrompt: inputPrompt.value,
-      },
-      {
-        headers: {
-          Authorization: `Bearer ${accessToken}`, // Authorization 헤더에 토큰 포함
+    if (apiTest) {
+      // apiTest가 true일 때 mockResponse 사용
+      generatedResults.value = mockResponse.result
+      console.log('Optimized Results:', generatedResults.value)
+    } else {
+      const response = await axios.post(
+        '/papers/transformation/',
+        {
+          userPrompt: inputPrompt.value,
         },
-      },
-    )
-    generatedResults.value = response.data.result
-    console.log('Optimized Results:', generatedResults.value)
+        {
+          headers: {
+            Authorization: `Bearer ${accessToken}`, // Authorization 헤더에 토큰 포함
+          },
+        },
+      )
+      generatedResults.value = response.data.result
+      console.log('Optimized Results:', generatedResults.value)
+    }
   } catch (error) {
     if (error.response && error.response.status === 404) {
       errorMessage.value = '그런건 없어요'
@@ -185,8 +194,6 @@ const handleOptimization = () => {
     console.warn('최적화할 프롬프트를 입력해보세요.')
   }
 }
-
-// DOI 요청 핸들러 및 페이지 이동
 const requestPaperByDoi = async (doi) => {
   try {
     const response = await axios.get(`/papers/select/?paperDoi=${doi}`, {
@@ -203,15 +210,14 @@ const requestPaperByDoi = async (doi) => {
     }
   } catch (error) {
     console.error('논문 세부 정보를 가져오는데 실패했습니다:', error)
-    errorMessage.value = '논문 정보를 불러오는 데 실패했습니다. 다시 시도해주세요.'
+    errorMessage.value = '논문 정보 불러오는 데 실패했습니다. 다시 시도해주세요.'
   }
 }
 </script>
-
 <template>
   <div class="main-container">
     <div class="test-content">
-      <div class="input-area d-flex w-100 p-2">
+      <div class="input-area d-flex p-2">
         <input
           v-model="inputPrompt"
           type="text"
@@ -235,28 +241,39 @@ const requestPaperByDoi = async (doi) => {
         </div>
 
         <div v-if="generatedResults" class="results-area mt-5">
-          <h3 class="mb-4">최적화된 키워드 및 논문:</h3>
           <div class="mb-4">
-            <h4>생성된 프롬프트: {{ generatedResults.generatedPrompt }}</h4>
+            <p class="text-start">{{ generatedResults.generatedPrompt }}</p>
           </div>
           <div
             v-for="(keywordItem, index) in generatedResults.generatedKeywordList"
             :key="index"
             class="mb-4"
           >
-            <h5 class="fw-bold">키워드: {{ keywordItem.generatedKeyword }}</h5>
-            <div
-              v-for="(paper, paperIndex) in keywordItem.paperList"
-              :key="paperIndex"
-              class="card mb-3 shadow-sm"
-              @click="requestPaperByDoi(paper.paperDoi)"
-              style="cursor: pointer"
-            >
-              <div class="card-body">
-                <h6>{{ paper.title }}</h6>
-                <p><strong>DOI:</strong> {{ paper.paperDoi }}</p>
-                <p><strong>초록:</strong> {{ paper.korAbstract }}</p>
-                <p><strong>인용 수:</strong> {{ paper.citation }}</p>
+            <h5 class="fw-bold text-start">
+              {{ keywordItem.generatedKeyword.split('[')[1].split(']')[0] }}
+            </h5>
+            <h5 class="fw-bold text-start">{{ keywordItem.generatedKeyword.split('[')[0] }}</h5>
+            <div class="d-flex flex-wrap">
+              <div
+                v-for="(paper, paperIndex) in keywordItem.paperList"
+                :key="paperIndex"
+                class="card mb-3 shadow-sm me-3"
+                @click="requestPaperByDoi(paper.paperDoi)"
+                style="cursor: pointer; width: 30%"
+              >
+                <div class="card-body text-start">
+                  <div class="d-flex align-items-center">
+                    <p class="fw-bold">{{ paper.title }}</p>
+                    <img :src="BookmarkIcon" class="px-1" />
+                  </div>
+                  <p>
+                    {{
+                      paper.engAbstract.length > 250
+                        ? paper.engAbstract.slice(0, 250) + '...'
+                        : paper.engAbstract
+                    }}
+                  </p>
+                </div>
               </div>
             </div>
           </div>
@@ -289,11 +306,33 @@ const requestPaperByDoi = async (doi) => {
 
 <style scoped>
 .main-container {
-  width: 600px;
+  max-height: 80vh; /* 최대 높이 설정 */
+  overflow-y: auto; /* 수직 스크롤 추가 */
+  display: flex;
+  align-items: center; /* 수직 가운데 정렬 */
+  justify-content: center; /* 수평 가운데 정렬 */
+}
+
+.main-container::-webkit-scrollbar {
+  width: 8px; /* 스크롤 바의 너비 */
+}
+
+.main-container::-webkit-scrollbar-thumb {
+  background-color: #da7e7e; /* 스크롤 바의 색상 (부트스트랩 기본색) */
+  border-radius: 4px; /* 스크롤 바의 모서리 둥글기 */
+}
+
+.main-container::-webkit-scrollbar-thumb:hover {
+  background-color: #8a9cce; /* 스크롤 바 호버 시 색상 */
+}
+
+.main-container::-webkit-scrollbar-track {
+  background-color: #f8f9fa; /* 스크롤 바 트랙의 배경색 */
 }
 
 .test-content {
-  width: 600px;
+  margin: auto;
+  max-width: 1000px;
 }
 
 .input-area {
@@ -336,6 +375,7 @@ const requestPaperByDoi = async (doi) => {
 .results-area .card {
   max-width: 600px;
   margin: 0 auto;
+  border: 1px solid #a04747;
 }
 
 .intro-text {

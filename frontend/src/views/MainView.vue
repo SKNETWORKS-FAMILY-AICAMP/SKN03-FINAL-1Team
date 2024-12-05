@@ -8,7 +8,7 @@ import RightSection from '@/components/Chatbot/rightsection/RightSectionMain.vue
     <div class="p-0">
       <SideComponent />
     </div>
-    <div class="right-section-wrapper d-flex justify-content-center align-items-center p-0 m-0">
+    <div class="right-section-wrapper d-flex justify-content-center align-items-center">
       <RightSection />
     </div>
   </div>
@@ -20,5 +20,6 @@ import RightSection from '@/components/Chatbot/rightsection/RightSectionMain.vue
   display: flex;
   justify-content: center; /* 수평 중앙 정렬 */
   align-items: center; /* 수직 중앙 정렬 */
+  width: 1600px;
 }
 </style>
