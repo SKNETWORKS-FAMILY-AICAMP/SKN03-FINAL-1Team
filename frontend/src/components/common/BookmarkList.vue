@@ -1,6 +1,7 @@
 <script setup>
 import { ref, onMounted } from 'vue'
 import { useRoute } from 'vue-router'
+import BookmarkIcon from '@/assets/SideComponent/BookmarkIcon.png'
 import axios from '@/axiosConfig'
 
 const bookmarks = ref([])
@@ -64,10 +65,15 @@ onMounted(() => {
         :key="bookmark.bookmarkList"
         class="list-group-item text-start my-2 rounded-4"
       >
-        <h5>
-          <strong class="fst-italic">{{ bookmark.title }}</strong>
-        </h5>
-        <p>{{ bookmark.generatedKeyword }}</p>
+        <div class="d-flex align-items-center">
+          <div class="me-3">
+            <h5>
+              <strong class="fst-italic">{{ bookmark.title }}</strong>
+            </h5>
+            <p>{{ bookmark.generatedKeyword }}</p>
+          </div>
+          <img :src="BookmarkIcon" class="ms-auto" />
+        </div>
       </li>
     </ul>
   </div>

@@ -49,11 +49,12 @@ navbarStore.setSelectedNavItem(view)
   border-bottom-right-radius: 15px;
   box-shadow: 2px 0px 10px 4px #515151;
   margin-right: 20px;
-  transition: width 0.3s;
+  transition: width 0.3s ease;
 }
 
 .left-side-content.collapsed {
   width: 80px;
+  transition: width 0.3s ease;
 }
 
 .accordion-button {
