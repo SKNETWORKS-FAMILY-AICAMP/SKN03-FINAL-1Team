@@ -1,9 +1,3 @@
-<template>
-  <div class="pdf-container">
-    <embed :src="src" class="pdf-viewer" type="application/pdf" />
-  </div>
-</template>
-
 <script setup>
 const props = defineProps({
   src: {
@@ -12,6 +6,12 @@ const props = defineProps({
   },
 })
 </script>
+
+<template>
+  <div class="pdf-container">
+    <embed :src="src" class="pdf-viewer" type="application/pdf" />
+  </div>
+</template>
 
 <style scoped>
 .pdf-container {
