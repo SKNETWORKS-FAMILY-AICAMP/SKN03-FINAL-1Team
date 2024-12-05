@@ -6,14 +6,23 @@ import PaperSearchItem from '@/components/Chatbot/rightsection/PaperSearchItem.v
 const inputText = ref('')
 const papers = ref([])
 const loading = ref(false) // 로딩 상태 추가
+const accessToken = 'temp' // 여기서 실제 토큰을 할당
 
 // 논문 데이터 가져오기 (POST 요청)
 const fetchPapers = async () => {
   loading.value = true // 로딩 시작
   try {
-    const response = await axios.post('/papers/search/', {
-      userKeyword: inputText.value,
-    })
+    const response = await axios.post(
+      '/papers/search/',
+      {
+        userKeyword: inputText.value,
+      },
+      {
+        headers: {
+          Authorization: `Bearer ${accessToken}`, // Authorization 헤더에 토큰 포함
+        },
+      },
+    )
     papers.value = response.data.result.paperList
     console.log('Papers:', papers.value)
   } catch (error) {
