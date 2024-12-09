@@ -84,7 +84,7 @@ onMounted(() => {
   flex-grow: 1;
   display: flex;
   flex-direction: column;
-  padding: 20px;
+  padding: 20px 0px 20px 20px;
 }
 
 .bookmark-list {
