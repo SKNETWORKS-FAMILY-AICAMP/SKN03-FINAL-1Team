@@ -242,17 +242,19 @@ const requestPaperByDoi = async (doi) => {
 
         <div v-if="generatedResults" class="results-area mt-5">
           <div class="mb-4">
-            <p class="text-start">{{ generatedResults.generatedPrompt }}</p>
+            <p class="text-start dynamic-padding">{{ generatedResults.generatedPrompt }}</p>
           </div>
           <div
             v-for="(keywordItem, index) in generatedResults.generatedKeywordList"
             :key="index"
             class="mb-4"
           >
-            <h5 class="fw-bold text-start">
-              {{ keywordItem.generatedKeyword.split('[')[1].split(']')[0] }}
+            <h5 class="fw-bold text-start dynamic-padding">
+              {{ index + 1 }}. {{ keywordItem.generatedKeyword.split('[')[1].split(']')[0] }}
             </h5>
-            <h5 class="fw-bold text-start">{{ keywordItem.generatedKeyword.split('[')[0] }}</h5>
+            <h5 class="fw-bold text-start dynamic-padding pb-1">
+              {{ keywordItem.generatedKeyword.split('[')[0] }}
+            </h5>
             <div class="d-flex flex-wrap">
               <div
                 v-for="(paper, paperIndex) in keywordItem.paperList"
@@ -393,5 +395,16 @@ const requestPaperByDoi = async (doi) => {
 
 .shadow {
   box-shadow: 0 0.5rem 1rem rgba(0, 0, 0, 0.15) !important;
+}
+@media (max-width: 999px) {
+  .dynamic-padding {
+    padding-left: 0 !important;
+  }
+}
+
+@media (min-width: 1000px) {
+  .dynamic-padding {
+    padding-left: 1rem !important;
+  }
 }
 </style>

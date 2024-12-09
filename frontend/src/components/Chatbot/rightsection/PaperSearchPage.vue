@@ -45,7 +45,7 @@ const sendMessage = () => {
 <template>
   <div class="main-container">
     <div class="test-content">
-      <div class="input-area d-flex w-100 p-2">
+      <div class="input-area d-flex p-2">
         <input
           v-model="inputText"
           type="text"
@@ -71,11 +71,18 @@ const sendMessage = () => {
 
 <style scoped>
 .main-container {
-  width: 600px;
+  max-height: 80vh; /* 최대 높이 설정 */
+  overflow-y: auto; /* 수직 스크롤 추가 */
+  display: flex;
+  flex-grow: 1;
+  align-items: center; /* 수직 가운데 정렬 */
+  justify-content: center; /* 수평 가운데 정렬 */
 }
 
 .test-content {
-  width: 600px;
+  margin: auto;
+  width: 100%; /* 좌우로 꽉 차게 설정 */
+  max-width: 1000px;
 }
 
 .input-area {

@@ -23,7 +23,7 @@ const toggleChat = () => {
       >
         <keyword-search />
       </div>
-      <div :key="isToggled ? 'chat' : 'paper-search'" v-else class="page">
+      <div :key="isToggled ? 'chat' : 'paper-search'" v-else class="page" style="width: 100%">
         <paper-search-page />
       </div>
     </transition>

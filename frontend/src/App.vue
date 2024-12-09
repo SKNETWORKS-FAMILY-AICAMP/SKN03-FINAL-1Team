@@ -9,10 +9,10 @@
 </template>
 
 <style scoped>
-@import '@/assets/fonts/Pretendard.css';
+@import '@/assets/font/Pretendard.css';
 
 #app {
-  font-family: Arial, sans-serif;
+  font-family: 'Pretendard', Arial, sans-serif;
   text-align: center;
   padding: 0px;
 }
