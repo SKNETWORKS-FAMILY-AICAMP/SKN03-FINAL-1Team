@@ -1,11 +1,8 @@
 <script setup>
 import { ref, onMounted } from 'vue'
-import { useRoute } from 'vue-router'
 import BookmarkIcon from '@/assets/SideComponent/BookmarkIcon.png'
-import axios from '@/axiosConfig'
 
 const bookmarks = ref([])
-const route = useRoute()
 
 const mockResponse = {
   resultCode: 201,
@@ -44,26 +41,67 @@ const fetchBookmarks = async () => {
     console.log(bookmarks)
   } catch (error) {
     console.error('선행 논문을 가져오는 중 오류 발생:', error)
-
-    if (mockResponse.resultCode === 201 && mockResponse.result.paperList) {
-      bookmarks.value = mockResponse.result.paperList
-    }
   }
+}
+
+const initDragAndDrop = () => {
+  const draggables = document.querySelectorAll('.draggable')
+  const container = document.getElementById('bookmark-list')
+
+  draggables.forEach((draggable) => {
+    draggable.addEventListener('dragstart', () => {
+      draggable.classList.add('dragging')
+    })
+
+    draggable.addEventListener('dragend', () => {
+      draggable.classList.remove('dragging')
+    })
+  })
+
+  container.addEventListener('dragover', (e) => {
+    e.preventDefault()
+    const afterElement = getDragAfterElement(container, e.clientY)
+    const draggable = document.querySelector('.dragging')
+    if (afterElement == null) {
+      container.appendChild(draggable)
+    } else {
+      container.insertBefore(draggable, afterElement)
+    }
+  })
+}
+
+const getDragAfterElement = (container, y) => {
+  const draggableElements = [...container.querySelectorAll('.draggable:not(.dragging)')]
+
+  return draggableElements.reduce(
+    (closest, child) => {
+      const box = child.getBoundingClientRect()
+      const offset = y - box.top - box.height / 2
+      if (offset < 0 && offset > closest.offset) {
+        return { offset: offset, element: child }
+      } else {
+        return closest
+      }
+    },
+    { offset: Number.NEGATIVE_INFINITY },
+  ).element
 }
 
 onMounted(() => {
   fetchBookmarks()
+  initDragAndDrop()
 })
 </script>
 
 <template>
   <div class="bookmark-container flex-column">
     <div class="bookmark-list mt-5 text-start">북마크 리스트</div>
-    <ul class="list-group text-start">
+    <ul id="bookmark-list" class="list-group text-start">
       <li
         v-for="bookmark in bookmarks"
-        :key="bookmark.bookmarkList"
-        class="list-group-item text-start my-2 rounded-4"
+        :key="bookmark.bookmarkTitle"
+        class="list-group-item text-start my-2 rounded-4 draggable"
+        draggable="true"
       >
         <div class="d-flex align-items-center">
           <div class="me-3">
@@ -103,5 +141,13 @@ onMounted(() => {
   width: 100%;
   height: 1px;
   background-color: white;
+}
+
+.draggable {
+  cursor: grab;
+}
+
+.dragging {
+  opacity: 0.5;
 }
 </style>

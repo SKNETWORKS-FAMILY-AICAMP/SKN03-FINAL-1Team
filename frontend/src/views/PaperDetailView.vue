@@ -12,8 +12,8 @@ const route = useRoute()
 const showPdfViewer = ref(false)
 const pdfUrl = ref('')
 const paperS3Path = ref('')
-const pdfFile = ref(null) // 추가
-const priorPapers = ref(null) // 추가: priorPapers 데이터를 저장할 변수
+const pdfFile = ref(null)
+const priorPapers = ref(null)
 const accessToken = 'temp' // 실제 토큰을 할당
 
 const togglePdfViewer = () => {
@@ -81,6 +81,26 @@ onMounted(async () => {
   } else {
     console.warn('paperDoi 쿼리 파라미터가 없습니다.')
   }
+
+  // 드래그 앤 드롭 이벤트 추가
+  const dropBox = document.querySelector('.pdf-box')
+  dropBox.addEventListener('dragover', (e) => {
+    e.preventDefault()
+    dropBox.classList.add('dragging-over')
+  })
+
+  dropBox.addEventListener('dragleave', () => {
+    dropBox.classList.remove('dragging-over')
+  })
+
+  dropBox.addEventListener('drop', (e) => {
+    e.preventDefault()
+    dropBox.classList.remove('dragging-over')
+    const draggable = document.querySelector('.dragging')
+    if (draggable) {
+      alert('PDF 박스에 드랍되었습니다!')
+    }
+  })
 })
 
 const fetchPdf = async (url) => {
@@ -104,7 +124,7 @@ const fetchPdf = async (url) => {
         <PdfViewer :src="pdfFile" />
         <!-- src를 pdfFile로 변경 -->
       </div>
-      <div v-else class="d-flex align-items-center dotted-box" @click="togglePdfViewer">
+      <div v-else class="pdf-box d-flex align-items-center dotted-box" @click="togglePdfViewer">
         <div>
           <img :src="DropIcon" class="flex-row align-items-center" />
           <p>S3 Path: {{ paperS3Path }}</p>
@@ -137,5 +157,9 @@ p {
   border: 4px dotted #888888;
   margin-top: 20px;
   cursor: pointer;
+}
+
+.dragging-over {
+  border-color: #555; /* 드래그 중일 때 테두리 색 변경 */
 }
 </style>
