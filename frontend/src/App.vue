@@ -1,4 +1,6 @@
-<script setup></script>
+<script setup>
+import '@/assets/fonts/Pretendard.css'
+</script>
 
 <template>
   <div id="app">
@@ -9,10 +11,8 @@
 </template>
 
 <style scoped>
-/* @import '@/assets/font/Pretendard.css'; */
-
 #app {
-  font-family: Arial, sans-serif;
+  font-family: 'Pretendard', Arial, sans-serif;
   text-align: center;
   padding: 0px;
 }
