@@ -24,7 +24,7 @@ const routes = [
     component: MainView,
   },
   {
-    path: '/paper/select',
+    path: '/papers/select',
     name: 'paper-detail',
     component: PaperDetailView,
   },
