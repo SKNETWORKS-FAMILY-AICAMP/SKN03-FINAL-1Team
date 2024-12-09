@@ -17,12 +17,8 @@
     "pdfjs-dist": "^4.9.124",
     "pinia": "^2.2.6",
     "vue": "^3.5.12",
-    "vue-google-oauth2": "^1.5.10",
     "vue-pdf": "^4.3.0",
-    "vue-router": "^4.4.5",
-    "vue3-google-oauth2": "^1.0.7",
-    "vue3-google-signin": "^2.0.0",
-    "vuedraggable": "^2.24.3"
+    "vue-router": "^4.4.5"
   },
   "devDependencies": {
     "@eslint/js": "^9.14.0",
