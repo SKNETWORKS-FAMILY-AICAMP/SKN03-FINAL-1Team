@@ -1,7 +1,7 @@
 <script setup>
 import { ref, onMounted } from 'vue'
 import { useRoute } from 'vue-router'
-import axios from '@/axiosConfig'
+import axiosConfig from '@/axiosConfig' // axiosConfig 파일을 가져옵니다.
 
 const paperS3Path = ref('')
 const pdfFile = ref(null)
@@ -12,7 +12,7 @@ onMounted(async () => {
   const paperDoi = route.query.paperDoi
   if (paperDoi) {
     try {
-      const response = await axios.get(`https://api.documento.click/papers/select`, {
+      const response = await axiosConfig.get('/papers/select', {
         params: { paperDoi },
         headers: {
           Authorization: `Bearer ${accessToken}`, // Authorization 헤더에 토큰 포함
