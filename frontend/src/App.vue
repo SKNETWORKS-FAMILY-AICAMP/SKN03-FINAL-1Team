@@ -9,6 +9,8 @@
 </template>
 
 <style scoped>
+@import '@/assets/fonts/Pretendard.css';
+
 #app {
   font-family: Arial, sans-serif;
   text-align: center;
