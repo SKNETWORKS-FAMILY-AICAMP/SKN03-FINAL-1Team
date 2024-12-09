@@ -85,6 +85,7 @@ const selectedNavItem = computed(() => navbarStore.selectedNavItem)
   box-shadow: 2px 0px 10px 4px #515151; /* 섀도우 속성 추가 */
   border-top-right-radius: 15px;
   border-bottom-right-radius: 15px;
+  padding: 2px;
 }
 
 .icon-list {
@@ -120,6 +121,8 @@ const selectedNavItem = computed(() => navbarStore.selectedNavItem)
 }
 
 .logo {
+  width: 38px;
+  margin: 11px;
   cursor: pointer;
 }
 
