@@ -80,6 +80,7 @@ const sendMessage = () => {
 }
 
 .test-content {
+  flex-grow: 1;
   margin: auto;
   width: 100%; /* 좌우로 꽉 차게 설정 */
   max-width: 1000px;
