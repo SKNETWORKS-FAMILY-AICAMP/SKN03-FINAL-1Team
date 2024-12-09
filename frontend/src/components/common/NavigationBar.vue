@@ -1,5 +1,5 @@
 <script setup>
-import { ref, computed } from 'vue'
+import { ref, computed, watchEffect } from 'vue'
 import { useRouter, useRoute } from 'vue-router'
 import { useNavbarStore } from '@/stores/navbarStore'
 import DocumentIcon from '@/assets/IconBar/DocumentIcon.png'
@@ -8,14 +8,39 @@ import HamburgerIcon from '@/assets/IconBar/HamburgerIcon.png'
 import SettingIcon from '@/assets/IconBar/SettingIcon.png'
 import HomeIcon from '@/assets/IconBar/HomeIcon.png'
 import TreeIcon from '@/assets/IconBar/TreeIcon.png'
+import MagnifierIcon from '@/assets/IconBar/MagnifierIcon.png'
 
 const navbarStore = useNavbarStore()
 const router = useRouter()
 const route = useRoute()
 
+const footerIcons = ref([
+  { id: 1, src: DocumentIcon, view: 'paper/select' },
+  { id: 'home', src: HomeIcon, view: 'home' },
+  { id: 3, src: SettingIcon, view: 'settings' },
+])
+
+watchEffect(() => {
+  if (route.fullPath.startsWith('/paper/select')) {
+    changeIcon()
+  }
+})
+
+function changeIcon() {
+  footerIcons.value = footerIcons.value.map((icon) =>
+    icon.id === 1 ? { ...icon, src: MagnifierIcon, view: 'main' } : icon,
+  )
+}
+
 const handleIconClick = (view) => {
   if (view === 'home') {
     router.push('/')
+  }
+  if (view === 'main') {
+    router.push('/main')
+  }
+  if (view === 'paper/select') {
+    router.push('/paper/select')
   } else {
     navbarStore.setSelectedNavItem(view)
   }
@@ -33,12 +58,6 @@ const mainIcons = computed(() => {
 
   return icons
 })
-
-const footerIcons = ref([
-  { id: 1, src: DocumentIcon, view: 'footer1' },
-  { id: 'home', src: HomeIcon, view: 'home' },
-  { id: 3, src: SettingIcon, view: 'settings' },
-])
 
 const selectedNavItem = computed(() => navbarStore.selectedNavItem)
 </script>
