@@ -14,12 +14,12 @@ from fastapi.encoders import jsonable_encoder
 # ********************************************* #
 
 
-# ***************  Oauth Logic  *************** #
+# ***************  Oauth Logic / JWT  *************** #
 async def login_user(data):
     print("===  /login ===")
     oauth = googleOAuth()
     return RedirectResponse(
-        f"{oauth.authorization_url}?response_type=code&client_id={oauth.client_id}&redirect_uri={oauth.redirect_uri}&scope=openid%20email%20profile"
+        f"{oauth.authorization_url}?scope=openid%20email%20profile&access_type=offline&response_type=code&redirect_uri={oauth.redirect_uri}&client_id={oauth.client_id}"
     )
 
 
@@ -28,10 +28,10 @@ async def oauth_callback(code):
     
     try:
         if not code:  # code None 또는 빈 문자열인 경우 처리
-            raise HTTPException(status_code=400)
+            raise HTTPException(status_code=400, detail= "Parameter is Invalid or Empty. Check the input")
         
         oauth = googleOAuth()
-        print("oauth is success")
+
         token_response = requests.post(
         oauth.token_url,
         data={
@@ -80,7 +80,7 @@ async def oauth_callback(code):
             content={
                 "resultCode" : 400,
                 "errorCode": "INVALID PARAMETER",
-                "message": "Parameter is Invalid. Check the input"
+                "message": he.detail
             }
         )
         else:

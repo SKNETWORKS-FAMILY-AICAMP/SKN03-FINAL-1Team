@@ -94,6 +94,7 @@ async def login():
 # 2-1. 회원가입/로그인 용
 @app.get("/auth/callback")
 async def auth_callback(code: str = ""):
+    print("code : ", code)
     return await handle_request(oauth_callback, code)
 
 # 2-2. 세션 저장용
