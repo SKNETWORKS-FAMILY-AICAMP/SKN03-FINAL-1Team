@@ -43,7 +43,7 @@ const fetchPaperSummary = async () => {
 }
 
 onMounted(() => {
-  fetchPaperSummary()
+  // fetchPaperSummary()
 })
 </script>
 

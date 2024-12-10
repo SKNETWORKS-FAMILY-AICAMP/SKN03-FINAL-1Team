@@ -51,7 +51,7 @@ const fetchPriorPapers = async () => {
 }
 
 onMounted(() => {
-  fetchPriorPapers()
+  // fetchPriorPapers()
 })
 </script>
 
