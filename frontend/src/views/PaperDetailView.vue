@@ -12,7 +12,7 @@ onMounted(async () => {
   const paperDoi = route.query.paperDoi
   if (paperDoi) {
     try {
-      const response = await axiosConfig.get('/papers/select', {
+      const response = await axiosConfig.get('/papers/select/', {
         params: { paperDoi },
         headers: {
           Authorization: `Bearer ${accessToken}`, // Authorization 헤더에 토큰 포함
