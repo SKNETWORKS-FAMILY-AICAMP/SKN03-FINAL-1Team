@@ -57,13 +57,13 @@ onMounted(async () => {
 })
 
 const fetchPdf = async (url) => {
-  try {
-    const response = await fetch(url)
-    const blob = await response.blob()
-    pdfFile.value = URL.createObjectURL(blob)
-  } catch (error) {
-    console.error('Error fetching PDF:', error)
-  }
+  // try {
+  //   const response = await fetch(url)
+  //   const blob = await response.blob()
+  //   pdfFile.value = URL.createObjectURL(blob)
+  // } catch (error) {
+  //   console.error('Error fetching PDF:', error)
+  // }
 }
 </script>
 
