@@ -1,13 +1,22 @@
 from fastapi import HTTPException
-from fastapi.responses import JSONResponse, RedirectResponse
+from fastapi.responses import RedirectResponse
 from .utils import googleOAuth, MySQLHandler
 from .error_template import *
 import requests, json
 from uuid import uuid4
 from fastapi.encoders import jsonable_encoder
+from datetime import datetime, timedelta, timezone
 
+def _check_expiretime(expire:int):
+    expires_in = expire - 60
+    # 현재 시간 계산
+    current_time = current_time = datetime.now(timezone.utc)
+    # 만료 시간 계산
+    expiration_time = current_time + timedelta(seconds=expires_in)
+    # MySQL에 저장 가능한 TIMESTAMP 형식으로 변환
+    expiration_time_str = expiration_time.strftime('%Y-%m-%d %H:%M:%S')
 
-
+    return expiration_time_str
 
 # ********************************************* #
 # ***************  About  User  *************** #
@@ -19,7 +28,7 @@ async def login_user(data):
     print("===  /login ===")
     oauth = googleOAuth()
     return RedirectResponse(
-        f"{oauth.authorization_url}?scope=openid%20email%20profile&access_type=offline&response_type=code&redirect_uri={oauth.redirect_uri}&client_id={oauth.client_id}"
+        f"{oauth.authorization_url}?scope=openid%20email%20profile&access_type=offline&response_type=code&redirect_uri={oauth.redirect_uri}&client_id={oauth.client_id}&prompt=select_account"
     )
 
 
@@ -28,7 +37,7 @@ async def oauth_callback(code):
     
     try:
         if not code:  # code None 또는 빈 문자열인 경우 처리
-            raise HTTPException(status_code=400, detail= "Parameter is Invalid or Empty. Check the input")
+            raise HTTPException(status_code=500, detail= "Parameter is Invalid or Empty. Check the input")
         
         oauth = googleOAuth()
 
@@ -44,169 +53,122 @@ async def oauth_callback(code):
         )
         
         if token_response.status_code != 200:
-            print("Failed to get token")
-            raise HTTPException(status_code=token_response.status_code)
+            raise HTTPException(status_code=token_response.status_code, detail=token_response.content)
         
         token_response_data = token_response.json()
-        print("token_response : ", token_response_data)
+
         access_token = token_response_data.get("access_token")
+        refresh_token = token_response_data.get("refresh_token")
         
+        expires_in = token_response_data.get("expires_in")
+        expires_in = _check_expiretime(expires_in)
+        
+
         if not access_token:
-            print("Invalid token")
-            raise HTTPException(status_code=404)
+            raise HTTPException(status_code=500, detail="Invalid token")
 
         # 구글에게 Access Token을 통해 사용자 정보 요청
         user_info_response = requests.get(
             oauth.user_info_url, headers={"Authorization": f"Bearer {access_token}"}
         )
+        
         if user_info_response.status_code != 200:
-            print("Failed to get user info")
-            raise HTTPException(status_code=user_info_response.status_code)  
+            raise HTTPException(status_code=user_info_response.status_code, detail=user_info_response.content)  
+        
+        user_info = user_info_response.json()
+        email = user_info.get("email", "")
+        name = user_info.get("name", "")
+        picute = user_info.get("picture", "")
         
 
     except HTTPException as he:
-        if he.status_code == 404:
-            return JSONResponse(
-            status_code=404,
-            content={
-                "resultCode" : 404,
-                "errorCode": "Invalid token",
-                "message": "The Toekn is Invaild."
-            }
-        )
-        elif he.status_code == 400:
-            return JSONResponse(
-            status_code=400,
-            content={
-                "resultCode" : 400,
-                "errorCode": "INVALID PARAMETER",
-                "message": he.detail
-            }
-        )
+        return response_template(result="GOOGLE_ACCESS_ERROR", message=he.detail, http_code=503)
+
+
+    # DB에 저장
+    try:
+        db_handler = MySQLHandler()
+        db_handler.connect()
+        
+        check_query = "SELECT user_id FROM DOCUMENTO.user WHERE email = %s"
+        check_result = db_handler.fetch_one(check_query, (email, ))        
+        
+        if check_result:
+            print("=== EXIST CUSTOMER ===")
+            update_query = "UPDATE DOCUMENTO.auth SET access_token = %s, expires_at = %s WHERE user_id = %s"
+            db_handler.execute_query(update_query,(access_token, expires_in, check_result['user_id']))    
+        
         else:
-            return JSONResponse(
-            status_code=he.status_code,
-            content={
-                "resultCode" : he.status_code,
-                "errorCode": "UNEXPECTED_ERROR",
-                "message": "An unexpected error occurred while processing your request."
-            }
-        )
-
-
-    else:
-        user_info = user_info_response.json()
-        print("raw_data : ",user_info_response )
-        print("json_data : ", user_info)
-        print("header : ", user_info_response.headers)
-        # 콘솔에 유저 정보 출력
-        print("User Info received from Google:", user_info)
-        # # 세션 ID를 생성하는 함수
-        def generate_session_id():
-            numeric_id = int(uuid4().int % 10**15)  # 숫자 15자리 제한
-            return numeric_id
-        # 세션 생성
-        session_id = generate_session_id()
-        email = user_info.get("email", "")
-        name = user_info.get("name", "")
-        try: 
-
-            db_handler = MySQLHandler()
-            db_handler.connect()
+            print("=== NEW CUSTOMER ===")
+            def generate_session_id():
+                numeric_id = int(uuid4().int % 10**6)  # 숫자 15자리 제한
+                return numeric_id
+        
+            uuid = generate_session_id()
             
-            insert_query = "SELECT * FROM DOCUMENTO.user WHERE email = %s"
-            request_result = db_handler.fetch_one(insert_query, (email, ))
-            if request_result:
-                update_query = "UPDATE DOCUMENTO.user SET user_id = %s WHERE email = %s"
-                db_handler.execute_query(update_query, session_id, email)
+            # 수정예정
+            # user table에 picture 도 있어야함
+            user_insert_query = "INSERT INTO DOCUMENTO.user (user_id, email, name) VALUES (%s, %s, %s)"
+            db_handler.execute_query(user_insert_query, (uuid, email, name))       
+            auth_insert_query = "INSERT INTO DOCUMENTO.auth (user_id, access_token, refresh_token, expires_at) VALUES (%s, %s, %s, %s)"
+            db_handler.execute_query(auth_insert_query, (uuid, access_token, refresh_token, expires_in))             
 
-            else:
-                insert_query = "INSERT INTO DOCUMENTO.user (user_id, email, name) VALUES (%s, %s, %s)"
-                db_handler.execute_query(insert_query, (session_id, email, name))
-        except Exception as e:
-            print(f"Error with insert to MySQL: {e}")
-        else:
+    except Exception as e:
+        print(f"MySQL error: {e}")
+        raise HTTPException(status_code=500, detail=f"Error fetching data from MySQL {e}")
+    
+    
+    else:
+        output_data = {"accessToken": access_token}
+        return response_template(result=output_data, message="Login", http_code=201)
         
-        #     print("++++++++++++++++++++++++==SSID++++++++++++++++++++++++++++++++")
-        #     # 쿠키로 세션 아이디를 전달
-        #     response = RedirectResponse(url="https://www.documento.click/")
-        #     response.set_cookie(key="session_id", 
-        #                         value=session_id, 
-        #                         httponly=True, 
-        #                         max_age=3600 * 60,)
-
-        # # 쿠키 설정 검증 출력
-        #     print("Set-Cookie Header:", response.headers.get("set-cookie"))
-            return {"accessToken": access_token}
-        
-        finally:
-            db_handler.disconnect()
+    finally:
+        db_handler.disconnect()
     
     
   
-async def get_userinfo(ssid):
+async def get_userinfo(request:Request):
     print("=== GET /user_info ===")
-    
+    print(request.headers)
     try:
-        if not ssid:  # ssid None 또는 빈 문자열인 경우 처리
-            raise HTTPException(status_code=401)
-        ssid = int(ssid) 
+        if "Authorization" not in request.headers:
+            raise HTTPException(status_code=400, detail="user not login yet. please login firtst")
+    
+        token = request.headers["authorization"][len("Bearer "):]
+    
+    except HTTPException as http_e:
+        if http_e.status_code == 400:
+            return response_template(result="NOT_LOGIN", message=http_e.detail, http_code=http_e.status_code)
         
-        #싱글톤 시 수정
+    try:
         db_handler = MySQLHandler()
         db_handler.connect()
-        select_query = "SELECT * FROM user WHERE user_id = %s"
-        result = db_handler.fetch_one(select_query, (ssid, ))
-        print("====================serch db====================")
-        print(result)
-        if not result:
-            raise HTTPException(status_code=404)
+        isuser_query = "SELECT user_id FROM DOCUMENTO.auth WHERE access_token = %s"
+        uuid = db_handler.fetch_one(isuser_query, (token, ))['user_id']
         
+        #수정예정
+        #refresh 토큰
         
+        select_query = "SELECT * FROM DOCUMENTO.user WHERE user_id = %s"
+        result = db_handler.fetch_one(select_query, (uuid, ))
         
-    except HTTPException as he:
-        if he.status_code == 404:
-            return JSONResponse(
-            status_code=404,
-            content={
-                "resultCode" : 404,
-                "errorCode": "NO_RESULTS",
-                "message": "No results found. ."
-            }
-        )
-        elif he.status_code == 401:
-            return JSONResponse(
-            status_code=401,
-            content={
-                "resultCode" : 401,
-                "errorCode": "NO SSID",
-                "message": "No session id. There is No ssid in Cookies"
-            }
-        )
-        else:
-            return JSONResponse(
-            status_code=he.status_code,
-            content={
-                "resultCode" : he.status_code,
-                "errorCode": "UNEXPECTED_ERROR",
-                "message": "An unexpected error occurred while processing your request."
-            }
-        )
+    except Exception as e:
+        print(f"MySQL error: {e}")
+        raise HTTPException(status_code=500, detail=f"Error fetching data from MySQL {e}")
 
     
     else:
-        output = {
-            "session_id" : ssid,
-            "email" : result.get("email"),
-            "name" : result.get("name", "홍길동")
+        #수정예정
+        #S3에 default 프로필 이미지 없로드 해야할듯
+        output_data = {
+            "accessToken" : token, #멘토님이 북마크에서 말했던것 처럼
+            "email" : result.get("email",""),
+            "name" : result.get("name", "홍길동"),
+            "picute" : result.get("picute","")
             
         }
-        return JSONResponse(status_code=200, 
-                    content={
-                        "resultCode" : 200,
-                        "message" : "user_info retrieved successfully.",
-                        "result" : output
-                    })
+        return response_template(result=output_data, message="User_info retrieved", http_code=200)
+
     finally:
         db_handler.disconnect()
 
@@ -238,7 +200,7 @@ async def fetch_user_bookmarks(uuid):
             insert_query = "SELECT title FROM DOCUMENTO.paper WHERE paper_doi = %s"
             response_result = db_handler.fetch_one(insert_query, (bookmark["paperDoi"] , ))
             if not response_result:
-                bookmark["title"] = "We Don't have this Paper Yet"
+                continue
             else:
                 bookmark["title"] = response_result['title']
 
@@ -263,8 +225,6 @@ async def fetch_user_bookmarks(uuid):
         db_handler.disconnect()
     
 
-
-    
     
 # 5.2. 북마크 추가 /삭제
 async def handle_bookmark(data):
@@ -290,9 +250,6 @@ async def handle_bookmark(data):
         
         if data_check:
             raise HTTPException(status_code=400, detail= f"{data_check}Parmeter is Empty")   
-
-        print()
-        
     
     # 1-1. Data 오류 검증
     except HTTPException as http_e:
@@ -351,11 +308,12 @@ async def handle_bookmark(data):
                 del_cnt = -99
                 for i, bml in enumerate(bookmark_list):
                     if bml["paperDoi"] == paperDoi:
-                        del_cnt = i-1
+                        del_cnt = i
+                        break
                 if del_cnt == -99 :
                     raise HTTPException(status_code=404, detail="The item is not bookmarked. Cannot remove a non-existent bookmark.")
                 else:
-                    bookmark_list.pop(i)
+                    bookmark_list.pop(del_cnt)
                             
             update_query = "UPDATE DOCUMENTO.user SET bookmarked_papers = %s WHERE user_id = %s"
             db_handler.execute_query(update_query, (json.dumps(bookmark_list), uuid))

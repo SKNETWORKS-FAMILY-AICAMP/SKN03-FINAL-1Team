@@ -17,7 +17,3 @@ class bookMarking(BaseModel):
     userKeyword : str | None
     bookMark : bool | None
 
-#삭제예정
-class test(BaseModel):
-    userKeyword: str
-    paperDoi: str 

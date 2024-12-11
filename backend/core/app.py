@@ -1,13 +1,12 @@
-from fastapi import FastAPI, HTTPException, Request, Cookie, Depends
+from fastapi import FastAPI, HTTPException, Request,  Depends
 from fastapi.exceptions import RequestValidationError
 from fastapi.middleware.cors import CORSMiddleware
-from fastapi.responses import JSONResponse
+from starlette.exceptions import HTTPException as StarletteHTTPException
 import uvicorn
 from src import *
 from src.reqeust_model import *
 
 
-from typing import Annotated
 from typing import Union
 
 app = FastAPI()
@@ -22,46 +21,15 @@ app.add_middleware(
     allow_credentials=True,  # 인증 정보 허용 (쿠키 등)
 )
 
+# ************  app.py custom 예외처리  ************ #
+# 403, 405
+app.add_exception_handler(HTTPException, top_http_exchandler)
+# 422 input error
+app.add_exception_handler(RequestValidationError, top_validation_exchandler)
 
-# ********************************************* #
-# ******************  공통 예외처리  ****************** #
-# ********************************************* #
+app.add_exception_handler(StarletteHTTPException, custom_405_handler)
 
-# 403 예외 처리기 정의
-@app.exception_handler(HTTPException)
-async def custom_http_exception_handler(request: Request, exc: HTTPException):
-    if exc.status_code == 403:
-        return response_template(result="AUTHENTICATION_FAILED", message="Authentication failed. Please log_in with valid credentials.", http_code=exc.status_code)
-        
-    return await request.app.default_exception_handler(request, exc)
-
-
-# 422 예외 처리기 정의
-@app.exception_handler(RequestValidationError)
-async def custom_validation_exception_handler(request: Request, exc: RequestValidationError):
-    
-    error_list  = exc.errors()
-    error_set = set()
-    message = ""
-    
-    for error in error_list:
-        error_set.add(" " + error.get("type", ""))
-        message += f"{error['loc'][-1]} : {error['msg']} \n "
-    
-    errorCode = "".join(sorted(error_set))
-    errorCode = errorCode.upper()
-    
-    return JSONResponse(
-        status_code=422,
-        content={
-            "resultCode": 422,
-            "errorCode": errorCode,
-            "message": message,
-        },
-    )
-    
-
-
+# 수정예정
 @app.on_event("startup")
 async def initialize_globals():
     try:
@@ -87,24 +55,21 @@ async def cleanup_resources():
 async def login():
     # Input parmeter 오류 처리 오류 
     data = "success"
-    
     return await handle_request(login_user,data)
 
 
 # 2-1. 회원가입/로그인 용
 @app.get("/auth/callback")
 async def auth_callback(code: str = ""):
-    print("code : ", code)
+    #print("code : ", code)
     return await handle_request(oauth_callback, code)
 
 # 2-2. 세션 저장용
+# 일단 모든 페이지에서 user_info를 요청한다는 가정하에 함수작성
 @app.get("/user_info")
-async def user_info(session_id :  Annotated[str | None, Cookie()] = None):
-    print("++++++++++++++++++++++ user_info ++++++++++++++++++++++++++")
-    
-    print("Session id : ", session_id)
-    
-    return await handle_request(get_userinfo, session_id)
+async def user_info(request : Request):
+
+    return await handle_request(get_userinfo, request)
 
 
 # ********************************************* #
@@ -157,7 +122,7 @@ async def create_paper_summary(data: paperDoi):
 #8. 선행 논문 리스트
 @app.get("/papers/priorpapers/",dependencies=[Depends(validate_token)])
 #쿼리문 : ?paperDoi=”string”
-async def get_prior_papers(paperDoi: str=""):
+async def get_prior_papers(paperDoi:Union[str, None] = None):
     return await handle_request(fetch_prior_papers, paperDoi)
 
 

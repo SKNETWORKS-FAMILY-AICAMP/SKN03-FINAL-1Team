@@ -1,6 +1,5 @@
 import mysql.connector
 from mysql.connector import Error
-import json
 import boto3
 from botocore.exceptions import BotoCoreError, ClientError
 

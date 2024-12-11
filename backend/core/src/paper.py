@@ -16,6 +16,7 @@ async def process_search(data): # seom-j
     try:
         # get data
         user_keyword = data.get("data").userKeyword
+        user_keyword = user_keyword.strip()
         if not user_keyword:
             raise HTTPException(status_code=400, detail="Parameter is Empty. Check the userKeyword input.")
         
@@ -33,10 +34,12 @@ async def process_search(data): # seom-j
         if not isinstance(json_results, list):
             raise ValueError("jsonResults is not a valid list")
 
+        sorted_results = sorted(json_results, key=lambda x: x["similarity"])
+        
         # parse results
         doi_list = [
             {"paper_doi": result["paper_doi"], "similarity": result["similarity"]}
-            for result in json_results[:3]
+            for result in sorted_results[:3]
         ]
 
         # fetch paper data from MySQL & create output
@@ -81,7 +84,8 @@ async def process_search(data): # seom-j
         return response_template(message=un_expc, http_code=500)
     
     else:
-                # pagination 페이지네이션
+        # pagination 페이지네이션
+        # 수정예정
         current_page = 1  
         page_size = 3  
         total_results = len(paper_list)
@@ -225,7 +229,7 @@ async def process_transformation(data):
 
 
 # 6. 논문 선택
-async def fetch_paper_details(data:str):
+async def fetch_paper_details(data):
     print("=== GET /papers/select ===")
     try :
         paper_doi = data

@@ -21,6 +21,9 @@ from .error_template import(
     handle_request,
     validate_token,
     response_template,
+    top_http_exchandler,
+    top_validation_exchandler,
+    custom_405_handler,
 )
 
 
@@ -40,5 +43,9 @@ __all__ = [
     "get_userinfo",
     "handle_request",
     "validate_token",
-    "response_template"
+    "response_template",
+    "top_http_exchandler",
+    "top_validation_exchandler",
+    "custom_405_handler",
+    
 ]

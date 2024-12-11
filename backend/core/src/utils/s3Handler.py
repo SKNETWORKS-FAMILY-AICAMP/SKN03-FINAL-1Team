@@ -1,8 +1,6 @@
 import boto3
 from typing import List
-import json
 from io import BytesIO
-import os
 from botocore.exceptions import BotoCoreError, ClientError
 
 class S3Handler:
