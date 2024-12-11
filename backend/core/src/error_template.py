@@ -24,19 +24,14 @@ async def top_http_exchandler(request: Request, exc: HTTPException):
 
 async def custom_405_handler(request: Request, exc: StarletteHTTPException):
     if exc.status_code == 405:
-        return JSONResponse(
-            status_code=405,
-            content={
-                "error": "Method Not Allowed",
-                "message": f"The HTTP method '{request.method}' is not allowed for the requested URL: {request.url.path}",
-                "hint": "Check the API documentation for allowed methods."
-            },
-        )
-    # 다른 예외는 기본 처리
-    return JSONResponse(
-        status_code=exc.status_code,
-        content={"detail": exc.detail},
-    )
+        exc_mess = f"Invalid request method. Only  '{request.method}' is not allowed for this endpoint: {request.url.path}"
+        return response_template(result="METHOD_NOT_ALLOWED", message=exc_mess, http_code=405)
+        
+    # # 다른 예외는 기본 처리
+    # return JSONResponse(
+    #     status_code=exc.status_code,
+    #     content={"detail": exc.detail},
+    # )
     
 async def top_validation_exchandler(request: Request, exc: RequestValidationError):
     
@@ -64,6 +59,8 @@ async def handle_request(func, data=None):
         # 요청 처리 함수 실행
         return await func(data)
     
+    except HTTPException as he:
+        return response_template(result="UNEXPECTED_ERROR: MAYBE SRC", message=he.detail, http_code=he.status_code)
     except Exception as e:
         # 예상치 못한 오류 처리
         return JSONResponse(

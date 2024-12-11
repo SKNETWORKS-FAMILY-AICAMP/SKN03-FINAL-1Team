@@ -119,8 +119,11 @@ async def oauth_callback(code):
     
     
     else:
+        
+        print("=== FIN /auth/callback ===")
+        
         output_data = {"accessToken": access_token}
-        return response_template(result=output_data, message="Login", http_code=201)
+        return response_template(result=output_data, message="Login", http_code=200)
         
     finally:
         db_handler.disconnect()
@@ -129,15 +132,24 @@ async def oauth_callback(code):
   
 async def get_userinfo(request:Request):
     print("=== GET /user_info ===")
-    print(request.headers)
+
     try:
-        if "Authorization" not in request.headers:
-            raise HTTPException(status_code=400, detail="user not login yet. please login firtst")
-    
-        token = request.headers["authorization"][len("Bearer "):]
+        authorization: str = request.headers.get("Authorization")
+        
+        if (not authorization) or (not authorization.startswith("Bearer ")):
+            raise HTTPException(status_code=401, detail="user not login yet. please login firtst")
+
+        authorization = authorization.strip()
+        parts = authorization.split(" ")
+        
+        if (not parts[1]) or (len(parts) < 2):
+            raise HTTPException(status_code=401, detail="user not login yet. please login firtst")
+        
+        
+        token = parts[1]
     
     except HTTPException as http_e:
-        if http_e.status_code == 400:
+        if http_e.status_code == 401:
             return response_template(result="NOT_LOGIN", message=http_e.detail, http_code=http_e.status_code)
         
     try:
@@ -162,12 +174,15 @@ async def get_userinfo(request:Request):
         #S3에 default 프로필 이미지 없로드 해야할듯
         output_data = {
             "accessToken" : token, #멘토님이 북마크에서 말했던것 처럼
-            "email" : result.get("email",""),
-            "name" : result.get("name", "홍길동"),
-            "picute" : result.get("picute","")
+            "userEmail" : result.get("email",""),
+            "userName" : result.get("name", "홍길동"),
+            "userImg " : result.get("profile_img","")
             
         }
-        return response_template(result=output_data, message="User_info retrieved", http_code=200)
+        
+        print("=== FIN /user_info ===")
+        
+        return response_template(result=output_data, message="User INFO retrieved", http_code=200)
 
     finally:
         db_handler.disconnect()
@@ -178,7 +193,7 @@ async def get_userinfo(request:Request):
 # 5. bookmarks
 # 5.1. 북마크 리스트
 async def fetch_user_bookmarks(uuid):
-    print(uuid)
+    
     print("=== GET /users/bookmarks ===")
     try:
         db_handler = MySQLHandler()
@@ -215,10 +230,10 @@ async def fetch_user_bookmarks(uuid):
 
     except Exception as e:
         print(f"MySQL error: {e}")
-        raise HTTPException(status_code=500, detail=f"Error fetching data from MySQL {e}")
+        raise HTTPException(status_code=500, detail=f"Error fetching data from MySQL : {e}")
             
     else:
-        print("=== FIN GET - /users/bookmarks ===")
+        print("=== FIN GET /users/bookmarks ===")
         return response_template(result=output_data, message="Bookmark list retrieved", http_code=200)
         
     finally:
@@ -341,7 +356,7 @@ async def handle_bookmark(data):
         return response_template(message=un_expc, http_code=500)
     
     else:
-        print("=== FIN /users/bookmarks ===")
+        print("=== FIN POST /users/bookmarks ===")
         return response_json
     
     finally:
