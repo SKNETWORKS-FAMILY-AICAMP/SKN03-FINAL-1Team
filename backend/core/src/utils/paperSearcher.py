@@ -7,10 +7,12 @@ from typing import List
 import json
 import numpy as np
 
+
 class paperSearcher:
     """
     Singleton class to manage SPECTER model, tokenizer, and FAISS index operations.
     """
+
     _instance = None
 
     def __new__(cls):
@@ -30,7 +32,9 @@ class paperSearcher:
         """
         Embed a single query text using the SPECTER model on CPU.
         """
-        inputs = self.tokenizer(text, return_tensors="pt", padding=True, truncation=True, max_length=512)
+        inputs = self.tokenizer(
+            text, return_tensors="pt", padding=True, truncation=True, max_length=512
+        )
         with torch.no_grad():
             outputs = self.model(**inputs)
         return outputs.last_hidden_state.mean(dim=1).squeeze().numpy()
@@ -45,7 +49,9 @@ class paperSearcher:
         index = faiss.read_index(reader)
         return index
 
-    def load_faiss_files_from_s3(self, s3_handler, faiss_index_key: str, faiss_ids_key: str):
+    def load_faiss_files_from_s3(
+        self, s3_handler, faiss_index_key: str, faiss_ids_key: str
+    ):
         """
         Load FAISS index and IDs from S3.
         """
@@ -56,7 +62,7 @@ class paperSearcher:
         ids = pickle.load(faiss_ids_file)
 
         return index, ids
-        
+
     def search_faiss_index(
         self,
         query: str,
@@ -64,7 +70,7 @@ class paperSearcher:
         ids: List[str],
         similarity_threshold: float = 70.0,
         max_distance: float = 500.0,
-        chunk_size: int = 2048
+        chunk_size: int = 2048,
     ) -> str:
         """
         Search the FAISS index for the given query and return matching results in JSON format.
@@ -96,12 +102,14 @@ class paperSearcher:
             chunk_index = faiss.IndexFlatL2(query_embedding.shape[0])
             chunk_index.add(chunk_embeddings)
 
-            distances, indices = chunk_index.search(query_embedding.reshape(1, -1), len(chunk_embeddings))
+            distances, indices = chunk_index.search(
+                query_embedding.reshape(1, -1), len(chunk_embeddings)
+            )
 
             chunk_results = [
                 {
                     "paper_doi": ids[chunk_start + idx],
-                    "similarity": round(max(0, (1 - (dist / max_distance)) * 100), 2)
+                    "similarity": round(max(0, (1 - (dist / max_distance)) * 100), 2),
                 }
                 for idx, dist in zip(indices[0], distances[0])
                 if max(0, (1 - (dist / max_distance)) * 100) >= similarity_threshold
@@ -111,7 +119,7 @@ class paperSearcher:
 
         results = sorted(results, key=lambda x: x["similarity"], reverse=True)
         return json.dumps(results, indent=4)
-    
+
     def search_faiss_index_top_n(
         self,
         query: str,
@@ -120,7 +128,7 @@ class paperSearcher:
         max_results: int = 3,
         similarity_threshold: float = 70.0,
         max_distance: float = 500.0,
-        chunk_size: int = 2048
+        chunk_size: int = 2048,
     ) -> str:
         """
         Search the FAISS index for the given query and return the top N matching results in JSON format.
@@ -153,12 +161,14 @@ class paperSearcher:
             chunk_index = faiss.IndexFlatL2(query_embedding.shape[0])
             chunk_index.add(chunk_embeddings)
 
-            distances, indices = chunk_index.search(query_embedding.reshape(1, -1), len(chunk_embeddings))
+            distances, indices = chunk_index.search(
+                query_embedding.reshape(1, -1), len(chunk_embeddings)
+            )
 
             chunk_results = [
                 {
                     "paper_doi": ids[chunk_start + idx],
-                    "similarity": round(max(0, (1 - (dist / max_distance)) * 100), 2)
+                    "similarity": round(max(0, (1 - (dist / max_distance)) * 100), 2),
                 }
                 for idx, dist in zip(indices[0], distances[0])
                 if max(0, (1 - (dist / max_distance)) * 100) >= similarity_threshold

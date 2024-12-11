@@ -16,41 +16,48 @@ security = HTTPBearer()
 # Golbal custom error
 async def top_http_exchandler(request: Request, exc: HTTPException):
     if exc.status_code == 403:
-        return response_template(result="AUTHENTICATION_FAILED", message=exc.detail, http_code=exc.status_code)
+        return response_template(
+            result="AUTHENTICATION_FAILED",
+            message=exc.detail,
+            http_code=exc.status_code,
+        )
     elif exc.status_code == 401:
-        return response_template(result="NO_USER_INFO", message=exc.detail, http_code=exc.status_code)         
+        return response_template(
+            result="NO_USER_INFO", message=exc.detail, http_code=exc.status_code
+        )
     print("hello")
     return await request.app.default_exception_handler(request, exc)
+
 
 async def custom_405_handler(request: Request, exc: StarletteHTTPException):
     if exc.status_code == 405:
         exc_mess = f"Invalid request method. Only  '{request.method}' is not allowed for this endpoint: {request.url.path}"
-        return response_template(result="METHOD_NOT_ALLOWED", message=exc_mess, http_code=405)
-        
+        return response_template(
+            result="METHOD_NOT_ALLOWED", message=exc_mess, http_code=405
+        )
+
     # # 다른 예외는 기본 처리
     # return JSONResponse(
     #     status_code=exc.status_code,
     #     content={"detail": exc.detail},
     # )
-    
+
+
 async def top_validation_exchandler(request: Request, exc: RequestValidationError):
-    
-    error_list  = exc.errors()
+
+    error_list = exc.errors()
     error_set = set()
     message = ""
-    
+
     for error in error_list:
         error_set.add(" " + error.get("type", ""))
         message += f"{error['loc'][-1]} : {error['msg']} \n "
-    
+
     errorCode = "".join(sorted(error_set))
     errorCode = errorCode.upper()
     errorCode = errorCode.strip()
-    
-    return response_template(result=errorCode,message=message,http_code=422)
 
-
-
+    return response_template(result=errorCode, message=message, http_code=422)
 
 
 # return handler
@@ -58,9 +65,13 @@ async def handle_request(func, data=None):
     try:
         # 요청 처리 함수 실행
         return await func(data)
-    
+
     except HTTPException as he:
-        return response_template(result="UNEXPECTED_ERROR: MAYBE SRC", message=he.detail, http_code=he.status_code)
+        return response_template(
+            result="UNEXPECTED_ERROR: MAYBE SRC",
+            message=he.detail,
+            http_code=he.status_code,
+        )
     except Exception as e:
         # 예상치 못한 오류 처리
         return JSONResponse(
@@ -71,7 +82,6 @@ async def handle_request(func, data=None):
                 "message": str(e),
             },
         )
-        
 
 
 # access토큰 인식
@@ -84,31 +94,31 @@ def validate_token(credentials: HTTPAuthorizationCredentials = Depends(security)
     try:
         token = credentials.credentials  # Extract token
         insert_query = "SELECT user_id FROM DOCUMENTO.auth WHERE access_token = %s"
-        request_result = db_handler.fetch_one(insert_query, (token, ))
+        request_result = db_handler.fetch_one(insert_query, (token,))
         if not request_result:
-            raise HTTPException(status_code=403, detail="Authentication failed. Please log_in with valid credentials.")
+            raise HTTPException(
+                status_code=403,
+                detail="Authentication failed. Please log_in with valid credentials.",
+            )
         return request_result["user_id"]
 
-            
-    
     finally:
         db_handler.disconnect()
-
-
 
 
 # ********************************************* #
 # **********  use in src directory  **********  #
 # ********************************************* #
 
-def response_template(result:None, message:str, http_code:int=500):
-    
+
+def response_template(result: None, message: str, http_code: int = 500):
+
     if (http_code == 200) or (http_code == 201):
         return JSONResponse(
             status_code=http_code,
             content={
                 "resultCode": http_code,
-                "message": message + " completed successfully" ,
+                "message": message + " completed successfully",
                 "result": result,
             },
         )
@@ -130,15 +140,9 @@ def response_template(result:None, message:str, http_code:int=500):
                 "message": message,
             },
         )
-    
+
     else:
         return JSONResponse(
-                    status_code=http_code,
-                    content={
-                        "resultCode" : http_code,
-                        "errorCode": result,
-                        "message": message
-                    }
-                )
-        
-
+            status_code=http_code,
+            content={"resultCode": http_code, "errorCode": result, "message": message},
+        )

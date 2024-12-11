@@ -4,8 +4,6 @@ from .paper import (
     process_summary,
     process_transformation,
     process_search,
-
-
 )
 
 from .user import (
@@ -14,10 +12,9 @@ from .user import (
     fetch_user_bookmarks,
     handle_bookmark,
     get_userinfo,
-
 )
 
-from .error_template import(
+from .error_template import (
     handle_request,
     validate_token,
     response_template,
@@ -27,7 +24,7 @@ from .error_template import(
 )
 
 
-from .init import initialize_global_objects # seom-j
+from .init import initialize_global_objects  # seom-j
 
 __all__ = [
     "fetch_paper_details",
@@ -39,7 +36,7 @@ __all__ = [
     "oauth_callback",
     "fetch_user_bookmarks",
     "handle_bookmark",
-    "initialize_global_objects", # seom-j
+    "initialize_global_objects",  # seom-j
     "get_userinfo",
     "handle_request",
     "validate_token",
@@ -47,5 +44,4 @@ __all__ = [
     "top_http_exchandler",
     "top_validation_exchandler",
     "custom_405_handler",
-    
 ]

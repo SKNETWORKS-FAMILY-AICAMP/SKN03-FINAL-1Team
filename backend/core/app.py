@@ -1,13 +1,10 @@
-from fastapi import FastAPI, HTTPException, Request,  Depends
+from fastapi import FastAPI, HTTPException, Request, Depends
 from fastapi.exceptions import RequestValidationError
 from fastapi.middleware.cors import CORSMiddleware
 from starlette.exceptions import HTTPException as StarletteHTTPException
 import uvicorn
 from src import *
 from src.reqeust_model import *
-
-
-from typing import Union
 
 app = FastAPI()
 
@@ -28,6 +25,7 @@ app.add_exception_handler(HTTPException, top_http_exchandler)
 app.add_exception_handler(RequestValidationError, top_validation_exchandler)
 
 app.add_exception_handler(StarletteHTTPException, custom_405_handler)
+
 
 # 수정예정
 @app.on_event("startup")
@@ -53,21 +51,22 @@ async def cleanup_resources():
 # 2. 로그인
 @app.get("/login")
 async def login():
-    # Input parmeter 오류 처리 오류 
+    # Input parmeter 오류 처리 오류
     data = "success"
-    return await handle_request(login_user,data)
+    return await handle_request(login_user, data)
 
 
 # 2-1. 회원가입/로그인 용
 @app.get("/auth/callback")
 async def auth_callback(code: str = ""):
-    #print("code : ", code)
+    # print("code : ", code)
     return await handle_request(oauth_callback, code)
+
 
 # 2-2. 세션 저장용
 # 일단 모든 페이지에서 user_info를 요청한다는 가정하에 함수작성
 @app.get("/user_info")
-async def user_info(request : Request):
+async def user_info(request: Request):
 
     return await handle_request(get_userinfo, request)
 
@@ -76,18 +75,24 @@ async def user_info(request : Request):
 # ***************  About Paper  *************** #
 # ********************************************* #
 
+
 # 3. 논문검색
-@app.post("/papers/search/",dependencies=[Depends(validate_token)])
-async def search_papers(request: Request, data: userKeyword):
-    
-    return await handle_request(process_search, {"data": data, "request": request})
+@app.post("/papers/search/", dependencies=[Depends(validate_token)])
+async def search_papers(request: Request, data: userKeyword, page: int = 0):
+    print(page)
+    return await handle_request(
+        process_search, {"data": data, "request": request, "page": page}
+    )
 
 
 # 4. 키워드 최적화
-@app.post("/papers/transformation/",dependencies=[Depends(validate_token)])
+@app.post("/papers/transformation/", dependencies=[Depends(validate_token)])
 async def create_paper_transformation(request: Request, data: userPrompt):
-    #data = await request.json()
-    return await handle_request(process_transformation, {"data": data, "request": request})
+    # data = await request.json()
+    return await handle_request(
+        process_transformation, {"data": data, "request": request}
+    )
+
 
 # ***************  5. bookmark  *************** #
 # 5.1. 북마크 리스트
@@ -100,44 +105,50 @@ async def get_user_bookmarks(uuid: str = Depends(validate_token)):
 # 멘토님 曰 : 추가와 삭제는 같은 방식의 post
 @app.post("/users/bookmarks/")
 async def add_to_bookmarks(data: bookMarking, uuid: str = Depends(validate_token)):
-    print(data.json())
-    request_data = {"request_data":data,"uuid":uuid }
+
+    request_data = {"request_data": data, "uuid": uuid}
     return await handle_request(handle_bookmark, request_data)
+
 
 # ********************************************* #
 
 # 6. 논문 선택
-# notion에는 /papers/select/?paperDoi=”string” 이렇게 적혀있음 
+# notion에는 /papers/select/?paperDoi=”string” 이렇게 적혀있음
 
-@app.get("/papers/select/",dependencies=[Depends(validate_token)])
-async def get_paper_by_doi(paperDoi: str=""):
-    
+
+@app.get("/papers/select/", dependencies=[Depends(validate_token)])
+async def get_paper_by_doi(paperDoi: str = ""):
+
     return await handle_request(fetch_paper_details, paperDoi)
 
-#7. 논문 요약
-@app.post("/papers/summary/",dependencies=[Depends(validate_token)])
+
+# 7. 논문 요약
+@app.post("/papers/summary/", dependencies=[Depends(validate_token)])
 async def create_paper_summary(data: paperDoi):
     return await handle_request(process_summary, data)
 
-#8. 선행 논문 리스트
-@app.get("/papers/priorpapers/",dependencies=[Depends(validate_token)])
-#쿼리문 : ?paperDoi=”string”
-async def get_prior_papers(paperDoi:Union[str, None] = None):
-    return await handle_request(fetch_prior_papers, paperDoi)
 
+# 8. 선행 논문 리스트
+@app.get("/papers/priorpapers/", dependencies=[Depends(validate_token)])
+# 쿼리문 : ?paperDoi=”string”
+async def get_prior_papers(paperDoi: str = ""):
+    return await handle_request(fetch_prior_papers, paperDoi)
 
 
 # ********************************************* #
 # ***************  health check *************** #
 # ********************************************* #
 
+
 @app.get("/health")
 def health_check():
     return {"status": "Backend is up and running"}
 
+
 @app.get("/")
 def welcome_check():
     return {"status": "Welcome to documento"}
+
 
 if __name__ == "__main__":
     uvicorn.run("app:app", host="0.0.0.0", port=8000, reload=True)

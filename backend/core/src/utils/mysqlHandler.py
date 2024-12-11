@@ -29,16 +29,24 @@ class MySQLHandler:
         try:
             ssm = boto3.client("ssm")
 
-            parameter = ssm.get_parameter(Name="/DOCUMENTO/KEY/MYSQL_ACCESS_KEY/HOST", WithDecryption=True)
+            parameter = ssm.get_parameter(
+                Name="/DOCUMENTO/KEY/MYSQL_ACCESS_KEY/HOST", WithDecryption=True
+            )
             self.host = parameter["Parameter"]["Value"]
 
-            parameter = ssm.get_parameter(Name="/DOCUMENTO/KEY/MYSQL_ACCESS_KEY/USER", WithDecryption=True)
+            parameter = ssm.get_parameter(
+                Name="/DOCUMENTO/KEY/MYSQL_ACCESS_KEY/USER", WithDecryption=True
+            )
             self.user = parameter["Parameter"]["Value"]
 
-            parameter = ssm.get_parameter(Name="/DOCUMENTO/KEY/MYSQL_ACCESS_KEY/PASSWORD", WithDecryption=True)
+            parameter = ssm.get_parameter(
+                Name="/DOCUMENTO/KEY/MYSQL_ACCESS_KEY/PASSWORD", WithDecryption=True
+            )
             self.password = parameter["Parameter"]["Value"]
 
-            parameter = ssm.get_parameter(Name="/DOCUMENTO/KEY/MYSQL_ACCESS_KEY/DATABASE", WithDecryption=True)
+            parameter = ssm.get_parameter(
+                Name="/DOCUMENTO/KEY/MYSQL_ACCESS_KEY/DATABASE", WithDecryption=True
+            )
             self.database = parameter["Parameter"]["Value"]
 
         except (BotoCoreError, ClientError) as e:
@@ -54,7 +62,7 @@ class MySQLHandler:
                 host=self.host,
                 user=self.user,
                 password=self.password,
-                database=self.database
+                database=self.database,
             )
             if self.connection.is_connected():
                 print("Successfully connected to MySQL.")

@@ -3,6 +3,7 @@ from typing import List
 from io import BytesIO
 from botocore.exceptions import BotoCoreError, ClientError
 
+
 class S3Handler:
     def __init__(self):
         """
@@ -16,20 +17,27 @@ class S3Handler:
         Load AWS credentials from a file and initialize the S3 client.
         """
         try:
-            ssm = boto3.client('ssm')
-            parameter = ssm.get_parameter(Name='/DOCUMENTO/KEY/S3_ACCESS_KEY/ACCESS_KEY_ID', WithDecryption=True)
-            access_key_id = parameter['Parameter']['Value']
+            ssm = boto3.client("ssm")
+            parameter = ssm.get_parameter(
+                Name="/DOCUMENTO/KEY/S3_ACCESS_KEY/ACCESS_KEY_ID", WithDecryption=True
+            )
+            access_key_id = parameter["Parameter"]["Value"]
 
-            parameter = ssm.get_parameter(Name='/DOCUMENTO/KEY/S3_ACCESS_KEY/SECRETE_ACCESS_KEY_ID', WithDecryption=True)
-            secret_access_key = parameter['Parameter']['Value']
+            parameter = ssm.get_parameter(
+                Name="/DOCUMENTO/KEY/S3_ACCESS_KEY/SECRETE_ACCESS_KEY_ID",
+                WithDecryption=True,
+            )
+            secret_access_key = parameter["Parameter"]["Value"]
 
-            parameter = ssm.get_parameter(Name='/DOCUMENTO/KEY/S3_ACCESS_KEY/REGION', WithDecryption=True)
-            region = parameter['Parameter']['Value']
+            parameter = ssm.get_parameter(
+                Name="/DOCUMENTO/KEY/S3_ACCESS_KEY/REGION", WithDecryption=True
+            )
+            region = parameter["Parameter"]["Value"]
 
             self.s3_client = boto3.Session(
                 aws_access_key_id=access_key_id,
                 aws_secret_access_key=secret_access_key,
-                region_name=region
+                region_name=region,
             ).client("s3")
 
         except (BotoCoreError, ClientError) as e:
@@ -46,7 +54,9 @@ class S3Handler:
         except Exception as e:
             raise RuntimeError(f"Error listing S3 buckets: {e}")
 
-    def download_file_to_memory(self, file_key: str, bucket_name: str = "documento-s3") -> BytesIO:
+    def download_file_to_memory(
+        self, file_key: str, bucket_name: str = "documento-s3"
+    ) -> BytesIO:
         """
         Download a file from S3 into memory as a BytesIO object.
         """

@@ -2,6 +2,7 @@ import openai
 import os
 import boto3
 
+
 class openaiHandler:
     def __init__(self) -> None:
         self._set_openai_api_key()
@@ -11,13 +12,23 @@ class openaiHandler:
         Sets the OpenAI API key from environment variables or AWS SSM Parameter Store.
         """
 
-        api_key = os.environ.get('OPENAI_API_KEY')
+        # #in local
+        # print("Fetching API key from AWS SSM Parameter Store...")
+        # ssm = boto3.client("ssm")
+        # parameter = ssm.get_parameter(
+        #     Name="/DOCUMENTO/KEY/OPENAI_API_KEY/TRANSFORMATION", WithDecryption=True
+        # )
+        # os.environ["OPENAI_API_KEY"] = parameter["Parameter"]["Value"]
+
+        api_key = os.environ.get("OPENAI_API_KEY")
         if not api_key:
             print("Fetching API key from AWS SSM Parameter Store...")
-            ssm = boto3.client('ssm')
-            parameter = ssm.get_parameter(Name='/DOCUMENTO/KEY/OPENAI_API_KEY/TRANSFORMATION', WithDecryption=True)
-            os.environ['OPENAI_API_KEY'] = parameter['Parameter']['Value']
-        openai.api_key = os.environ['OPENAI_API_KEY']
+            ssm = boto3.client("ssm")
+            parameter = ssm.get_parameter(
+                Name="/DOCUMENTO/KEY/OPENAI_API_KEY/TRANSFORMATION", WithDecryption=True
+            )
+            os.environ["OPENAI_API_KEY"] = parameter["Parameter"]["Value"]
+        openai.api_key = os.environ["OPENAI_API_KEY"]
 
     def create_system_prompt(self, user_prompt) -> str:
         """
@@ -29,8 +40,8 @@ class openaiHandler:
             "These keywords should be specific, consist of three or more words, and cater to advanced research purposes. "
             "Additionally, provide translations for the keywords in both English and Korean in the following structured format:\n\n"
             "[\n"
-            "{\"eng\": \"<English Keyword 1>\", \"kor\": \"<Korean Translation 1>\"},\n"
-            "{\"eng\": \"<English Keyword 2>\", \"kor\": \"<Korean Translation 2>\"},\n"
+            '{"eng": "<English Keyword 1>", "kor": "<Korean Translation 1>"},\n'
+            '{"eng": "<English Keyword 2>", "kor": "<Korean Translation 2>"},\n'
             "...]\n\n"
             f"Here’s the user query:\n‘{user_prompt}’\nGenerate 5 specific and highly relevant keywords that align with this topic."
         )
@@ -55,7 +66,7 @@ class openaiHandler:
             #     content = chunk['choices'][0].get('delta', {}).get('content')
             #     if content:
             #         print(content, end="", flush=True)
-            content = response['choices'][0]['message']['content'] 
+            content = response["choices"][0]["message"]["content"]
             return content
         except Exception as e:
             print(f"Error occurred: {str(e)}")
