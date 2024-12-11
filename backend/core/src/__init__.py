@@ -23,6 +23,10 @@ from .error_template import (
     custom_405_handler,
 )
 
+from .test_any import (
+    tg_default,
+    tg_page,
+)
 
 from .init import initialize_global_objects  # seom-j
 
@@ -44,4 +48,7 @@ __all__ = [
     "top_http_exchandler",
     "top_validation_exchandler",
     "custom_405_handler",
+    
+    "tg_default",
+    "tg_page",
 ]

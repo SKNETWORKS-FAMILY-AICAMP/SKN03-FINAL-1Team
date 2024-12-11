@@ -49,7 +49,7 @@ async def process_search(data: dict):  # seom-j
             {"paper_doi": result["paper_doi"], "similarity": result["similarity"]}
             for result in sorted_results[:3]
         ]
-        print(sorted_results[:3])
+
         # fetch paper data from MySQL & create output
         db_handler = MySQLHandler()
         db_handler.connect()
@@ -98,8 +98,9 @@ async def process_search(data: dict):  # seom-j
             )
 
     except Exception as un_expc:
-        print(f"Unexpected error : {un_expc}")
-        return response_template(message=un_expc, http_code=500)
+        raise HTTPException(
+            status_code=500, detail=f"Error In processing OPENAI: {un_expc}"
+        )
 
     else:
         # pagination 페이지네이션

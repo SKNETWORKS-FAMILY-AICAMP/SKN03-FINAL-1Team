@@ -112,10 +112,9 @@ async def add_to_bookmarks(data: bookMarking, uuid: str = Depends(validate_token
 
 # ********************************************* #
 
+
 # 6. 논문 선택
 # notion에는 /papers/select/?paperDoi=”string” 이렇게 적혀있음
-
-
 @app.get("/papers/select/", dependencies=[Depends(validate_token)])
 async def get_paper_by_doi(paperDoi: str = ""):
 
@@ -148,6 +147,16 @@ def health_check():
 @app.get("/")
 def welcome_check():
     return {"status": "Welcome to documento"}
+
+
+@app.post("/test_pg/")
+async def test_pagination(request: Request, data: userKeyword, page: int = 0):
+
+    if page == 0:
+        return await handle_request(
+            tg_default, {"data": data, "request": request, "page": page}
+        )
+    return await handle_request(tg_page, {"page": page})
 
 
 if __name__ == "__main__":

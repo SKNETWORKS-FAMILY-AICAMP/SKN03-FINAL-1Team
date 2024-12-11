@@ -128,12 +128,10 @@ async def oauth_callback(code):
                 auth_insert_query, (uuid, access_token, refresh_token, expires_in)
             )
 
-    except Exception as e:
-        print(f"MySQL error: {e}")
+    except Exception as un_expc:
         raise HTTPException(
-            status_code=500, detail=f"Error fetching data from MySQL {e}"
+            status_code=500, detail=f"Error In processing OPENAI: {un_expc}"
         )
-
     else:
 
         print("=== FIN /auth/callback ===")
@@ -184,10 +182,9 @@ async def get_userinfo(request: Request):
         select_query = "SELECT * FROM DOCUMENTO.user WHERE user_id = %s"
         result = db_handler.fetch_one(select_query, (uuid,))
 
-    except Exception as e:
-        print(f"MySQL error: {e}")
+    except Exception as un_expc:
         raise HTTPException(
-            status_code=500, detail=f"Error fetching data from MySQL {e}"
+            status_code=500, detail=f"Error In processing OPENAI: {un_expc}"
         )
 
     else:
@@ -262,10 +259,9 @@ async def fetch_user_bookmarks(uuid):
                 http_code=http_e.status_code,
             )
 
-    except Exception as e:
-        print(f"MySQL error: {e}")
+    except Exception as un_expc:
         raise HTTPException(
-            status_code=500, detail=f"Error fetching data from MySQL : {e}"
+            status_code=500, detail=f"Error In processing OPENAI: {un_expc}"
         )
 
     else:
@@ -320,8 +316,9 @@ async def handle_bookmark(data):
                 http_code=http_e.status_code,
             )
     except Exception as un_expc:
-        raise HTTPException(status_code=500, detail=f"Error processing data: {un_expc}")
-
+        raise HTTPException(
+            status_code=500, detail=f"Error In processing OPENAI: {un_expc}"
+        )
     # 3. 프로세스
     try:
         db_handler = MySQLHandler()
@@ -418,8 +415,9 @@ async def handle_bookmark(data):
             )
 
     except Exception as un_expc:
-        print(f"Unexpected error: {un_expc}")
-        return response_template(message=un_expc, http_code=500)
+        raise HTTPException(
+            status_code=500, detail=f"Error In processing OPENAI: {un_expc}"
+        )
 
     else:
         print("=== FIN POST /users/bookmarks ===")
