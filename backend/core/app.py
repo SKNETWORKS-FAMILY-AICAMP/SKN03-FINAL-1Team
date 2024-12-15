@@ -55,6 +55,20 @@ async def login():
     data = "success"
     return await handle_request(login_user, data)
 
+@app.get("/login_non")
+async def login():
+    # Input parmeter 오류 처리 오류
+    data = "success"
+    return await handle_request(login_none, data)
+
+@app.get("/login_consent")
+async def login():
+    # Input parmeter 오류 처리 오류
+    data = "success"
+    return await handle_request(login_consent, data)
+
+
+
 
 # 2-1. 회원가입/로그인 용
 @app.get("/auth/callback")
@@ -77,17 +91,27 @@ async def user_info(request: Request):
 
 
 # 3. 논문검색
-@app.post("/papers/search/", dependencies=[Depends(validate_token)])
-async def search_papers(request: Request, data: userKeyword, page: int = 0):
-    print(page)
+@app.post("/papers/search/")
+async def search_papers(
+    request: Request,
+    keyword: paperSearch,
+    page: int = 0,
+    uuid: str = Depends(validate_token),
+):
+
+    if page == 0:
+        request_data = {"keyword": keyword, "request": request, "uuid": uuid}
+
+        return await handle_request(process_search_default, request_data)
+
     return await handle_request(
-        process_search, {"data": data, "request": request, "page": page}
+        process_search, {"keyword": keyword, "page": page, "uuid": uuid}
     )
 
 
 # 4. 키워드 최적화
 @app.post("/papers/transformation/", dependencies=[Depends(validate_token)])
-async def create_paper_transformation(request: Request, data: userPrompt):
+async def create_paper_transformation(request: Request, data: paperTransformation):
     # data = await request.json()
     return await handle_request(
         process_transformation, {"data": data, "request": request}
@@ -123,7 +147,7 @@ async def get_paper_by_doi(paperDoi: str = ""):
 
 # 7. 논문 요약
 @app.post("/papers/summary/", dependencies=[Depends(validate_token)])
-async def create_paper_summary(data: paperDoi):
+async def create_paper_summary(data: paperSummary):
     return await handle_request(process_summary, data)
 
 
@@ -147,16 +171,6 @@ def health_check():
 @app.get("/")
 def welcome_check():
     return {"status": "Welcome to documento"}
-
-
-@app.post("/test_pg/")
-async def test_pagination(request: Request, data: userKeyword, page: int = 0):
-
-    if page == 0:
-        return await handle_request(
-            tg_default, {"data": data, "request": request, "page": page}
-        )
-    return await handle_request(tg_page, {"page": page})
 
 
 if __name__ == "__main__":

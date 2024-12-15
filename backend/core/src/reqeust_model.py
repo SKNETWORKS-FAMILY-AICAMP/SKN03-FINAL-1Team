@@ -1,16 +1,17 @@
 from pydantic import BaseModel
 
-
-class userKeyword(BaseModel):
+# 논문 검색
+class paperSearch(BaseModel):
     userKeyword: str | None
 
-
-class userPrompt(BaseModel):
+# 키워드 최적화
+class paperTransformation(BaseModel):
     userPrompt: str | None
 
-
-class paperDoi(BaseModel):
+# 논문 요약약
+class paperSummary(BaseModel):
     paperDoi: str | None
+    userKeyword: str | None
 
 
 class bookMarking(BaseModel):

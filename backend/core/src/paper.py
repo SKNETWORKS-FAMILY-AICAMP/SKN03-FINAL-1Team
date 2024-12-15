@@ -11,14 +11,20 @@ import json
 # 3. 논문검색
 
 
-async def process_search(data: dict):  # seom-j
-    print("=== POST /papers/search ===")
+async def process_search(data: dict):
+    pass
+
+
+async def process_search_default(data: dict):  # seom-j
+    print("=== POST /papers/search : default ===")
+
+    # 만약 pagenation 테이블에 uuid & keyword 동일에 값이 있으면, 조회했던 적 있는것것
 
     try:
-        page_cnt = data.get("page")
+        uuid = data.get("uuid")
 
         # get data
-        user_keyword = data.get("data").userKeyword
+        user_keyword = data.get("keyword").userKeyword
         user_keyword = user_keyword.strip()
         if not user_keyword:
             raise HTTPException(
@@ -26,6 +32,41 @@ async def process_search(data: dict):  # seom-j
                 detail="Parameter is Empty. Check the userKeyword input.",
             )
 
+        db_handler = MySQLHandler()
+        db_handler.connect()
+        check_query = """
+        SELECT * 
+        FROM DOCUMENTO.pagenation 
+        WHERE userKeyword = %s 
+        AND user_id = %s;
+        """
+        is_data = db_handler.fetch_one(check_query, (user_keyword, uuid))
+
+        if is_data:
+            pass
+            return "hello"
+
+    except HTTPException as http_e:
+        if http_e.status_code == 400:
+            return response_template(
+                result="EMPTY_PARAMETER",
+                message=http_e.detail,
+                http_code=http_e.status_code,
+            )
+
+        else:
+            return response_template(
+                result="UNEXPECTED_HTTP_ERROR",
+                message=http_e.detail,
+                http_code=http_e.status_code,
+            )
+
+    except Exception as un_expc:
+        raise HTTPException(
+            status_code=500, detail=f"Error In processing MYSQL: {un_expc}"
+        )
+
+    try:
         # get searcher, faiss_index, faiss_ids (global variables)
         request = data.get("request")
         searcher = request.app.state.searcher
@@ -42,17 +83,18 @@ async def process_search(data: dict):  # seom-j
         if not isinstance(json_results, list):
             raise ValueError("jsonResults is not a valid list")
 
-        sorted_results = sorted(json_results, key=lambda x: -x["similarity"])
+        sorted_results = sorted(
+            json_results, key=lambda x: x["similarity"], reverse=True
+        )
+
+        if len(sorted_results) > 70:
+            sorted_results = sorted_results[:70]
 
         # parse results
         doi_list = [
             {"paper_doi": result["paper_doi"], "similarity": result["similarity"]}
-            for result in sorted_results[:3]
+            for result in sorted_results
         ]
-
-        # fetch paper data from MySQL & create output
-        db_handler = MySQLHandler()
-        db_handler.connect()
 
         paper_list = []
         for doi_item in doi_list:
@@ -82,14 +124,6 @@ async def process_search(data: dict):  # seom-j
             return response_template(
                 result="NO_RESULTS", message=http_e.detail, http_code=http_e.status_code
             )
-
-        elif http_e.status_code == 400:
-            return response_template(
-                result="EMPTY_PARAMETER",
-                message=http_e.detail,
-                http_code=http_e.status_code,
-            )
-
         else:
             return response_template(
                 result="UNEXPECTED_HTTP_ERROR",
@@ -99,10 +133,25 @@ async def process_search(data: dict):  # seom-j
 
     except Exception as un_expc:
         raise HTTPException(
-            status_code=500, detail=f"Error In processing OPENAI: {un_expc}"
+            status_code=500, detail=f"Error In processing FASIS or MYSQL: {un_expc}"
         )
 
-    else:
+    try:
+        result_papers = paper_list[:3]
+        
+        insert_query = """
+            INSERT INTO DOCUMENTO.pagenation
+            (userKeyword, user_id, searchResult) 
+            VALUES (%s, %s, %s)
+            """
+        
+        db_handler.execute_query(
+            insert_query, (user_keyword, uuid, paper_list)
+        )
+
+        
+        
+        
         # pagination 페이지네이션
         # 수정예정
         current_page = 1

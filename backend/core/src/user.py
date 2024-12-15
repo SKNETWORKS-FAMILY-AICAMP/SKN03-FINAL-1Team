@@ -28,10 +28,29 @@ def _check_expiretime(expire: int):
 # ***************  Oauth Logic / JWT  *************** #
 async def login_user(data):
     print("===  /login ===")
+    #삭제예정
+    print("prompt=select_account")
     oauth = googleOAuth()
     return RedirectResponse(
         f"{oauth.authorization_url}?scope=openid%20email%20profile&access_type=offline&response_type=code&redirect_uri={oauth.redirect_uri}&client_id={oauth.client_id}&prompt=select_account"
     )
+async def login_none(data):
+    print("===  /login ===")
+    #삭제예정
+    print("prompt=NONE")
+    oauth = googleOAuth()
+    return RedirectResponse(
+        f"{oauth.authorization_url}?scope=openid%20email%20profile&access_type=offline&response_type=code&redirect_uri={oauth.redirect_uri}&client_id={oauth.client_id}"
+    )
+async def login_consent(data):
+    print("===  /login ===")
+    #삭제예정
+    print("prompt=consent")
+    oauth = googleOAuth()
+    return RedirectResponse(
+        f"{oauth.authorization_url}?scope=openid%20email%20profile&access_type=offline&response_type=code&redirect_uri={oauth.redirect_uri}&client_id={oauth.client_id}&prompt=consent"
+    )
+
 
 
 async def oauth_callback(code):
@@ -44,7 +63,7 @@ async def oauth_callback(code):
             )
 
         oauth = googleOAuth()
-
+        
         token_response = requests.post(
             oauth.token_url,
             data={
@@ -60,12 +79,14 @@ async def oauth_callback(code):
             raise HTTPException(
                 status_code=token_response.status_code, detail=token_response.content
             )
-
+        
         token_response_data = token_response.json()
 
         access_token = token_response_data.get("access_token")
         refresh_token = token_response_data.get("refresh_token")
-
+        print("access_token :", access_token)
+        print("refresh_token :", refresh_token)
+        print("token_response_data :", token_response_data)
         expires_in = token_response_data.get("expires_in")
         expires_in = _check_expiretime(expires_in)
 
@@ -95,6 +116,7 @@ async def oauth_callback(code):
 
     # DB에 저장
     try:
+        print("here")
         db_handler = MySQLHandler()
         db_handler.connect()
 
@@ -130,7 +152,7 @@ async def oauth_callback(code):
 
     except Exception as un_expc:
         raise HTTPException(
-            status_code=500, detail=f"Error In processing OPENAI: {un_expc}"
+            status_code=500, detail=f"Error In processing MYSQL: {un_expc}"
         )
     else:
 
@@ -184,7 +206,7 @@ async def get_userinfo(request: Request):
 
     except Exception as un_expc:
         raise HTTPException(
-            status_code=500, detail=f"Error In processing OPENAI: {un_expc}"
+            status_code=500, detail=f"Error In processing MYSQL: {un_expc}"
         )
 
     else:
@@ -260,9 +282,7 @@ async def fetch_user_bookmarks(uuid):
             )
 
     except Exception as un_expc:
-        raise HTTPException(
-            status_code=500, detail=f"Error In processing OPENAI: {un_expc}"
-        )
+        raise HTTPException(status_code=500, detail=f"Error In processing : {un_expc}")
 
     else:
         print("=== FIN GET /users/bookmarks ===")
@@ -316,9 +336,7 @@ async def handle_bookmark(data):
                 http_code=http_e.status_code,
             )
     except Exception as un_expc:
-        raise HTTPException(
-            status_code=500, detail=f"Error In processing OPENAI: {un_expc}"
-        )
+        raise HTTPException(status_code=500, detail=f"Error In processing : {un_expc}")
     # 3. 프로세스
     try:
         db_handler = MySQLHandler()
@@ -416,7 +434,7 @@ async def handle_bookmark(data):
 
     except Exception as un_expc:
         raise HTTPException(
-            status_code=500, detail=f"Error In processing OPENAI: {un_expc}"
+            status_code=500, detail=f"Error In processing MYSQL: {un_expc}"
         )
 
     else:
