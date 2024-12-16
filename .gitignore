@@ -5,3 +5,81 @@ __pycache__/
 backend/test/
 .pytest_cache/
 backend/test_fend/
+
+############################### FRONTEND USE ###############################
+
+# Logs
+logs
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+lerna-debug.log*
+
+# Node modules
+node_modules
+
+# OS-specific files
+.DS_Store
+
+# Build directories
+dist
+dist-ssr
+coverage
+*.local
+
+# Cypress
+/cypress/videos/
+/cypress/screenshots/
+
+# Editor directories and files
+.vscode/*
+!.vscode/extensions.json
+.idea
+*.suo
+*.ntvs*
+*.njsproj
+*.sln
+*.sw?
+
+# TypeScript build info
+*.tsbuildinfo
+
+# Runtime data
+pids/
+*.pid
+*.seed
+*.pid.lock
+
+# Static files
+public/static/
+static/
+
+# Build files
+build/
+
+# Python specific
+__pycache__/
+*.pyc
+*.pyo
+
+# Data engineering specific
+data-engineering/processed_data/
+data-engineering/output/
+
+# Docs build artifacts
+docs/_build/
+
+# .gitignore 파일에 .env 파일 추가
+.env
+backend/.env
+backend/.venv
+frontend/.env
+.vscode
+
+frontend\src\axiosConfig.js
+
+start_backend.bat
+
+frontend\src\axiosConfig.js
