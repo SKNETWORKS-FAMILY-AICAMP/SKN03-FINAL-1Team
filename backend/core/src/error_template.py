@@ -93,7 +93,8 @@ def validate_token(credentials: HTTPAuthorizationCredentials = Depends(security)
     db_handler.connect()
     try:
         token = credentials.credentials  # Extract token
-        insert_query = "SELECT user_id FROM DOCUMENTO.auth WHERE refresh_token = %s"
+        
+        insert_query = "SELECT user_id FROM DOCUMENTO.auth WHERE access_token = %s"
         request_result = db_handler.fetch_one(insert_query, (token,))
         if not request_result:
             raise HTTPException(

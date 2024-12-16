@@ -12,7 +12,7 @@ app = FastAPI()
 # ******************  CORS 처리  ****************** #
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["https://www.documento.click"],  # 프론트엔드 서브 도메인
+    allow_origins=["https://www.documento.click", "http://localhost:5173"],  # 프론트엔드 서브 도메인
     allow_methods=["*"],  # 모든 HTTP 메서드 허용
     allow_headers=["*"],  # 모든 헤더 허용
     allow_credentials=True,  # 인증 정보 허용 (쿠키 등)
@@ -49,7 +49,7 @@ async def cleanup_resources():
 
 
 # 2. 로그인
-@app.get("/login")
+@app.get("/login/")
 async def login():
     # Input parmeter 오류 처리 오류
     data = "success"
@@ -63,13 +63,18 @@ async def auth_callback(code: str = ""):
     return await handle_request(oauth_callback, code)
 
 
-# # 2-2. 세션 저장용
-# # 일단 모든 페이지에서 user_info를 요청한다는 가정하에 함수작성
-# @app.get("/user_info")
-# async def user_info(request: Request):
+# 2-2. 세션 저장용
+# 일단 모든 페이지에서 user_info를 요청한다는 가정하에 함수작성
+@app.get("/user_info")
+async def user_info(request: Request):
 
-#     return await handle_request(get_userinfo, request)
+    return await handle_request(get_userinfo, request)
 
+@app.post("/logout")
+async def logout(uuid: str = Depends(validate_token)):
+    print("logout")
+    # 여기에 세션 삭제 또는 토큰 무효화 처리
+    return await handle_request(user_logout, uuid)
 
 # ********************************************* #
 # ***************  About Paper  *************** #

@@ -11,7 +11,7 @@ from datetime import datetime, timedelta, timezone
 def _check_expiretime(expire: int):
     expires_in = expire - 60
     # 현재 시간 계산
-    current_time = current_time = datetime.now(timezone.utc)
+    current_time = datetime.now(timezone.utc)
     # 만료 시간 계산
     expiration_time = current_time + timedelta(seconds=expires_in)
     # MySQL에 저장 가능한 TIMESTAMP 형식으로 변환
@@ -86,7 +86,7 @@ async def oauth_callback(code):
         user_info = user_info_response.json()
         email = user_info.get("email", "")
         name = user_info.get("name", "")
-        picute = user_info.get("picture", "DEFAULT")
+        picture = user_info.get("picture", "DEFAULT")
 
     except HTTPException as he:
         return response_template(
@@ -108,6 +108,13 @@ async def oauth_callback(code):
                 update_query,
                 (access_token, expires_in, refresh_token, check_result["user_id"]),
             )
+            update_img_query = (
+                "UPDATE DOCUMENTO.user SET profile_img = %s WHERE user_id = %s"
+            )
+            db_handler.execute_query(
+                update_img_query,
+                (picture, check_result["user_id"]),
+            )
 
         else:
             print("=== NEW CUSTOMER ===")
@@ -118,10 +125,8 @@ async def oauth_callback(code):
 
             uuid = generate_session_id()
 
-            # 수정예정
-            # user table에 picture 도 있어야함
             user_insert_query = "INSERT INTO DOCUMENTO.user (user_id, email, name, profile_img) VALUES (%s, %s, %s, %s)"
-            db_handler.execute_query(user_insert_query, (uuid, email, name, picute))
+            db_handler.execute_query(user_insert_query, (uuid, email, name, picture))
             auth_insert_query = "INSERT INTO DOCUMENTO.auth (user_id, access_token, refresh_token, expires_at) VALUES (%s, %s, %s, %s)"
             db_handler.execute_query(
                 auth_insert_query, (uuid, access_token, refresh_token, expires_in)
@@ -133,84 +138,110 @@ async def oauth_callback(code):
         )
     else:
 
-        print("=== FIN /auth/callback ===")
-
-        output_data = {
-            "access_token": access_token,
-            "refresh_token": refresh_token,
-            "user_info": {"userEmail": email, "userName": name, "userImg ": picute},
-        }
-
-        # return response_template(result=output_data, message="Login", http_code=200)
-        return {"message": "success"}
+        # 프론트엔드 URL로 리다이렉트하며 Access Token 전달
+        redirect_url = f"{oauth.home_uri}/auth/callback?access_token={access_token}"
+        return RedirectResponse(url=redirect_url)
 
     finally:
         db_handler.disconnect()
 
 
-# #수정예정
-# async def get_userinfo(request: Request):
-#     print("=== GET /user_info ===")
+async def user_logout(uuid):
+    print("===  /logout ===")
+    try:
+        reset_time = _check_expiretime(60)
+        db_handler = MySQLHandler()
 
-#     try:
-#         authorization: str = request.headers.get("Authorization")
+        db_handler.connect()
+        update_query = "UPDATE DOCUMENTO.auth SET expires_at = %s WHERE user_id = %s"
+        db_handler.execute_query(
+            update_query,
+            (reset_time, uuid),
+        )
+    except Exception as un_expc:
+        raise HTTPException(
+            status_code=500, detail=f"Error In processing MYSQL: {un_expc}"
+        )
 
-#         if (not authorization) or (not authorization.startswith("Bearer ")):
-#             raise HTTPException(
-#                 status_code=401, detail="user not login yet. please login firtst"
-#             )
+    else:
+        output_data = {"message": "Success"}
+        return response_template(
+            result=output_data, message="User Logout", http_code=200
+        )
 
-#         authorization = authorization.strip()
-#         parts = authorization.split(" ")
 
-#         if (not parts[1]) or (len(parts) < 2):
-#             raise HTTPException(
-#                 status_code=401, detail="user not login yet. please login firtst"
-#             )
+# 수정예정
+async def get_userinfo(request: Request):
+    print("=== GET /user_info ===")
 
-#         token = parts[1]
+    try:
+        authorization: str = request.headers.get("Authorization")
 
-#     except HTTPException as http_e:
-#         if http_e.status_code == 401:
-#             return response_template(
-#                 result="NOT_LOGIN", message=http_e.detail, http_code=http_e.status_code
-#             )
+        if (not authorization) or (not authorization.startswith("Bearer ")):
+            raise HTTPException(
+                status_code=401, detail="user not login yet. please login firtst"
+            )
 
-#     try:
-#         db_handler = MySQLHandler()
-#         db_handler.connect()
-#         isuser_query = "SELECT user_id FROM DOCUMENTO.auth WHERE access_token = %s"
-#         uuid = db_handler.fetch_one(isuser_query, (token,))["user_id"]
+        authorization = authorization.strip()
+        parts = authorization.split(" ")
 
-#         # 수정예정
-#         # refresh 토큰
+        if (not parts[1]) or (len(parts) < 2):
+            raise HTTPException(
+                status_code=401, detail="user not login yet. please login firtst"
+            )
 
-#         select_query = "SELECT * FROM DOCUMENTO.user WHERE user_id = %s"
-#         result = db_handler.fetch_one(select_query, (uuid,))
+        token = parts[1]
 
-#     except Exception as un_expc:
-#         raise HTTPException(
-#             status_code=500, detail=f"Error In processing MYSQL: {un_expc}"
-#         )
+    except HTTPException as http_e:
+        if http_e.status_code == 401:
+            return response_template(
+                result="NOT_LOGIN", message=http_e.detail, http_code=http_e.status_code
+            )
 
-#     else:
-#         # 수정예정
-#         # S3에 default 프로필 이미지 없로드 해야할듯
-#         output_data = {
-#             "accessToken": token,  # 멘토님이 북마크에서 말했던것 처럼
-#             "userEmail": result.get("email", ""),
-#             "userName": result.get("name", "홍길동"),
-#             "userImg ": result.get("profile_img", ""),
-#         }
+    try:
+        db_handler = MySQLHandler()
+        db_handler.connect()
+        isuser_query = "SELECT * FROM DOCUMENTO.auth WHERE access_token = %s"
+        result = db_handler.fetch_one(isuser_query, (token,))
 
-#         print("=== FIN /user_info ===")
+        uuid = result["user_id"]
+        expired = result["expires_at"]
+        expired_time = expired.replace(tzinfo=timezone.utc)
+        current_time = datetime.now(timezone.utc)
 
-#         return response_template(
-#             result=output_data, message="User INFO retrieved", http_code=200
-#         )
+        if expired_time < current_time:
+            raise HTTPException(status_code=401, detail="Access Token is expired")
 
-#     finally:
-#         db_handler.disconnect()
+        select_query = "SELECT * FROM DOCUMENTO.user WHERE user_id = %s"
+        result = db_handler.fetch_one(select_query, (uuid,))
+
+    except HTTPException as http_e:
+        if http_e.status_code == 401:
+            return response_template(
+                result="NOT_LOGIN", message=http_e.detail, http_code=http_e.status_code
+            )
+    except Exception as un_expc:
+        raise HTTPException(
+            status_code=500, detail=f"Error In processing MYSQL: {un_expc}"
+        )
+
+    else:
+        # S3에 default 프로필 이미지 없로드 해야할듯
+        output_data = {
+            "accessToken": token,  # 멘토님이 북마크에서 말했던것 처럼
+            "userEmail": result.get("email", ""),
+            "userName": result.get("name", "홍길동"),
+            "userImg": result.get("profile_img", ""),
+        }
+
+        print("=== FIN /user_info ===")
+
+        return response_template(
+            result=output_data, message="User INFO retrieved", http_code=200
+        )
+
+    finally:
+        db_handler.disconnect()
 
 
 # ***************  Bookmark Logic  *************** #
@@ -323,8 +354,8 @@ async def handle_bookmark(data):
         db_handler = MySQLHandler()
         uuid = data["uuid"]
         db_handler.connect()
-        insert_query = "SELECT bookmarked_papers FROM DOCUMENTO.user WHERE user_id = %s"
-        result = db_handler.fetch_one(insert_query, (uuid,))
+        select_query = "SELECT bookmarked_papers FROM DOCUMENTO.user WHERE user_id = %s"
+        result = db_handler.fetch_one(select_query, (uuid,))
         bookmark_data = result.get("bookmarked_papers", None)
 
         # True, 즉 추가하는 기능

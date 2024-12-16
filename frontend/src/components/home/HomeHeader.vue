@@ -2,18 +2,25 @@
 import { ref, onMounted } from 'vue'
 import axios from '@/axiosConfig' // 설정한 axios 인스턴스를 가져옵니다.
 
-// 환경 변수에서 API URL과 로그인 URL을 가져옵니다.
+// // 환경 변수에서 API URL과 로그인 URL을 가져옵니다.
+// const API_URL = process.env.VUE_APP_API_URL
+// const LOGIN_URL = process.env.VUE_APP_LOGIN_URL
+// const LOGOUT_REDIRECT_URL = process.env.VUE_APP_LOGOUT_REDIRECT_URL
+
+// LOCAL
 const API_URL = process.env.VUE_APP_API_URL
 const LOGIN_URL = process.env.VUE_APP_LOGIN_URL
-const LOGOUT_REDIRECT_URL = process.env.VUE_APP_LOGOUT_REDIRECT_URL
+const HOME_REDIRECT_URL = process.env.VUE_APP_HOME_REDIRECT_URL
+
 
 const userInfo = ref(null)
 
 // 사용자 정보 가져오기
 const fetchUserInfo = async () => {
   try {
+
     const response = await axios.get(`${API_URL}/user_info`)
-    userInfo.value = response.data
+    userInfo.value = response.data.result
     console.log('User Info:', userInfo.value)
   } catch (error) {
     console.error('Failed to fetch user info:', error)
@@ -24,18 +31,17 @@ const fetchUserInfo = async () => {
 const handleLogin = () => {
   window.location.href = LOGIN_URL
 }
-
 // 로그아웃 핸들러
 const handleLogout = async () => {
   try {
-    const response = await axios.get(`${API_URL}/logout`)
-    console.log(response.data.message) // 로그아웃 성공 메시지 확인
-    // 쿠키 삭제 및 페이지 리로드
-    document.cookie =
-      'session_id=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/; domain=documento.click'
 
-    // 페이지 새로고침
-    window.location.href = LOGOUT_REDIRECT_URL
+    const response = await axios.post(`${API_URL}/logout`)
+    // 로컬 스토리지에서 Access Token 삭제
+    localStorage.removeItem('access_token')
+    localStorage.removeItem('user_info')
+    window.location.href = HOME_REDIRECT_URL
+
+    console.log(response.data.message) // 로그아웃 성공 메시지 확인
   } catch (error) {
     console.error('Failed to logout:', error)
   }
@@ -65,8 +71,8 @@ onMounted(() => {
       </div>
       <div id="userMenu" class="user-info">
         <template v-if="userInfo">
-          <img :src="userInfo.picture" alt="User Picture" width="32" height="32" />
-          <span>{{ userInfo.name }}</span>
+          <img :src="userInfo.userImg" alt="User Picture" width="32" height="32" />
+          <span>{{ userInfo.userName }}</span>
           <button @click="handleLogout" class="styled-button">Logout</button>
         </template>
         <template v-else>

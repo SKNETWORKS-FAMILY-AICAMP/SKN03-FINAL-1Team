@@ -11,7 +11,8 @@ from .user import (
     oauth_callback,
     fetch_user_bookmarks,
     handle_bookmark,
-    # get_userinfo,
+    get_userinfo,
+    user_logout,
 )
 
 from .error_template import (
@@ -37,11 +38,12 @@ __all__ = [
     "fetch_user_bookmarks",
     "handle_bookmark",
     "initialize_global_objects",  # seom-j
-    # "get_userinfo",
+    "get_userinfo",
     "handle_request",
     "validate_token",
     "response_template",
     "top_http_exchandler",
     "top_validation_exchandler",
     "custom_405_handler",
+    "user_logout"
 ]

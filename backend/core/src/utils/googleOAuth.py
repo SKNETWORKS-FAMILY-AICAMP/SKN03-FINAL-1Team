@@ -9,11 +9,13 @@ class googleOAuth:
         """
         # for distribution
         self.authorization_url = "https://accounts.google.com/o/oauth2/v2/auth"
+        
         self.token_url = "https://oauth2.googleapis.com/token"
         self.user_info_url = "https://openidconnect.googleapis.com/v1/userinfo"
+        
 
         # LOCAL
-        # self.authorization_url = "https://accounts.google.com/o/oauth2/auth"
+        #self.authorization_url = "https://accounts.google.com/o/oauth2/auth"
 
         self._load_credentials()
 
@@ -29,11 +31,11 @@ class googleOAuth:
                 WithDecryption=True,
             )
 
-            # # LOCAL
-            # parameter = ssm.get_parameter(
-            #     Name="/TEST/KEY/GOOGLE_OAUTH_KEY/GOOGLE_CLIENT_ID",
-            #     WithDecryption=True,
-            # )
+            # LOCAL
+            parameter = ssm.get_parameter(
+                Name="/TEST/KEY/GOOGLE_OAUTH_KEY/GOOGLE_CLIENT_ID",
+                WithDecryption=True,
+            )
             self.client_id = parameter["Parameter"]["Value"]
 
             parameter = ssm.get_parameter(
@@ -41,11 +43,11 @@ class googleOAuth:
                 WithDecryption=True,
             )
 
-            # #LOCAL
-            # parameter = ssm.get_parameter(
-            #     Name="/TEST/KEY/GOOGLE_OAUTH_KEY/GOOGLE_CLIENT_SECRET",
-            #     WithDecryption=True,
-            # )
+            #LOCAL
+            parameter = ssm.get_parameter(
+                Name="/TEST/KEY/GOOGLE_OAUTH_KEY/GOOGLE_CLIENT_SECRET",
+                WithDecryption=True,
+            )
             self.client_secret = parameter["Parameter"]["Value"]
 
             parameter = ssm.get_parameter(
@@ -53,12 +55,26 @@ class googleOAuth:
                 WithDecryption=True,
             )
 
-            # #LOCAL
-            # parameter = ssm.get_parameter(
-            #     Name="/TEST/KEY/GOOGLE_OAUTH_KEY/GOOGLE_REDIRECT_URI",
-            #     WithDecryption=True,
-            # )
+            #LOCAL
+            parameter = ssm.get_parameter(
+                Name="/TEST/KEY/GOOGLE_OAUTH_KEY/GOOGLE_REDIRECT_URI",
+                WithDecryption=True,
+            )
             self.redirect_uri = parameter["Parameter"]["Value"]
+            
+            
+            parameter = ssm.get_parameter(
+                Name="/DEPLOY/URI/HOME_URI",
+                WithDecryption=True,
+            )
+
+            #LOCAL
+            parameter = ssm.get_parameter(
+                Name="/TEST/URI/HOME_URI",
+                WithDecryption=True,
+            )
+            self.home_uri = parameter["Parameter"]["Value"]
+            
 
         except (BotoCoreError, ClientError) as e:
             print(f"Error retrieving parameter from SSM: {e}")
