@@ -11,14 +11,8 @@ import json
 # 3. 논문검색
 
 
-async def process_search(data: dict):
-    pass
-
-
-async def process_search_default(data: dict):  # seom-j
+async def paper_search(data: dict):  # seom-j
     print("=== POST /papers/search : default ===")
-
-    # 만약 pagenation 테이블에 uuid & keyword 동일에 값이 있으면, 조회했던 적 있는것것
 
     try:
         uuid = data.get("uuid")
@@ -32,41 +26,6 @@ async def process_search_default(data: dict):  # seom-j
                 detail="Parameter is Empty. Check the userKeyword input.",
             )
 
-        db_handler = MySQLHandler()
-        db_handler.connect()
-        check_query = """
-        SELECT * 
-        FROM DOCUMENTO.pagenation 
-        WHERE userKeyword = %s 
-        AND user_id = %s;
-        """
-        is_data = db_handler.fetch_one(check_query, (user_keyword, uuid))
-
-        if is_data:
-            pass
-            return "hello"
-
-    except HTTPException as http_e:
-        if http_e.status_code == 400:
-            return response_template(
-                result="EMPTY_PARAMETER",
-                message=http_e.detail,
-                http_code=http_e.status_code,
-            )
-
-        else:
-            return response_template(
-                result="UNEXPECTED_HTTP_ERROR",
-                message=http_e.detail,
-                http_code=http_e.status_code,
-            )
-
-    except Exception as un_expc:
-        raise HTTPException(
-            status_code=500, detail=f"Error In processing MYSQL: {un_expc}"
-        )
-
-    try:
         # get searcher, faiss_index, faiss_ids (global variables)
         request = data.get("request")
         searcher = request.app.state.searcher
@@ -95,6 +54,31 @@ async def process_search_default(data: dict):  # seom-j
             {"paper_doi": result["paper_doi"], "similarity": result["similarity"]}
             for result in sorted_results
         ]
+
+    except HTTPException as http_e:
+        if http_e.status_code == 400:
+            return response_template(
+                result="EMPTY_PARAMETER",
+                message=http_e.detail,
+                http_code=http_e.status_code,
+            )
+
+        else:
+            return response_template(
+                result="UNEXPECTED_HTTP_ERROR",
+                message=http_e.detail,
+                http_code=http_e.status_code,
+            )
+
+    except Exception as un_expc:
+        raise HTTPException(
+            status_code=500, detail=f"Error In processing FASIS: {un_expc}"
+        )
+
+    try:
+
+        db_handler = MySQLHandler()
+        db_handler.connect()
 
         paper_list = []
         for doi_item in doi_list:
@@ -137,48 +121,42 @@ async def process_search_default(data: dict):  # seom-j
         )
 
     try:
-        result_papers = paper_list[:3]
-        
-        insert_query = """
-            INSERT INTO DOCUMENTO.pagenation
-            (userKeyword, user_id, searchResult) 
-            VALUES (%s, %s, %s)
-            """
-        
-        db_handler.execute_query(
-            insert_query, (user_keyword, uuid, paper_list)
-        )
+        totalSizes = len(paper_list)
+        if totalSizes > 60:
+            paper_list = paper_list[:60]
+            totalSizes = 60
 
-        
-        
-        
-        # pagination 페이지네이션
-        # 수정예정
-        current_page = 1
-        page_size = 3
-        total_results = len(paper_list)
-        total_pages = (total_results + page_size - 1) // page_size
-        has_next_page = current_page < total_pages
-        has_previous_page = current_page > 1
+        totalPages = ((totalSizes - 1) // 3) + 1
 
-        start_index = (current_page - 1) * page_size
-        end_index = start_index + page_size
-        paginated_paper_list = paper_list[start_index:end_index]
+        paperLists = []
+        paperPage = dict()
+        paperInfos = []
 
-        # output
-        output_data = {
-            "paperList": paginated_paper_list,
-            "pagination": {
-                "currentPage": current_page,
-                "pageSize": page_size,
-                "totalPages": total_pages,
-                "totalResults": total_results,
-                "hasNextPage": has_next_page,
-                "hasPreviousPage": has_previous_page,
-            },
+        for i, paperobj in enumerate(paper_list):
+            if i % 3 == 0:
+                # 초기화
+                paperPage = dict()
+                paperInfos = []
+                currentPage = (i // 3) + 1
+
+                paperPage["currentPage"] = currentPage
+                paperPage["sizes"] = 3
+                paperPage["hasPreviousPage"] = False if currentPage == 1 else True
+                paperPage["hasNextPage"] = False if currentPage == totalPages else True
+
+            paperInfos.append(paperobj)
+
+            if (i % 3 == 2) or (i == totalSizes - 1):
+                paperPage["paperInfos"] = paperInfos
+                paperLists.append(paperPage)
+
+        paperTotals = {
+            "totalPages": totalPages,
+            "totalSizes": totalSizes,
+            "paperLists": paperLists,
         }
+        output_data = {"paperTotals": paperTotals}
 
-        print("outputData : ", output_data)
         print("=== FIN /papers/search ===")
         return response_template(result=output_data, message="Search", http_code=201)
 
@@ -192,9 +170,6 @@ async def process_transformation(data):
     OPENAI로 출력된 결과로 output 수정
     """
     print("=== POST /papers/transformation ===")
-
-    # 수정필요?
-    # searched_keyword 테이블에 데이터 넣는 코드
 
     try:
 
@@ -261,8 +236,6 @@ async def process_transformation(data):
                     raise HTTPException(
                         status_code=500, detail=f"Error processing JSON: {e}"
                     )
-                    # print(f"Error decoding top_results JSON: {e}")
-                    # top_results = []
 
             sorted_results = sorted(top_results, key=lambda x: -x["similarity"])
             doi_list = [
@@ -416,10 +389,10 @@ async def fetch_paper_details(data):
 
 # 7. 논문요약
 async def process_summary(data):
-    print("=== POST /papers/summary ===")
+    print("=== GET /papers/summary ===")
     try:
-        paper_doi = data.paperDoi
-        paper_doi = paper_doi.strip()
+
+        paper_doi = data.strip()
         if not paper_doi:
             raise HTTPException(
                 status_code=400, detail="Parameter is empty. Check the paperDoi input."
@@ -443,7 +416,6 @@ async def process_summary(data):
 
     try:
         # 수정예정
-        user_keyword = "이걸 어떻게 해야하지"
 
         # 수정예정
         db_handler = MySQLHandler()
@@ -455,26 +427,36 @@ async def process_summary(data):
         """
         paper_data = db_handler.fetch_one(select_query, (paper_doi,))
 
+        if not paper_data:
+            raise HTTPException(
+                status_code=404,
+                detail="There is no such paperDoi. Check the paperDoi input.",
+            )
+
         output_data = {
             "title": paper_data.get("title"),
-            "userKeyword": user_keyword,
             "authors": paper_data.get("authors"),
             "publicationYear": paper_data.get("publication_year"),
             "publicationMonth": paper_data.get("publication_month"),
-            "generatedKeyword": paper_data.get(
-                "generatedKeyword", "This will be OUR generatedKeyword"
-            ),
-            "generatedCoreMethod": paper_data.get(
-                "generatedCoreMethod", "This will be OUR generatedCoreMethod"
-            ),
-            "generatedTechnologies": paper_data.get(
-                "generatedTechnologies", "This will be OUR generatedTechnologies"
-            ),
+            "generatedSummary": paper_data.get("generated_summarization"),
         }
+
+    except HTTPException as http_e:
+        if http_e.status_code == 404:
+            return response_template(
+                result="WRONG PAPERDOI",
+                message=http_e.detail,
+                http_code=http_e.status_code,
+            )
+        else:
+            return response_template(
+                result="UNEXPECTED_HTTP_ERROR",
+                message=http_e.detail,
+                http_code=http_e.status_code,
+            )
 
     except Exception as un_expc:
         raise HTTPException(status_code=500, detail=f"Error in MYSQL: {un_expc}")
-
     else:
         print("=== FIN /papers/summary ===")
         return response_template(

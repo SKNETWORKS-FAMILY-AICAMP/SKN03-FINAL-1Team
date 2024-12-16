@@ -28,6 +28,7 @@ class googleOAuth:
                 Name="/DOCUMENTO/KEY/GOOGLE_OAUTH_KEY/GOOGLE_CLIENT_ID",
                 WithDecryption=True,
             )
+
             # # LOCAL
             # parameter = ssm.get_parameter(
             #     Name="/TEST/KEY/GOOGLE_OAUTH_KEY/GOOGLE_CLIENT_ID",

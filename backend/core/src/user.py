@@ -28,29 +28,10 @@ def _check_expiretime(expire: int):
 # ***************  Oauth Logic / JWT  *************** #
 async def login_user(data):
     print("===  /login ===")
-    #삭제예정
-    print("prompt=select_account")
-    oauth = googleOAuth()
-    return RedirectResponse(
-        f"{oauth.authorization_url}?scope=openid%20email%20profile&access_type=offline&response_type=code&redirect_uri={oauth.redirect_uri}&client_id={oauth.client_id}&prompt=select_account"
-    )
-async def login_none(data):
-    print("===  /login ===")
-    #삭제예정
-    print("prompt=NONE")
-    oauth = googleOAuth()
-    return RedirectResponse(
-        f"{oauth.authorization_url}?scope=openid%20email%20profile&access_type=offline&response_type=code&redirect_uri={oauth.redirect_uri}&client_id={oauth.client_id}"
-    )
-async def login_consent(data):
-    print("===  /login ===")
-    #삭제예정
-    print("prompt=consent")
     oauth = googleOAuth()
     return RedirectResponse(
         f"{oauth.authorization_url}?scope=openid%20email%20profile&access_type=offline&response_type=code&redirect_uri={oauth.redirect_uri}&client_id={oauth.client_id}&prompt=consent"
     )
-
 
 
 async def oauth_callback(code):
@@ -62,8 +43,8 @@ async def oauth_callback(code):
                 status_code=500, detail="Parameter is Invalid or Empty. Check the input"
             )
 
-        oauth = googleOAuth()
-        
+        oauth = googleOAuth()  # unefficient
+
         token_response = requests.post(
             oauth.token_url,
             data={
@@ -79,14 +60,12 @@ async def oauth_callback(code):
             raise HTTPException(
                 status_code=token_response.status_code, detail=token_response.content
             )
-        
+
         token_response_data = token_response.json()
 
         access_token = token_response_data.get("access_token")
         refresh_token = token_response_data.get("refresh_token")
-        print("access_token :", access_token)
-        print("refresh_token :", refresh_token)
-        print("token_response_data :", token_response_data)
+
         expires_in = token_response_data.get("expires_in")
         expires_in = _check_expiretime(expires_in)
 
@@ -107,7 +86,7 @@ async def oauth_callback(code):
         user_info = user_info_response.json()
         email = user_info.get("email", "")
         name = user_info.get("name", "")
-        picute = user_info.get("picture", "")
+        picute = user_info.get("picture", "DEFAULT")
 
     except HTTPException as he:
         return response_template(
@@ -116,7 +95,6 @@ async def oauth_callback(code):
 
     # DB에 저장
     try:
-        print("here")
         db_handler = MySQLHandler()
         db_handler.connect()
 
@@ -125,9 +103,10 @@ async def oauth_callback(code):
 
         if check_result:
             print("=== EXIST CUSTOMER ===")
-            update_query = "UPDATE DOCUMENTO.auth SET access_token = %s, expires_at = %s WHERE user_id = %s"
+            update_query = "UPDATE DOCUMENTO.auth SET access_token = %s, expires_at = %s, refresh_token = %s WHERE user_id = %s"
             db_handler.execute_query(
-                update_query, (access_token, expires_in, check_result["user_id"])
+                update_query,
+                (access_token, expires_in, refresh_token, check_result["user_id"]),
             )
 
         else:
@@ -141,10 +120,8 @@ async def oauth_callback(code):
 
             # 수정예정
             # user table에 picture 도 있어야함
-            user_insert_query = (
-                "INSERT INTO DOCUMENTO.user (user_id, email, name) VALUES (%s, %s, %s)"
-            )
-            db_handler.execute_query(user_insert_query, (uuid, email, name))
+            user_insert_query = "INSERT INTO DOCUMENTO.user (user_id, email, name, profile_img) VALUES (%s, %s, %s, %s)"
+            db_handler.execute_query(user_insert_query, (uuid, email, name, picute))
             auth_insert_query = "INSERT INTO DOCUMENTO.auth (user_id, access_token, refresh_token, expires_at) VALUES (%s, %s, %s, %s)"
             db_handler.execute_query(
                 auth_insert_query, (uuid, access_token, refresh_token, expires_in)
@@ -158,75 +135,82 @@ async def oauth_callback(code):
 
         print("=== FIN /auth/callback ===")
 
-        output_data = {"accessToken": access_token}
-        return response_template(result=output_data, message="Login", http_code=200)
-
-    finally:
-        db_handler.disconnect()
-
-
-async def get_userinfo(request: Request):
-    print("=== GET /user_info ===")
-
-    try:
-        authorization: str = request.headers.get("Authorization")
-
-        if (not authorization) or (not authorization.startswith("Bearer ")):
-            raise HTTPException(
-                status_code=401, detail="user not login yet. please login firtst"
-            )
-
-        authorization = authorization.strip()
-        parts = authorization.split(" ")
-
-        if (not parts[1]) or (len(parts) < 2):
-            raise HTTPException(
-                status_code=401, detail="user not login yet. please login firtst"
-            )
-
-        token = parts[1]
-
-    except HTTPException as http_e:
-        if http_e.status_code == 401:
-            return response_template(
-                result="NOT_LOGIN", message=http_e.detail, http_code=http_e.status_code
-            )
-
-    try:
-        db_handler = MySQLHandler()
-        db_handler.connect()
-        isuser_query = "SELECT user_id FROM DOCUMENTO.auth WHERE access_token = %s"
-        uuid = db_handler.fetch_one(isuser_query, (token,))["user_id"]
-
-        # 수정예정
-        # refresh 토큰
-
-        select_query = "SELECT * FROM DOCUMENTO.user WHERE user_id = %s"
-        result = db_handler.fetch_one(select_query, (uuid,))
-
-    except Exception as un_expc:
-        raise HTTPException(
-            status_code=500, detail=f"Error In processing MYSQL: {un_expc}"
-        )
-
-    else:
-        # 수정예정
-        # S3에 default 프로필 이미지 없로드 해야할듯
         output_data = {
-            "accessToken": token,  # 멘토님이 북마크에서 말했던것 처럼
-            "userEmail": result.get("email", ""),
-            "userName": result.get("name", "홍길동"),
-            "userImg ": result.get("profile_img", ""),
+            "access_token": access_token,
+            "refresh_token": refresh_token,
+            "user_info": {"userEmail": email, "userName": name, "userImg ": picute},
         }
 
-        print("=== FIN /user_info ===")
-
-        return response_template(
-            result=output_data, message="User INFO retrieved", http_code=200
-        )
+        # return response_template(result=output_data, message="Login", http_code=200)
+        return {"message": "success"}
 
     finally:
         db_handler.disconnect()
+
+
+# #수정예정
+# async def get_userinfo(request: Request):
+#     print("=== GET /user_info ===")
+
+#     try:
+#         authorization: str = request.headers.get("Authorization")
+
+#         if (not authorization) or (not authorization.startswith("Bearer ")):
+#             raise HTTPException(
+#                 status_code=401, detail="user not login yet. please login firtst"
+#             )
+
+#         authorization = authorization.strip()
+#         parts = authorization.split(" ")
+
+#         if (not parts[1]) or (len(parts) < 2):
+#             raise HTTPException(
+#                 status_code=401, detail="user not login yet. please login firtst"
+#             )
+
+#         token = parts[1]
+
+#     except HTTPException as http_e:
+#         if http_e.status_code == 401:
+#             return response_template(
+#                 result="NOT_LOGIN", message=http_e.detail, http_code=http_e.status_code
+#             )
+
+#     try:
+#         db_handler = MySQLHandler()
+#         db_handler.connect()
+#         isuser_query = "SELECT user_id FROM DOCUMENTO.auth WHERE access_token = %s"
+#         uuid = db_handler.fetch_one(isuser_query, (token,))["user_id"]
+
+#         # 수정예정
+#         # refresh 토큰
+
+#         select_query = "SELECT * FROM DOCUMENTO.user WHERE user_id = %s"
+#         result = db_handler.fetch_one(select_query, (uuid,))
+
+#     except Exception as un_expc:
+#         raise HTTPException(
+#             status_code=500, detail=f"Error In processing MYSQL: {un_expc}"
+#         )
+
+#     else:
+#         # 수정예정
+#         # S3에 default 프로필 이미지 없로드 해야할듯
+#         output_data = {
+#             "accessToken": token,  # 멘토님이 북마크에서 말했던것 처럼
+#             "userEmail": result.get("email", ""),
+#             "userName": result.get("name", "홍길동"),
+#             "userImg ": result.get("profile_img", ""),
+#         }
+
+#         print("=== FIN /user_info ===")
+
+#         return response_template(
+#             result=output_data, message="User INFO retrieved", http_code=200
+#         )
+
+#     finally:
+#         db_handler.disconnect()
 
 
 # ***************  Bookmark Logic  *************** #
@@ -240,8 +224,6 @@ async def fetch_user_bookmarks(uuid):
         db_handler.connect()
         insert_query = "SELECT bookmarked_papers FROM DOCUMENTO.user WHERE user_id = %s"
         request_result = db_handler.fetch_one(insert_query, (uuid,))
-
-        print("reuqest_result : ", request_result)
 
         if not request_result["bookmarked_papers"] or not request_result:
             raise HTTPException(
@@ -300,7 +282,6 @@ async def handle_bookmark(data):
 
     # 1. Data 검증
     try:
-        print("=== Check data annotation ===")
         request_data = data["request_data"]
         request_json = jsonable_encoder(request_data)
 
@@ -370,7 +351,11 @@ async def handle_bookmark(data):
             )
             db_handler.execute_query(update_query, (json.dumps(bookmark_list), uuid))
 
-            output_data = {"paperDoi": paperDoi, "bookMark": bookMark}
+            output_data = {
+                "paperDoi": paperDoi,
+                "bookMark": bookMark,
+                "bookMarkLists": bookmark_list,
+            }
 
             response_json = response_template(
                 result=output_data, message="Bookmark save", http_code=201
@@ -404,7 +389,11 @@ async def handle_bookmark(data):
             )
             db_handler.execute_query(update_query, (json.dumps(bookmark_list), uuid))
 
-            output_data = {"paperDoi": paperDoi, "bookMark": bookMark}
+            output_data = {
+                "paperDoi": paperDoi,
+                "bookMark": bookMark,
+                "bookmark_list": bookmark_list,
+            }
 
             response_json = response_template(
                 result=output_data, message="Bookmark removed", http_code=201

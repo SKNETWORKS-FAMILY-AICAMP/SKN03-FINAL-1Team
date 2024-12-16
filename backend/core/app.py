@@ -55,34 +55,20 @@ async def login():
     data = "success"
     return await handle_request(login_user, data)
 
-@app.get("/login_non")
-async def login():
-    # Input parmeter 오류 처리 오류
-    data = "success"
-    return await handle_request(login_none, data)
-
-@app.get("/login_consent")
-async def login():
-    # Input parmeter 오류 처리 오류
-    data = "success"
-    return await handle_request(login_consent, data)
-
-
-
 
 # 2-1. 회원가입/로그인 용
 @app.get("/auth/callback")
 async def auth_callback(code: str = ""):
-    # print("code : ", code)
+
     return await handle_request(oauth_callback, code)
 
 
-# 2-2. 세션 저장용
-# 일단 모든 페이지에서 user_info를 요청한다는 가정하에 함수작성
-@app.get("/user_info")
-async def user_info(request: Request):
+# # 2-2. 세션 저장용
+# # 일단 모든 페이지에서 user_info를 요청한다는 가정하에 함수작성
+# @app.get("/user_info")
+# async def user_info(request: Request):
 
-    return await handle_request(get_userinfo, request)
+#     return await handle_request(get_userinfo, request)
 
 
 # ********************************************* #
@@ -95,18 +81,11 @@ async def user_info(request: Request):
 async def search_papers(
     request: Request,
     keyword: paperSearch,
-    page: int = 0,
     uuid: str = Depends(validate_token),
 ):
+    request_data = {"keyword": keyword, "request": request, "uuid": uuid}
 
-    if page == 0:
-        request_data = {"keyword": keyword, "request": request, "uuid": uuid}
-
-        return await handle_request(process_search_default, request_data)
-
-    return await handle_request(
-        process_search, {"keyword": keyword, "page": page, "uuid": uuid}
-    )
+    return await handle_request(paper_search, request_data)
 
 
 # 4. 키워드 최적화
@@ -139,16 +118,16 @@ async def add_to_bookmarks(data: bookMarking, uuid: str = Depends(validate_token
 
 # 6. 논문 선택
 # notion에는 /papers/select/?paperDoi=”string” 이렇게 적혀있음
-@app.get("/papers/select/", dependencies=[Depends(validate_token)])
+@app.get("/papers/detail/", dependencies=[Depends(validate_token)])
 async def get_paper_by_doi(paperDoi: str = ""):
 
     return await handle_request(fetch_paper_details, paperDoi)
 
 
 # 7. 논문 요약
-@app.post("/papers/summary/", dependencies=[Depends(validate_token)])
-async def create_paper_summary(data: paperSummary):
-    return await handle_request(process_summary, data)
+@app.get("/papers/summary/", dependencies=[Depends(validate_token)])
+async def create_paper_summary(paperDoi: str = ""):
+    return await handle_request(process_summary, paperDoi)
 
 
 # 8. 선행 논문 리스트

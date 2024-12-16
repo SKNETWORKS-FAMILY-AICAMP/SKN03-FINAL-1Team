@@ -25,7 +25,7 @@ async def top_http_exchandler(request: Request, exc: HTTPException):
         return response_template(
             result="NO_USER_INFO", message=exc.detail, http_code=exc.status_code
         )
-    print("hello")
+
     return await request.app.default_exception_handler(request, exc)
 
 
@@ -57,7 +57,7 @@ async def top_validation_exchandler(request: Request, exc: RequestValidationErro
     errorCode = errorCode.upper()
     errorCode = errorCode.strip()
 
-    return response_template(result=errorCode, message=message, http_code=422)
+    return await response_template(result=errorCode, message=message, http_code=422)
 
 
 # return handler
@@ -93,7 +93,7 @@ def validate_token(credentials: HTTPAuthorizationCredentials = Depends(security)
     db_handler.connect()
     try:
         token = credentials.credentials  # Extract token
-        insert_query = "SELECT user_id FROM DOCUMENTO.auth WHERE access_token = %s"
+        insert_query = "SELECT user_id FROM DOCUMENTO.auth WHERE refresh_token = %s"
         request_result = db_handler.fetch_one(insert_query, (token,))
         if not request_result:
             raise HTTPException(
@@ -118,7 +118,7 @@ def response_template(result: None, message: str, http_code: int = 500):
             status_code=http_code,
             content={
                 "resultCode": http_code,
-                "message": message + " completed successfully",
+                "message": message + " successfully",
                 "result": result,
             },
         )
