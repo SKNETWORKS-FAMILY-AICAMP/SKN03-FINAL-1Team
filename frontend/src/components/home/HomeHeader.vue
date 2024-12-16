@@ -3,11 +3,6 @@ import { ref, onMounted } from 'vue'
 import axios from '@/axiosConfig' // 설정한 axios 인스턴스를 가져옵니다.
 
 // // 환경 변수에서 API URL과 로그인 URL을 가져옵니다.
-// const API_URL = process.env.VUE_APP_API_URL
-// const LOGIN_URL = process.env.VUE_APP_LOGIN_URL
-// const LOGOUT_REDIRECT_URL = process.env.VUE_APP_LOGOUT_REDIRECT_URL
-
-// LOCAL
 const API_URL = process.env.VUE_APP_API_URL
 const LOGIN_URL = process.env.VUE_APP_LOGIN_URL
 const HOME_REDIRECT_URL = process.env.VUE_APP_HOME_REDIRECT_URL

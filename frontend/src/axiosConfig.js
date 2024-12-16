@@ -1,14 +1,13 @@
 import axios from 'axios'
 
 const instance = axios.create({
-  //baseURL: 'https://api.documento.click',
-  baseURL: 'http://127.0.0.1:8000/',
+  baseURL: 'https://api.documento.click',
+  //baseURL: 'http://127.0.0.1:8000/',
   headers: {
     'Content-Type': 'application/json',
   },
 })
 
-//앙 실험띠
 instance.interceptors.request.use((config) => {
   const token = localStorage.getItem('access_token')
   if (token) {

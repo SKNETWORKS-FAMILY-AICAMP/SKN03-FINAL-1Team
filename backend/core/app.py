@@ -8,11 +8,14 @@ from src.reqeust_model import *
 
 app = FastAPI()
 
+# #local
+# allowed = ["https://www.documento.click", "http://localhost:5173"]
+allowed = ["https://www.documento.click"]
 
 # ******************  CORS 처리  ****************** #
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["https://www.documento.click", "http://localhost:5173"],  # 프론트엔드 서브 도메인
+    allow_origins=allowed,  # 프론트엔드 서브 도메인
     allow_methods=["*"],  # 모든 HTTP 메서드 허용
     allow_headers=["*"],  # 모든 헤더 허용
     allow_credentials=True,  # 인증 정보 허용 (쿠키 등)

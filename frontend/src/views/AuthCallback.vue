@@ -18,7 +18,6 @@ const handleOAuthCallback = () => {
 
     console.log('Access Token saved successfully:', accessToken)
 
-    // LOCAL
     const HOME_REDIRECT_URL = process.env.VUE_APP_HOME_REDIRECT_URL
     window.location.href = HOME_REDIRECT_URL
   } catch (error) {
