@@ -5,6 +5,7 @@ import {onMounted } from 'vue'
 const route = useRoute()
 
 const handleOAuthCallback = () => {
+  console.log("isinHere?")
   const accessToken = route.query.access_token // URL에서 Access Token 추출
 
   if (!accessToken) {

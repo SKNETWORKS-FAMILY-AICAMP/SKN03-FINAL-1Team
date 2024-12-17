@@ -139,7 +139,7 @@ async def oauth_callback(code):
     else:
 
         # 프론트엔드 URL로 리다이렉트하며 Access Token 전달
-        redirect_url = f"{oauth.home_uri}/auth/callback?access_token={access_token}"
+        redirect_url = f"{oauth.home_uri}/auth/callback/?access_token={access_token}"
         return RedirectResponse(url=redirect_url)
 
     finally:
@@ -203,7 +203,8 @@ async def get_userinfo(request: Request):
         db_handler.connect()
         isuser_query = "SELECT * FROM DOCUMENTO.auth WHERE access_token = %s"
         result = db_handler.fetch_one(isuser_query, (token,))
-
+        if not result:
+            raise HTTPException(status_code=401, detail="Access Token is expired")
         uuid = result["user_id"]
         expired = result["expires_at"]
         expired_time = expired.replace(tzinfo=timezone.utc)

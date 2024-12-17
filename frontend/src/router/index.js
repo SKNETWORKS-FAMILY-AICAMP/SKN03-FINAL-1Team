@@ -29,7 +29,7 @@ const routes = [
     name: 'paper-detail',
     component: PaperDetailView,
   },
-  { path: '/auth/callback', name: 'AuthCallback', component: AuthCallback },
+  { path: '/auth/callback/', name: 'AuthCallback', component: AuthCallback },
   {
     path: '/test',
     name: 'test',
