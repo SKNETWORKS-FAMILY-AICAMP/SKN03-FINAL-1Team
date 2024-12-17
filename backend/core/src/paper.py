@@ -15,7 +15,6 @@ async def paper_search(data: dict):  # seom-j
     print("=== POST /papers/search : default ===")
 
     try:
-        uuid = data.get("uuid")
 
         # get data
         user_keyword = data.get("keyword").userKeyword
@@ -85,7 +84,7 @@ async def paper_search(data: dict):  # seom-j
             paper_doi = doi_item["paper_doi"]
 
             select_query = """
-            SELECT title, authors, venue, publication_year, publication_month, eng_abstract, citation 
+            SELECT title, authors, venue, publication_year, publication_month, eng_abstract, kor_abstract,citation 
             FROM DOCUMENTO.paper 
             WHERE paper_doi = %s
             """

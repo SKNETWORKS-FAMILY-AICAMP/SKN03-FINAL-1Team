@@ -68,11 +68,11 @@ async def auth_callback(code: str = ""):
 
 
 # 2-2. 세션 저장용
-# 일단 모든 페이지에서 user_info를 요청한다는 가정하에 함수작성
 @app.get("/user_info")
 async def user_info(request: Request):
 
     return await handle_request(get_userinfo, request)
+
 
 @app.post("/logout")
 async def logout(uuid: str = Depends(validate_token)):
@@ -80,21 +80,20 @@ async def logout(uuid: str = Depends(validate_token)):
     # 여기에 세션 삭제 또는 토큰 무효화 처리
     return await handle_request(user_logout, uuid)
 
+
 # ********************************************* #
 # ***************  About Paper  *************** #
 # ********************************************* #
 
 
 # 3. 논문검색
-@app.post("/papers/search/")
+@app.post("/papers/search/", dependencies=[Depends(validate_token)])
 async def search_papers(
     request: Request,
     keyword: paperSearch,
-    uuid: str = Depends(validate_token),
 ):
-    request_data = {"keyword": keyword, "request": request, "uuid": uuid}
 
-    return await handle_request(paper_search, request_data)
+    return await handle_request(paper_search, {"keyword": keyword, "request": request})
 
 
 # 4. 키워드 최적화

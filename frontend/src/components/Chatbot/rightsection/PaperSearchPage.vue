@@ -1,15 +1,16 @@
 <script setup>
-import { ref } from 'vue'
+import { ref,onMounted } from 'vue'
 import axios from '@/axiosConfig' // 설정한 axios 인스턴스를 가져옵니다.
 import PaperSearchItem from '@/components/Chatbot/rightsection/PaperSearchItem.vue' // 정확한 경로로 수정
 
+const currentPage = ref(1) // 현재 페이지
+const totalPages = ref(0) // 전체 페이지 수
 const inputText = ref('')
 const papers = ref([])
 const loading = ref(false) // 로딩 상태 추가
-const accessToken = 'temp' // 여기서 실제 토큰을 할당
 
 // 논문 데이터 가져오기 (POST 요청)
-const fetchPapers = async () => {
+const fetchPapers = async (page = currentPage) => {
   loading.value = true // 로딩 시작
   try {
     const response = await axios.post(
@@ -17,14 +18,11 @@ const fetchPapers = async () => {
       {
         userKeyword: inputText.value,
       },
-      {
-        headers: {
-          Authorization: `Bearer ${accessToken}`, // Authorization 헤더에 토큰 포함
-        },
-      },
     )
-    papers.value = response.data.result.paperList
-    console.log('Papers:', papers.value)
+    const { paperLists, totalPages: total } = response.data.result.paperTotals
+    papers.value = paperLists[page-1]?.paperInfos || [] // 현재 페이지 데이터
+    totalPages.value = total
+    currentPage.value = page
   } catch (error) {
     console.error('Failed to fetch papers:', error)
   } finally {
@@ -32,14 +30,18 @@ const fetchPapers = async () => {
   }
 }
 
-// 메시지 전송 핸들러
-const sendMessage = () => {
-  if (inputText.value.trim() !== '') {
-    fetchPapers()
-  } else {
-    console.warn('탐색 키워드를 입력해보아요.')
+
+/* 페이지 변경 함수 */
+const goToPage = (page) => {
+  if (page >= 1 && page <= totalPages.value) {
+    fetchPapers(page)
   }
 }
+
+/* 컴포넌트 마운트 시 첫 페이지 데이터 가져오기 */
+// onMounted(() => {
+//   fetchPapers(currentPage.value)
+// })
 </script>
 
 <template>
@@ -51,9 +53,9 @@ const sendMessage = () => {
           type="text"
           class="form-control chat-input"
           placeholder="탐색 키워드를 입력해보아요."
-          @keyup.enter="sendMessage"
+          @keyup.enter="fetchPapers(1)"
         />
-        <button class="btn send-button" @click="sendMessage" :disabled="loading">></button>
+        <button class="btn send-button" @click="fetchPapers(1)" :disabled="loading">></button>
       </div>
       <div v-if="loading" class="d-flex justify-content-center my-3">
         <div class="spinner-border text-primary" role="status">
@@ -64,8 +66,19 @@ const sendMessage = () => {
         <div v-for="(paper, index) in papers" :key="index">
           <PaperSearchItem :paper="paper" class="search-item" />
         </div>
-      </div>
+      
     </div>
+    <!-- 페이지네이션 컨트롤 -->
+    <div v-if="papers.length > 0" class="pagination-controls">
+      <button @click="goToPage(currentPage - 1)" :disabled="currentPage === 1">
+        이전
+      </button>
+      <span>Page {{ currentPage }} of {{ totalPages }}</span>
+      <button @click="goToPage(currentPage + 1)" :disabled="currentPage === totalPages">
+        다음
+      </button>
+    </div>
+  </div>
   </div>
 </template>
 
@@ -130,5 +143,30 @@ const sendMessage = () => {
   border-bottom: 1px solid #ccc; /* 구분선 추가 */
   padding-bottom: 10px; /* 구분선과 요소 간의 간격 추가 */
   margin-bottom: 10px; /* 구분선과 요소 간의 간격 추가 */
+}
+.pagination-controls {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  justify-content: center;
+}
+
+button {
+  background-color: #a04747;
+  color: white;
+  border: none;
+  padding: 0.5rem 1.5rem;
+  border-radius: 5px;
+  cursor: pointer;
+  transition: background 0.3s;
+}
+
+button:disabled {
+  background-color: #ccc;
+  cursor: not-allowed;
+}
+
+button:hover:not(:disabled) {
+  background-color: #7a3737;
 }
 </style>

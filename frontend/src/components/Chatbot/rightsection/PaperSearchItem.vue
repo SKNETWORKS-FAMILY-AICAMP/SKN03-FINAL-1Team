@@ -26,11 +26,11 @@ const props = defineProps({
     >
       <div>
         <h5>{{ paper.title }}</h5>
-        <p class="my-1">
-          {{ paper.publicationMonth }} {{ paper.publicationYear }} | {{ paper.authors }}
+        <p class="my-1 author">
+          {{ paper.publication_month }} {{ paper.publication_year }} | {{ paper.authors }}
         </p>
         <p class="no-margin">DOI: {{ paper.paperDoi }}</p>
-        <p class="no-margin">Abstract: {{ paper.abstract }}</p>
+        <p class="no-margin abstract">Abstract: {{ paper.kor_abstract }}</p>
       </div>
     </router-link>
   </div>
@@ -39,5 +39,20 @@ const props = defineProps({
 <style scoped>
 .no-margin {
   margin: 0;
+}
+.abstract {
+  display: -webkit-box; /* Flexbox 기반 표시 */
+  -webkit-line-clamp: 2; /* 표시할 최대 줄 수 (여기서는 3줄) */
+  -webkit-box-orient: vertical; /* 세로 방향 정렬 */
+  overflow: hidden; /* 넘치는 부분 감춤 */
+  text-overflow: ellipsis; /* '...' 표시 */
+}
+
+.author {
+  display: -webkit-box; /* Flexbox 기반 표시 */
+  -webkit-line-clamp: 1; /* 표시할 최대 줄 수 (여기서는 3줄) */
+  -webkit-box-orient: vertical; /* 세로 방향 정렬 */
+  overflow: hidden; /* 넘치는 부분 감춤 */
+  text-overflow: ellipsis; /* '...' 표시 */
 }
 </style>
