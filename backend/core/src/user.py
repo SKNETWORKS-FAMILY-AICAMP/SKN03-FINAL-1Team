@@ -86,7 +86,7 @@ async def oauth_callback(code):
         user_info = user_info_response.json()
         email = user_info.get("email", "")
         name = user_info.get("name", "")
-        picture = user_info.get("picture", "DEFAULT")
+        picture = user_info.get("picture", "")
 
     except HTTPException as he:
         return response_template(

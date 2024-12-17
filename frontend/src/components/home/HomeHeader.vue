@@ -1,7 +1,7 @@
 <script setup>
 import { ref, onMounted } from 'vue'
 import axios from '@/axiosConfig' // 설정한 axios 인스턴스를 가져옵니다.
-
+import defaultImage from '@/assets/DEFAULT_USER.svg' // 기본 이미지 import
 // // 환경 변수에서 API URL과 로그인 URL을 가져옵니다.
 const API_URL = process.env.VUE_APP_API_URL
 const LOGIN_URL = process.env.VUE_APP_LOGIN_URL
@@ -16,7 +16,7 @@ const fetchUserInfo = async () => {
 
     const response = await axios.get(`${API_URL}/user_info`)
     userInfo.value = response.data.result
-    console.log('User Info:', userInfo.value)
+    console.log('User Info:', userInfo.value['userImg'])
   } catch (error) {
     console.error('Failed to fetch user info:', error)
   }
@@ -66,7 +66,29 @@ onMounted(() => {
       </div>
       <div id="userMenu" class="user-info">
         <template v-if="userInfo">
-          <img :src="userInfo.userImg" alt="User Picture" width="32" height="32" />
+          
+          <!--img :src="userInfo.userImg" alt="User Picture" width="32" height="32" /!-->
+          <!-- 사용자 이미지 -->
+    <img
+      v-if="userInfo.userImg"
+      :src="userInfo.userImg"
+      alt="User Picture"
+      width="32"
+      height="32"
+    />
+
+    <!-- 기본 이미지 -->
+    <img
+      v-else
+      :src="defaultImage"
+      alt="Default User"
+      width="32"
+      height="32"
+      class="default-image"
+    />
+
+
+
           <span>{{ userInfo.userName }}</span>
           <button @click="handleLogout" class="styled-button">Logout</button>
         </template>
@@ -164,5 +186,8 @@ header ul.menu li a:hover {
   margin-top: 20px;
   text-align: left;
   display: inline-block;
+}
+.default-image {
+  filter: brightness(0) saturate(100%) invert(38%) sepia(32%) saturate(1286%) hue-rotate(314deg) brightness(91%) contrast(90%);
 }
 </style>

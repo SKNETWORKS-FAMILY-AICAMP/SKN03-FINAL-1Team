@@ -18,7 +18,7 @@ async def top_http_exchandler(request: Request, exc: HTTPException):
     if exc.status_code == 403:
         return response_template(
             result="AUTHENTICATION_FAILED",
-            message=exc.detail,
+            message="DOCUMENTO의 모든 서비스는 로그인이 필요합니다!\n 3초 후 로그인 페이지로 이동합니다",
             http_code=exc.status_code,
         )
     elif exc.status_code == 401:
@@ -93,13 +93,13 @@ def validate_token(credentials: HTTPAuthorizationCredentials = Depends(security)
     db_handler.connect()
     try:
         token = credentials.credentials  # Extract token
-        
+
         insert_query = "SELECT user_id FROM DOCUMENTO.auth WHERE access_token = %s"
         request_result = db_handler.fetch_one(insert_query, (token,))
         if not request_result:
             raise HTTPException(
                 status_code=403,
-                detail="Authentication failed. Please log_in with valid credentials.",
+                detail="DOCUMENTO의 모든 서비스는 로그인이 필요합니다!\n 3초 후 로그인 페이지로 이동합니다",
             )
         return request_result["user_id"]
 

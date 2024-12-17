@@ -22,7 +22,7 @@ async def paper_search(data: dict):  # seom-j
         if not user_keyword:
             raise HTTPException(
                 status_code=400,
-                detail="Parameter is Empty. Check the userKeyword input.",
+                detail="탐색 키워드를 입력하지 않았습니다!\n키워드를 입력해서 DOCUMENTO 서비스를 이용해주세요!",
             )
 
         # get searcher, faiss_index, faiss_ids (global variables)
@@ -99,7 +99,8 @@ async def paper_search(data: dict):  # seom-j
 
         if not paper_list:
             raise HTTPException(
-                status_code=404, detail="No results found. Please refine your search."
+                status_code=404,
+                detail="해당 키워드와 충분한 유사도를 가진 논문이 아직 존재하지 않습니다!\n다른 키워드를 검색해서 DOCUMENTO 서비스를 이용해주세요!",
             )
 
     except HTTPException as http_e:
