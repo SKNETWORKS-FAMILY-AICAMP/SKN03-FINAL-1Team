@@ -9,6 +9,12 @@ const LOGOUT_REDIRECT_URL = process.env.VUE_APP_LOGOUT_REDIRECT_URL
 
 const userInfo = ref(null)
 
+const menuItems = ref([
+  { name: 'Keyword', link: '/main' },
+  { name: 'Search', link: '/main' },
+  { name: 'Preview', link: '/main' },
+])
+
 // 사용자 정보 가져오기
 const fetchUserInfo = async () => {
   try {
@@ -40,12 +46,6 @@ const handleLogout = async () => {
     console.error('Failed to logout:', error)
   }
 }
-
-const menuItems = ref([
-  { name: 'Keyword', link: '/main' },
-  { name: 'Search', link: '/main' },
-  { name: 'Preview', link: '/main' },
-])
 
 onMounted(() => {
   fetchUserInfo()
