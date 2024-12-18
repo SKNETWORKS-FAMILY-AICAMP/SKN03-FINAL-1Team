@@ -95,9 +95,16 @@ async def search_papers(
 
     return await handle_request(paper_search, {"keyword": keyword, "request": request})
 
-
-# 4. 키워드 최적화
+# 4.-1 키워드 최적화
 @app.post("/papers/transformation/", dependencies=[Depends(validate_token)])
+async def create_paper_transformation(request: Request, data: paperTransformation):
+    # data = await request.json()
+    return await handle_request(
+        paper_dummy, {"data": data, "request": request}
+    )
+
+# 4.1 키워드 최적화
+@app.post("/papers/dummy/", dependencies=[Depends(validate_token)])
 async def create_paper_transformation(request: Request, data: paperTransformation):
     # data = await request.json()
     return await handle_request(

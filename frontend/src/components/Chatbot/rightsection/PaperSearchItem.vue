@@ -20,7 +20,7 @@ const props = defineProps({
       </div>
     </div>
     <router-link
-      :to="{ path: '/papers/select', query: { paperDoi: paper.paperDoi } }"
+      :to="{ path: '/papers/detail/', query: { paperDoi: paper.paperDoi } }"
       class="text-start"
       style="text-decoration: none; color: inherit"
     >

@@ -4,6 +4,7 @@ from .paper import (
     process_summary,
     process_transformation,
     paper_search,
+    paper_dummy
 )
 
 from .user import (
@@ -45,5 +46,7 @@ __all__ = [
     "top_http_exchandler",
     "top_validation_exchandler",
     "custom_405_handler",
-    "user_logout"
+    "user_logout",
+    
+    "paper_dummy"
 ]

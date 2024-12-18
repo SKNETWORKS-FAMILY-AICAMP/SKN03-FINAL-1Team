@@ -185,6 +185,7 @@ async def process_transformation(data):
         chatbot = openaiHandler()
         openai_output = chatbot.get_keywords(user_prompt)
         openai_output = json.loads(openai_output)
+        print(openai_output)
         eng_keywords_to_search = [
             item["eng"]
             for item in openai_output
@@ -306,10 +307,107 @@ async def process_transformation(data):
     finally:
         db_handler.disconnect()
 
+async def paper_dummy(data):
+    try:
+        user_prompt = data.get("data").userPrompt
+        user_prompt = user_prompt.strip()
+        print("userPrompt : ", user_prompt)
+        if not user_prompt:
+            raise HTTPException(
+                status_code=400,
+                detail="Parameter is Empty. Check the userPrompt input.",
+            )
+            
+        if user_prompt == "FAKE":
+            raise HTTPException(
+                status_code=404, detail="No results found. Please refine your search."
+            )
+        
+        if user_prompt == "EMPTY":
+            raise HTTPException(
+                status_code=404, detail="No results found. Please refine your search."
+            )
+
+    except HTTPException as http_e:
+        if http_e.status_code == 400:
+            return response_template(
+                result="EMPTY_PARAMETER",
+                message=http_e.detail,
+                http_code=http_e.status_code,
+            )
+        elif http_e.status_code == 404:
+            return response_template(
+                result="NO_RESULTS", message=http_e.detail, http_code=http_e.status_code
+            )
+        else:
+            return response_template(
+                result="UNEXPECTED_HTTP_ERROR",
+                message=http_e.detail,
+                http_code=http_e.status_code,
+            )
+    except Exception as un_expc:
+        raise HTTPException(status_code=500, detail=f"Error processing data: {un_expc}")
+    else:  
+        output_data= {
+    "generatedPrompt": "\"Efficient fine-tuning strategies for large-scale pre-trained language models\"의 키워드 검색 결과입니다.\n\n",
+    "generatedKeywordList": [
+      {
+        "generatedKeyword": "Optimization of Large-Scale Language Models [대규모 언어 모델의 최적화]",
+        "paperList": [
+          {
+            "paperDoi": "10.18653/v1/2020.acl-main.417",
+            "title": "ParaCrawl: Web-Scale Acquisition of Parallel Corpora",
+            "engAbstract": "We report on methods to create the largest publicly available parallel corpora by crawling the web, using open source software. We empirically compare alternative methods and publish benchmark data sets for sentence alignment and sentence pair filtering. We also describe the parallel corpora released and evaluate their quality and their usefulness to create machine translation systems.",
+            "citation": 227
+          },
+          {
+            "paperDoi": "10.18653/v1/2022.acl-long.264",
+            "title": "The Trade-offs of Domain Adaptation for Neural Language Models",
+            "engAbstract": "This work connects language model adaptation with concepts of machine learning theory. We consider a training setup with a large out-of-domain set and a small in-domain set. We derive how the benefit of training a model on either set depends on the size of the sets and the distance between their underlying distributions. We analyze how out-of-domain pre-training before in-domain fine-tuning achieves better generalization than either solution independently. Finally, we present how adaptation techniques based on data selection, such as importance sampling, intelligent data selection and influence functions, can be presented in a common framework which highlights their similarity and also their subtle differences.",
+            "citation": 18
+          }
+        ]
+      },
+      {
+        "generatedKeyword": "Fine-Tuning Techniques in Language Modelling [언어 모델링에서의 미세 조정 기법]",
+        "paperList": [
+          {
+            "paperDoi": "10.18653/v1/2022.acl-long.264",
+            "title": "The Trade-offs of Domain Adaptation for Neural Language Models",
+            "engAbstract": "This work connects language model adaptation with concepts of machine learning theory. We consider a training setup with a large out-of-domain set and a small in-domain set. We derive how the benefit of training a model on either set depends on the size of the sets and the distance between their underlying distributions. We analyze how out-of-domain pre-training before in-domain fine-tuning achieves better generalization than either solution independently. Finally, we present how adaptation techniques based on data selection, such as importance sampling, intelligent data selection and influence functions, can be presented in a common framework which highlights their similarity and also their subtle differences.",
+            "citation": 18
+          }
+        ]
+      },
+      {
+        "generatedKeyword": "Efficacy of Pre-trained Language Model Tuning [미리 훈련된 언어 모델 튜닝의 효율성]",
+        "paperList": [
+          {
+            "paperDoi": "10.18653/v1/2020.acl-demos.15",
+            "title": "jiant: A Software Toolkit for Research on General-Purpose Text Understanding Models",
+            "engAbstract": "We introduce jiant, an open source toolkit for conducting multitask and transfer learning experiments on English NLU tasks. jiant enables modular and configuration driven experimentation with state-of-the-art models and a broad set of tasks for probing, transfer learning, and multitask training experiments. jiant implements over 50 NLU tasks, including all GLUE and SuperGLUE benchmark tasks. We demonstrate that jiant reproduces published performance on a variety of tasks and models, e.g., RoBERTa and BERT.",
+            "citation": 92
+          }
+        ]
+      },
+      {
+        "generatedKeyword": "Performance Evaluation of Large-Scale Language Models [대규모 언어 모델의 성능 평가]",
+        "paperList": [
+          {
+            "paperDoi": "10.18653/v1/2020.acl-main.417",
+            "title": "ParaCrawl: Web-Scale Acquisition of Parallel Corpora",
+            "engAbstract": "We report on methods to create the largest publicly available parallel corpora by crawling the web, using open source software. We empirically compare alternative methods and publish benchmark data sets for sentence alignment and sentence pair filtering. We also describe the parallel corpora released and evaluate their quality and their usefulness to create machine translation systems.",
+            "citation": 227
+          }
+        ]
+      },]}
+     
+        return response_template(result=output_data,message="Keyword optimization",http_code=201)
+
 
 # 6. 논문 선택
 async def fetch_paper_details(data):
-    print("=== GET /papers/select ===")
+    print("=== GET /papers/detail ===")
     try:
         paper_doi = data
         paper_doi = paper_doi.strip()
@@ -373,7 +471,7 @@ async def fetch_paper_details(data):
                 # aws에 있는 object의 key 값 ( 그림 참조 )
             },
             # url 유효기간 (단위:second)
-            ExpiresIn=60 * 60,  # 1시간
+            ExpiresIn=60 * 60 * 5,  # 1시간
         )
 
     except Exception as e:
@@ -385,6 +483,8 @@ async def fetch_paper_details(data):
         return response_template(
             result=output_data, message="PDF provided", http_code=200
         )
+
+
 
 
 # 7. 논문요약
@@ -430,16 +530,27 @@ async def process_summary(data):
         if not paper_data:
             raise HTTPException(
                 status_code=404,
-                detail="There is no such paperDoi. Check the paperDoi input.",
+                detail="There is no such data. Check the paperDoi input.",
             )
-
-        output_data = {
+        generated_summary = json.loads(paper_data.get("generated_summarization")) if paper_data.get("generated_summarization") else None
+        
+        if not generated_summary:
+            raise HTTPException(
+                status_code=404,
+                detail="There is no such data. Check the paperDoi input.",
+            )
+        
+        default_msg = "아직 준비중 입니다다"
+        
+        output_data = [{
             "title": paper_data.get("title"),
-            "authors": paper_data.get("authors"),
-            "publicationYear": paper_data.get("publication_year"),
-            "publicationMonth": paper_data.get("publication_month"),
-            "generatedSummary": paper_data.get("generated_summarization"),
-        }
+            "Summary" : generated_summary.get("논문 요약", default_msg),
+            "experimentResult" : generated_summary.get("실험 결과", default_msg),
+            "experimentContext" : generated_summary.get("실험 내용", default_msg),
+            "Keyword" : generated_summary.get("논문의 키워드", default_msg),
+            "coreMethod" : generated_summary.get("논문의 핵심 방법론", default_msg),
+            "coreExplain" : generated_summary.get("핵심 활용 기술 및 설명", default_msg),
+        }]
 
     except HTTPException as http_e:
         if http_e.status_code == 404:
@@ -462,7 +573,7 @@ async def process_summary(data):
         return response_template(
             result=output_data,
             message="Paper summary and details provided",
-            http_code=201,
+            http_code=200,
         )
     finally:
         db_handler.disconnect()

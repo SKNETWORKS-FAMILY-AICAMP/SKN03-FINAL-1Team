@@ -2,6 +2,7 @@
 import { ref, onMounted } from 'vue'
 import { useRoute } from 'vue-router'
 import axiosConfig from '@/axiosConfig' // axiosConfig 파일을 가져옵니다.
+import SideComponent from '@/components/common/SideComponent.vue'
 
 const paperS3Path = ref('')
 const pdfFile = ref(null)
@@ -12,7 +13,7 @@ onMounted(async () => {
   const paperDoi = route.query.paperDoi
   if (paperDoi) {
     try {
-      const response = await axiosConfig.get('/papers/select/', {
+      const response = await axiosConfig.get('/papers/detail/', {
         params: { paperDoi },
         headers: {
           Authorization: `Bearer ${accessToken}`, // Authorization 헤더에 토큰 포함
@@ -69,6 +70,30 @@ const fetchPdf = async (url) => {
 
 <template>
   <div class="container-fluid d-flex flex-row m-0 p-0">
+    <div class="p-0">
+      <SideComponent />
+    </div>
+    <div class="right-section-wrapper d-flex justify-content-center align-items-center">
+      <div v-if="paperS3Path" style="background-color: rgba(255, 0, 0, 0.3); height: 90%; width: 90%; border: 1px solid red;">
+        <!-- <div v-if="showPdfViewer"> -->
+        <!-- <PdfViewer :src="pdfFile" /> -->
+      </div>
+      <div v-else class="pdf-box d-flex align-items-center dotted-box">
+        <div>
+          <img :src="DropIcon" class="flex-row align-items-center" />
+          <p>S3 Path: {{ paperS3Path }}</p>
+          <p class="d-flex align-items-center">
+            좌측 리스트의 파일을 Drag&Drop하거나 업로드하세요.
+          </p>
+        </div>
+      </div>
+    </div>
+  </div>
+</template>
+
+
+<!-- <template>
+  <div class="container-fluid d-flex flex-row m-0 p-0">
     <div class="main d-flex align-items-center justify-content-center w-100">
       <div v-if="showPdfViewer">
         <PdfViewer :src="pdfFile" />
@@ -84,9 +109,22 @@ const fetchPdf = async (url) => {
       </div>
     </div>
   </div>
-</template>
+</template> -->
 
 <style scoped>
+.container-fluid {
+  width: 100%;
+}
+.right-section-wrapper {
+  flex-grow: 1; /* 나머지 공간을 차지하도록 설정 */
+  display: flex;
+  justify-content: center; /* 수평 중앙 정렬 */
+  align-items: center; /* 수직 중앙 정렬 */
+  width: 1600px;
+}
+
+
+
 .dotted-box {
   width: 400px;
   height: 300px;

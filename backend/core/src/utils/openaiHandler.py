@@ -19,6 +19,7 @@ class openaiHandler:
         #     Name="/DOCUMENTO/KEY/OPENAI_API_KEY/TRANSFORMATION", WithDecryption=True
         # )
         # os.environ["OPENAI_API_KEY"] = parameter["Parameter"]["Value"]
+        # openai.api_key = os.environ["OPENAI_API_KEY"]
 
         api_key = os.environ.get("OPENAI_API_KEY")
         if not api_key:

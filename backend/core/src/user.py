@@ -89,9 +89,9 @@ async def oauth_callback(code):
         picture = user_info.get("picture", "")
 
     except HTTPException as he:
-        return response_template(
-            result="GOOGLE_ACCESS_ERROR", message=he.detail, http_code=503
-        )
+        oauth = googleOAuth()  # unefficient
+        redirect_url = f"{oauth.home_uri}"
+        return RedirectResponse(url=redirect_url)
 
     # DB에 저장
     try:

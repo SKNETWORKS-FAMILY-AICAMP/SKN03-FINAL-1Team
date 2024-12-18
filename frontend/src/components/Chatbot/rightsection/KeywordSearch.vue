@@ -19,7 +19,7 @@ const steps = [
   { id: 3, text: '검색된 논문들을 저장하고 논문 파악을 통해 논문의 난이도를 파악하세요.' },
 ]
 
-const accessToken = 'temp' // 실제 토큰을 할당
+
 
 const mockResponse = {
   resultCode: 201,
@@ -145,33 +145,22 @@ const mockResponse = {
   },
 }
 
-const apiTest = true // API 테스트 모드 추가
 
 // 키워드 최적화 요청 (POST 요청)
 const optimizeKeywords = async () => {
+  errorMessage.value = ''
   showIntroAndSteps.value = false
   loading.value = true // 로딩 시작
-  errorMessage.value = '' // 기존 에러 메시지 초기화
   try {
-    if (apiTest) {
-      // apiTest가 true일 때 mockResponse 사용
-      generatedResults.value = mockResponse.result
-      console.log('Optimized Results:', generatedResults.value)
-    } else {
-      const response = await axios.post(
+    const response = await axios.post(
         '/papers/transformation/',
         {
           userPrompt: inputPrompt.value,
         },
-        {
-          headers: {
-            Authorization: `Bearer ${accessToken}`, // Authorization 헤더에 토큰 포함
-          },
-        },
+
       )
       generatedResults.value = response.data.result
       console.log('Optimized Results:', generatedResults.value)
-    }
   } catch (error) {
     if (error.response && error.response.status === 404) {
       errorMessage.value = '그런건 없어요'
@@ -194,18 +183,14 @@ const handleOptimization = () => {
     console.warn('최적화할 프롬프트를 입력해보세요.')
   }
 }
-const requestPaperByDoi = async (doi) => {
+const requestPaperByDoi = async (paperDoi) => {
   try {
-    const response = await axios.get(`/papers/select/?paperDoi=${doi}`, {
-      headers: {
-        Authorization: `Bearer ${accessToken}`, // Authorization 헤더에 토큰 포함
-      },
-    })
-    if (response.data.resultCode === 201) {
-      const paperS3Path = response.data.result.paperS3Path
+    const response = await axios.get(`/papers/detail/?paperDoi=${paperDoi}`)
+    if (response.data.resultCode === 200) {
+      
       router.push({
-        path: '/papers/select',
-        query: { paperS3Path },
+        path: '/papers/detail/',
+        query: { paperDoi },
       })
     }
   } catch (error) {
@@ -213,6 +198,29 @@ const requestPaperByDoi = async (doi) => {
     errorMessage.value = '논문 정보 불러오는 데 실패했습니다. 다시 시도해주세요.'
   }
 }
+// 안쓸지도ㅓ? 일단 보류
+const requestPaperByKeyword = async (userKeyword) => {
+  try {
+    const response = await axios.post(
+    '/papers/search/',
+    {
+      userKeyword: userKeyword,
+    },
+  )
+  if (response.data.resultCode === 201) {
+    // 데이터를 Router의 state로 전달
+    router.push({
+      path: '/papers/search/',
+      state: { userKeyword }, // POST 데이터를 직접 전달
+    })
+  }
+  } catch (error) {
+    console.error('논문 세부 정보를 가져오는데 실패했습니다:', error)
+    errorMessage.value = '논문 정보 불러오는 데 실패했습니다. 다시 시도해주세요.'
+  }
+}
+
+
 </script>
 <template>
   <div class="main-container">
@@ -243,18 +251,30 @@ const requestPaperByDoi = async (doi) => {
         <div v-if="generatedResults" class="results-area mt-5">
           <div class="mb-4">
             <p class="text-start dynamic-padding">{{ generatedResults.generatedPrompt }}</p>
+            <!-- ~~의 키워드 검색 결과입니다. -->
           </div>
+
+
           <div
             v-for="(keywordItem, index) in generatedResults.generatedKeywordList"
             :key="index"
             class="mb-4"
           >
+          <!-- <div @click="requestPaperByKeyword(keywordItem.generatedKeyword.split('[')[0])" style="cursor: pointer; width: 30%"> -->
+            <div>
             <h5 class="fw-bold text-start dynamic-padding">
               {{ index + 1 }}. {{ keywordItem.generatedKeyword.split('[')[1].split(']')[0] }}
+              <!-- 한국어 -->
             </h5>
             <h5 class="fw-bold text-start dynamic-padding pb-1">
               {{ keywordItem.generatedKeyword.split('[')[0] }}
+              <!-- 영어 -->
             </h5>
+
+
+          </div>
+
+
             <div class="d-flex flex-wrap">
               <div
                 v-for="(paper, paperIndex) in keywordItem.paperList"
