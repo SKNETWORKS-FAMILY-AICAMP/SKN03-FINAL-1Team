@@ -10,7 +10,7 @@ import numpy as np
 
 class paperSearcher:
     """
-    Singleton class to manage SPECTER model, tokenizer, and FAISS index operations.
+    Singleton class to manage scibert_scivocab_cased model, tokenizer, and FAISS index operations.
     """
 
     _instance = None
@@ -23,14 +23,14 @@ class paperSearcher:
 
     def _initialize(self):
         """
-        Initialize the SPECTER model and tokenizer for CPU.
+        Initialize the scibert_scivocab_cased model and tokenizer for CPU.
         """
-        self.tokenizer = AutoTokenizer.from_pretrained("allenai/specter")
-        self.model = AutoModel.from_pretrained("allenai/specter").cpu()
+        self.tokenizer = AutoTokenizer.from_pretrained("allenai/scibert_scivocab_cased")
+        self.model = AutoModel.from_pretrained("allenai/scibert_scivocab_cased").cpu()
 
     def embed_text(self, text):
         """
-        Embed a single query text using the SPECTER model on CPU.
+        Embed a single query text using the scibert_scivocab_cased model on CPU.
         """
         inputs = self.tokenizer(
             text, return_tensors="pt", padding=True, truncation=True, max_length=512
@@ -121,29 +121,30 @@ class paperSearcher:
         return json.dumps(results, indent=4)
 
     def search_faiss_index_top_n(
-        self,
-        query: str,
-        index,
-        ids: List[str],
-        max_results: int = 3,
-        similarity_threshold: float = 70.0,
-        max_distance: float = 500.0,
-        chunk_size: int = 2048,
-    ) -> str:
+            self,
+            query: str,
+            index,
+            ids: List[dict],  
+            max_results: int = 3,
+            similarity_threshold: float = 70.0,
+            max_distance: float = 500.0,
+            chunk_size: int = 2048,
+        ) -> str:
         """
         Search the FAISS index for the given query and return the top N matching results in JSON format.
 
         Args:
             query (str): The query text to search for.
             index: The FAISS index object.
-            ids (List[str]): A list of IDs corresponding to the FAISS index entries.
+            ids (List[dict]): A list of metadata dictionaries corresponding to the FAISS index entries.
+                Each dictionary must include a "paper_doi" key.
             max_results (int): Maximum number of top results to return.
             similarity_threshold (float): Minimum similarity score to consider a match (0-100).
             max_distance (float): Maximum allowable distance for 100% similarity.
             chunk_size (int): Number of index entries to process per chunk.
 
         Returns:
-            str: JSON string with a list of dictionaries containing "paper_doi" and "similarity".
+            str: JSON string with a list of dictionaries containing "metadata" and "similarity".
         """
         query_embedding = self.embed_text(query).astype(np.float32)
 
@@ -167,7 +168,7 @@ class paperSearcher:
 
             chunk_results = [
                 {
-                    "paper_doi": ids[chunk_start + idx],
+                    "metadata": ids[chunk_start + idx],
                     "similarity": round(max(0, (1 - (dist / max_distance)) * 100), 2),
                 }
                 for idx, dist in zip(indices[0], distances[0])
@@ -176,6 +177,15 @@ class paperSearcher:
 
             results.extend(chunk_results)
 
-        results = sorted(results, key=lambda x: x["similarity"], reverse=True)
+        # Remove duplicates by 'paper_doi', keeping the highest similarity
+        unique_results = {}
+        for result in results:
+            paper_doi = result["metadata"]["paper_doi"]
+            if paper_doi not in unique_results or result["similarity"] > unique_results[paper_doi]["similarity"]:
+                unique_results[paper_doi] = result
+
+        # Convert back to a sorted list
+        results = sorted(unique_results.values(), key=lambda x: x["similarity"], reverse=True)
+
         top_results = results[:max_results]
         return json.dumps(top_results, indent=4)
