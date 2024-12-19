@@ -243,7 +243,7 @@ async def process_transformation(data):
                 {"paper_doi": result["paper_doi"], "similarity": result["similarity"]}
                 for result in sorted_results
             ]
-            print(sorted_results)
+
             paper_list = []
             for doi_item in doi_list:
                 paper_doi = doi_item["paper_doi"]
@@ -297,7 +297,7 @@ async def process_transformation(data):
             "generatedPrompt": f'"{user_prompt}"의 키워드 검색 결과입니다.\n\n',
             "generatedKeywordList": limited_keyword_listm,
         }
-        print("outputData : ", output_data)
+
 
         print("=== FIN /papers/transformation ===")
         return response_template(
@@ -311,7 +311,7 @@ async def paper_dummy(data):
     try:
         user_prompt = data.get("data").userPrompt
         user_prompt = user_prompt.strip()
-        print("userPrompt : ", user_prompt)
+
         if not user_prompt:
             raise HTTPException(
                 status_code=400,
@@ -456,11 +456,11 @@ async def fetch_paper_details(data):
         s3_path = paper_data["s3_path"]
 
         modified_doi = paper_doi.replace("/", "_")
-        print("modified_doi : ", modified_doi)
+ 
 
         parts = s3_path.split("/", 2)  # 최대 3개의 조각으로 분리
         modified_s3_path = "/".join(parts[:2])  # 첫 두 조각만 다시 결합
-        print("modified_s3_path : ", modified_s3_path)
+
 
         s3_handler = S3Handler()
         url = s3_handler.s3_client.generate_presigned_url(

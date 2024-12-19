@@ -192,7 +192,7 @@ class paperSearcher:
 
                 chunk_results = [
                     {
-                        "metadata": ids[chunk_start + idx],
+                        "paper_doi": ids[chunk_start + idx]['paper_doi'],
                         "similarity": round(max(0, (1 - (dist / max_distance)) * 100), 2),
                     }
                     for idx, dist in zip(indices[0], distances[0])
@@ -206,7 +206,7 @@ class paperSearcher:
         # Remove duplicates by 'paper_doi', keeping the highest similarity
         unique_results = {}
         for result in results:
-            paper_doi = result["metadata"].get("paper_doi")
+            paper_doi = result["paper_doi"]
             if not paper_doi:
                 logger.warning(f"Missing 'paper_doi' in metadata: {result}")
                 continue

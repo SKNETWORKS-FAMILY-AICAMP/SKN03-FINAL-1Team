@@ -75,8 +75,14 @@ const fetchPdf = async (url) => {
     </div>
     <div class="right-section-wrapper d-flex justify-content-center align-items-center">
       <div v-if="paperS3Path" style="background-color: rgba(255, 0, 0, 0.3); height: 90%; width: 90%; border: 1px solid red;">
-        <!-- <div v-if="showPdfViewer"> -->
-        <!-- <PdfViewer :src="pdfFile" /> -->
+        <object
+      :data="paperS3Path"
+      type="application/pdf"
+      width="100%"
+      height="800px"
+    >
+      
+    </object>
       </div>
       <div v-else class="pdf-box d-flex align-items-center dotted-box">
         <div>
