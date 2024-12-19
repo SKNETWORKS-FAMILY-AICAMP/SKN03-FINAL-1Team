@@ -17,7 +17,7 @@ async def paper_search(data: dict):  # seom-j
     try:
 
         # get data
-        user_keyword = data.get("keyword").userKeyword
+        user_keyword = data.get("keyword"," ")
         user_keyword = user_keyword.strip()
         if not user_keyword:
             raise HTTPException(
@@ -413,7 +413,7 @@ async def fetch_paper_details(data):
         paper_doi = paper_doi.strip()
         if not paper_doi:
             raise HTTPException(
-                status_code=400, detail="Parameter is Empty. Check the paperDoi Query."
+                status_code=400, detail="논문을 선택하지 않으셨습니다!\n북마크에서 논문을 선택하거나 우측 돋보기 아이콘을 통해 논문 탐색을 먼저 해주세요!"
             )
 
     except HTTPException as http_e:
@@ -443,6 +443,23 @@ async def fetch_paper_details(data):
         """
         paper_data = db_handler.fetch_one(select_query, (paper_doi,))
 
+        if not paper_data:
+            raise HTTPException(
+                status_code=404, detail="해당 논문은 아직 준비되지 않았습니다!\n북마크에서 논문을 선택하거나 우측 돋보기 아이콘을 통해 논문 탐색을 먼저 해주세요!"
+            )
+    except HTTPException as http_e:
+        if http_e.status_code == 404:
+            return response_template(
+                result="NO_DATA",
+                message=http_e.detail,
+                http_code=http_e.status_code,
+            )
+        else:
+            return response_template(
+                result="UNEXPECTED_HTTP_ERROR",
+                message=http_e.detail,
+                http_code=http_e.status_code,
+            )
     except Exception as e:
         raise HTTPException(
             status_code=500, detail=f"Error fetching data from MySQL {e}"
@@ -468,6 +485,9 @@ async def fetch_paper_details(data):
             Params={
                 "Bucket": "documento-s3",  # 버켓 이름
                 "Key": "papers/" + modified_s3_path + "/" + modified_doi + ".pdf",
+                'ResponseContentType': 'application/pdf',
+                'ResponseContentDisposition': 'inline'
+                
                 # aws에 있는 object의 key 값 ( 그림 참조 )
             },
             # url 유효기간 (단위:second)

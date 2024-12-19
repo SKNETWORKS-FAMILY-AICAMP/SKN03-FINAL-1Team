@@ -87,13 +87,13 @@ async def logout(uuid: str = Depends(validate_token)):
 
 
 # 3. 논문검색
-@app.post("/papers/search/", dependencies=[Depends(validate_token)])
+@app.get("/papers/search/", dependencies=[Depends(validate_token)])
 async def search_papers(
     request: Request,
-    keyword: paperSearch,
+    userKeyword :str = "",
 ):
 
-    return await handle_request(paper_search, {"keyword": keyword, "request": request})
+    return await handle_request(paper_search, {"keyword": userKeyword, "request": request})
 
 # 4.-1 키워드 최적화
 @app.post("/papers/transformation/", dependencies=[Depends(validate_token)])

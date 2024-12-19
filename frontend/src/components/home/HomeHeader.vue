@@ -18,6 +18,8 @@ const fetchUserInfo = async () => {
     userInfo.value = response.data.result
     console.log('User Info:', userInfo.value['userImg'])
   } catch (error) {
+    localStorage.removeItem('access_token')
+    localStorage.removeItem('user_info')
     console.error('Failed to fetch user info:', error)
   }
 }
