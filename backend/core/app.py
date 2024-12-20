@@ -9,9 +9,9 @@ from src.reqeust_model import *
 app = FastAPI()
 
 # #local
-allowed = ["https://www.documento.click", "http://localhost:5173"]
+# allowed = ["https://www.documento.click", "http://localhost:5173"]
 
-# allowed = ["https://www.documento.click"]
+allowed = ["https://www.documento.click"]
 
 # ******************  CORS 처리  ****************** #
 app.add_middleware(
@@ -100,7 +100,7 @@ async def search_papers(
 async def create_paper_transformation(request: Request, data: paperTransformation):
     # data = await request.json()
     return await handle_request(
-        paper_dummy, {"data": data, "request": request}
+        process_transformation, {"data": data, "request": request}
     )
 
 # 4.1 키워드 최적화
@@ -108,7 +108,7 @@ async def create_paper_transformation(request: Request, data: paperTransformatio
 async def create_paper_transformation(request: Request, data: paperTransformation):
     # data = await request.json()
     return await handle_request(
-        process_transformation, {"data": data, "request": request}
+        paper_dummy, {"data": data, "request": request}
     )
 
 

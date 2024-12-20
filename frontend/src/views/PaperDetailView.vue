@@ -4,7 +4,7 @@ import { useRoute } from 'vue-router'
 import axiosConfig from '@/axiosConfig' // axiosConfig 파일을 가져옵니다.
 import SideComponent from '@/components/common/SideComponent.vue'
 const LOGIN_URL = process.env.VUE_APP_LOGIN_URL
-const HOME_REDIRECT_URL = process.env.VUE_APP_HOME_REDIRECT_URL
+
 const paperS3Path = ref('')
 const route = useRoute()
 const errorMessage = ref('') // 에러 메시지 저장

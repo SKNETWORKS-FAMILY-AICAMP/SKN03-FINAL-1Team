@@ -22,12 +22,12 @@ const fetchPapers = async () => {
 papers.value = []
 loading.value = true // 로딩 시작
 try {
-  const response = await axios.post(
-    '/papers/search/',
-    {
-      userKeyword: inputText.value,
-    },
-  )
+  const response = await axios.get('/papers/search/', {
+  params: {
+    userKeyword: inputText.value, // 쿼리 파라미터로 전달
+  },
+});
+
   
   const { paperLists: list, totalPages:total, totalSizes:size } = response.data.result.paperTotals
   totalPapers.value = list // 전체 데이터 저장

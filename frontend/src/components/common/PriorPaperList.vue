@@ -2,63 +2,45 @@
 import { ref, onMounted } from 'vue'
 import { useRoute } from 'vue-router' // Vue Router에서 useRoute를 가져옵니다.
 import axios from '@/axiosConfig' // 설정한 axios 인스턴스를 가져옵니다.
-
-const DEFAULT_DOI = '기본 DOI 값' // 기본 DOI 값을 정의합니다.
-
+import warningImage from '@/assets/warning.svg'
 const papers = ref([])
 const route = useRoute() // 현재 라우트 정보를 가져옵니다.
+const warnFlag = ref(false)
 
 const fetchPriorPapers = async () => {
+  warnFlag.value = false
   try {
-    const paperDoi = route.query.paperDoi || DEFAULT_DOI // 기본 DOI 값을 사용합니다.
+    const paperDoi = route.query.paperDoi  // 기본 DOI 값을 사용합니다.
     const response = await axios.get('/papers/priorpapers/', {
       params: {
         paperDoi: paperDoi,
       },
     })
-    if (response.data.resultCode === 201 && response.data.result.paperList) {
+    if (response.data.resultCode === 200) {
       papers.value = response.data.result.paperList
+      console.log("papers: ", papers)
     }
   } catch (error) {
-    const mockResponse = {
-      resultCode: 201,
-      message: 'Preceding papers retrieved successfully.',
-      result: {
-        paperList: [
-          {
-            paperDoi: 'test doi',
-            parentPaperDoi: '10.18653/v1/2020.acl-demos.10',
-            title: 'test title',
-            generatedKeyword: '테스트 키워드',
-            similarity: 92,
-          },
-          {
-            paperDoi: 'test doi',
-            parentPaperDoi: '10.18653/v1/2020.acl-demos.10',
-            title: 'test title',
-            generatedKeyword: '테스트 키워드',
-            similarity: 75,
-          },
-        ],
-      },
+    if (error.response && error.response.data) {
+    const { resultCode, message} = error.response.data
+    if (resultCode === 404) {
+      warnFlag.value = true
+    console.log(message)
     }
-    console.error('선행 논문을 가져오는 중 오류 발생:', error)
-    // 에러가 발생했을 때 mockResponse를 사용하여 papers를 설정합니다.
-    if (mockResponse.resultCode === 201 && mockResponse.result.paperList) {
-      papers.value = mockResponse.result.paperList
-    }
+    
+}
   }
 }
 
 onMounted(() => {
-  // fetchPriorPapers()
+  fetchPriorPapers()
 })
 </script>
 
 <template>
   <div class="prior-paper-container flex-column">
     <div class="prior-paper-list mt-5 text-start">선행 논문 추천</div>
-    <ul class="list-group">
+    <ul v-if="papers"  class="list-group">
       <li
         v-for="paper in papers"
         :key="paper.paperDoi"
@@ -82,6 +64,21 @@ onMounted(() => {
         </div>
       </li>
     </ul>
+    <div v-if="warnFlag" >
+      <img
+      :src="warningImage"
+      alt="warning"
+      width=80%
+      class="warning-image"
+    />
+
+    <p>해당 논문의 선행 논문 추천은 준비중 입니다</p>
+    <p>이는 추후 없데이트 예정입니다</p> 
+
+
+    </div>
+
+
   </div>
 </template>
 
@@ -136,4 +133,9 @@ onMounted(() => {
 .progress-circle span {
   z-index: 2;
 }
+
+.warning-image {
+  filter: brightness(0) saturate(100%) invert(75%) sepia(70%) saturate(500%) hue-rotate(1deg) brightness(95%) contrast(90%);
+}
+
 </style>

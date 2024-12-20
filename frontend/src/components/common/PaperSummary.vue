@@ -9,6 +9,7 @@ const flag_code = ref(400)
 const paperSummarys = ref([]) // 배열로 초기화
 
 const fetchPaperSummary = async () => {
+  flag_code.value = 400
   try {
     
     console.log('test입니다.')

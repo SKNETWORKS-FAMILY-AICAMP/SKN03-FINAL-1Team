@@ -158,7 +158,7 @@ async def paper_search(data: dict):  # seom-j
         output_data = {"paperTotals": paperTotals}
 
         print("=== FIN /papers/search ===")
-        return response_template(result=output_data, message="Search", http_code=201)
+        return response_template(result=output_data, message="Search", http_code=200)
 
     finally:
         db_handler.disconnect()
@@ -179,7 +179,7 @@ async def process_transformation(data):
         if not user_prompt:
             raise HTTPException(
                 status_code=400,
-                detail="Parameter is Empty. Check the userPrompt input.",
+                detail="아무것도 입력되지 않았습니다!\n원하는 논문의 내용을 자신만의 언어로 표현해보세요",
             )
 
         chatbot = openaiHandler()
@@ -211,12 +211,15 @@ async def process_transformation(data):
                 http_code=http_e.status_code,
             )
     except Exception as un_expc:
-        raise HTTPException(
-            status_code=500, detail=f"Error In processing OPENAI: {un_expc}"
-        )
+        print(un_expc)
+        detail="해당 문구와 관련된 키워드 및 논문을 찾을 수 없습니다!\n좀 더 길고 자세하게 서술해 주세요!"
+        return response_template(
+                result="NO_RESULTS", message=detail, http_code=404
+            )
 
         #########################################################################################
     try:
+        print("?????")
         request = data.get("request")
         searcher = request.app.state.searcher
         faiss_index = request.app.state.faiss_index
@@ -263,7 +266,13 @@ async def process_transformation(data):
                     paper_list.append(paper_data_dict)
                 else:
                     print(f"No data found for DOI: {paper_doi}")
-
+            if not paper_list:
+                raise HTTPException(
+                    status_code=404, detail="해당 문구와 관련된 키워드 및 논문을 찾을 수 없습니다!\n좀 더 길고 자세하게 서술해 주세요!"
+                )
+            
+            
+            
             generated_keyword_listm.append(
                 {"generatedKeyword": keywords[idx], "paperList": paper_list}
             )
@@ -275,7 +284,7 @@ async def process_transformation(data):
 
         if not limited_keyword_listm:
             raise HTTPException(
-                status_code=404, detail="No results found. Please refine your search."
+                status_code=404, detail="해당 문구와 관련된 키워드 및 논문을 찾을 수 없습니다!\n좀 더 길고 자세하게 서술해 주세요!"
             )
 
     except HTTPException as http_e:
