@@ -1,95 +1,46 @@
 <script setup>
+import axios from '@/axiosConfig' // 설정한 axios 인스턴스를 가져옵니다.
 import { ref, onMounted } from 'vue'
 import BookmarkIcon from '@/assets/SideComponent/BookmarkIcon.png'
-
+import warningImage from '@/assets/warning.svg'
 const bookmarks = ref([])
+const warnFlag = ref(false)
 
-const mockResponse = {
-  resultCode: 201,
-  message: 'Bookmarks retrieved successfully.',
-  result: {
-    test: 'test입니다.',
-    bookmarkList: [
+const warnBookmark = [
       {
-        title: '북마크 타이틀입니다.',
-        parentPaperDoi: '10.18653/v1/2020.acl-demos.10',
-        generatedKeyword: '테스트 키워드',
-        similarity: 92,
+        title: '북마크가 존재하지 않습니다',
+        userKeyword: 'DOCUMENTO의 다른 기능들에서 책갈피 표시를 눌러주세요',
+        paperDoi: "이 카드는 북마크가 생성된 후 사라집니다!"
       },
-      {
-        title: '북마크 타이틀입니다.',
-        bookmarkTitle: 'test doi',
-        parentPaperDoi: '10.18653/v1/2020.acl-demos.10',
-        generatedKeyword: '10.18653/v1/2020.acl-demos.10',
-        similarity: 75,
-      },
-      {
-        title: '북마크 타이틀입니다.',
-        bookmarkTitle: 'test doi',
-        parentPaperDoi: '10.18653/v1/2020.acl-demos.10',
-        generatedKeyword: '뭔가 자연어 처리에 관한 서비스를 만들고 싶어!',
-        similarity: 75,
-      },
-    ],
-  },
-}
+      
+    ]
 
 const fetchBookmarks = async () => {
+  warnFlag.value = false
+  
   try {
-    console.log('테스트입니다.')
-    bookmarks.value = mockResponse.result.bookmarkList
-    console.log(bookmarks)
+    const response = await axios.get('/users/bookmarks/')
+    if (response.data.resultCode === 200) {
+      bookmarks.value = response.data.result.paperList
+      console.log("papers: ", bookmarks)
+    }
   } catch (error) {
-    console.error('선행 논문을 가져오는 중 오류 발생:', error)
+    if (error.response && error.response.data) {
+    const { resultCode, message} = error.response.data
+    if (resultCode === 404) {
+      warnFlag.value = true
+      bookmarks.value = warnBookmark
+
+    console.log(message)
+    }
+    
+}
   }
 }
 
-const initDragAndDrop = () => {
-  const draggables = document.querySelectorAll('.draggable')
-  const container = document.getElementById('bookmark-list')
-
-  draggables.forEach((draggable) => {
-    draggable.addEventListener('dragstart', () => {
-      draggable.classList.add('dragging')
-    })
-
-    draggable.addEventListener('dragend', () => {
-      draggable.classList.remove('dragging')
-    })
-  })
-
-  container.addEventListener('dragover', (e) => {
-    e.preventDefault()
-    const afterElement = getDragAfterElement(container, e.clientY)
-    const draggable = document.querySelector('.dragging')
-    if (afterElement == null) {
-      container.appendChild(draggable)
-    } else {
-      container.insertBefore(draggable, afterElement)
-    }
-  })
-}
-
-const getDragAfterElement = (container, y) => {
-  const draggableElements = [...container.querySelectorAll('.draggable:not(.dragging)')]
-
-  return draggableElements.reduce(
-    (closest, child) => {
-      const box = child.getBoundingClientRect()
-      const offset = y - box.top - box.height / 2
-      if (offset < 0 && offset > closest.offset) {
-        return { offset: offset, element: child }
-      } else {
-        return closest
-      }
-    },
-    { offset: Number.NEGATIVE_INFINITY },
-  ).element
-}
 
 onMounted(() => {
   fetchBookmarks()
-  initDragAndDrop()
 })
 </script>
 
@@ -100,17 +51,26 @@ onMounted(() => {
       <li
         v-for="bookmark in bookmarks"
         :key="bookmark.bookmarkTitle"
-        class="list-group-item text-start my-2 rounded-4 draggable"
-        draggable="true"
+        class="list-group-item text-start my-2 rounded-4"
       >
         <div class="d-flex align-items-center">
           <div class="me-3">
             <h5>
               <strong class="fst-italic">{{ bookmark.title }}</strong>
             </h5>
-            <p>{{ bookmark.generatedKeyword }}</p>
+            <p>{{ bookmark.userKeyword }}</p>
+            <p>{{ bookmark.paperDoi }}</p>
           </div>
-          <img :src="BookmarkIcon" class="ms-auto" />
+
+          <div v-if="warnFlag">
+            <img :src="warningImage" 
+            width=35
+            class="warning-image" />
+          </div>
+          <div v-else>
+            <img :src="BookmarkIcon" class="ms-auto" />
+          </div>
+          
         </div>
       </li>
     </ul>
@@ -149,5 +109,8 @@ onMounted(() => {
 
 .dragging {
   opacity: 0.5;
+}
+.warning-image {
+  filter: brightness(0) saturate(100%) invert(38%) sepia(32%) saturate(1286%) hue-rotate(314deg) brightness(91%) contrast(90%);
 }
 </style>

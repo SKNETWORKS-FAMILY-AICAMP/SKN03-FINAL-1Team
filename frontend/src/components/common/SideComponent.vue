@@ -8,7 +8,7 @@ import PriorPaperList from '@/components/common/PriorPaperList.vue'
 import PaperSummary from '@/components/common/PaperSummary.vue'
 import AccordionButtonImage from '@/assets/accordion-button.png'
 
-const isSidebarOpen = ref(true)
+const isSidebarOpen = ref(false)
 const navbarStore = useNavbarStore()
 
 const toggleSidebar = () => {

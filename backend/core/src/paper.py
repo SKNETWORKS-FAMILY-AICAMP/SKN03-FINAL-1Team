@@ -418,6 +418,7 @@ async def paper_dummy(data):
 async def fetch_paper_details(data):
     print("=== GET /papers/detail ===")
     try:
+        print("WTF")
         paper_doi = data
         paper_doi = paper_doi.strip()
         if not paper_doi:
@@ -699,7 +700,7 @@ async def fetch_prior_papers(data):
 
     else:
         output_data = {"paperList": paper_list}
-
+        db_handler.disconnect()
         print("=== FIN /papers/priorpapers ===")
         return response_template(
             result=output_data, message="Preceding papers retrieved", http_code=200

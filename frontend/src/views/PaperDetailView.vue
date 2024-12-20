@@ -11,16 +11,19 @@ const errorMessage = ref('') // 에러 메시지 저장
 const errorTitle = ref('') // 에러 메시지 저장
 const showErrorModal = ref(false) // 모달 상태
 const errorFlag = ref(300)
+
+
 onMounted(async () => {
   
   
     try {
       errorFlag.value = 300
       const paperDoi = route.query.paperDoi
-
+      console.log("papaerDoi: ", paperDoi)
       const response = await axiosConfig.get('/papers/detail/', {
         params: { paperDoi },
       })
+      console.log("response: ", response)
       errorFlag.value = 200
 
       paperS3Path.value = `${response.data.result.paperS3Path}#toolbar=1&navpanes=0&view=FitH&page=1` 
@@ -49,27 +52,6 @@ onMounted(async () => {
     }
   
 
-
-
-  // 드래그 앤 드롭 이벤트 추가
-  const dropBox = document.querySelector('.pdf-box')
-  dropBox.addEventListener('dragover', (e) => {
-    e.preventDefault()
-    dropBox.classList.add('dragging-over')
-  })
-
-  dropBox.addEventListener('dragleave', () => {
-    dropBox.classList.remove('dragging-over')
-  })
-
-  dropBox.addEventListener('drop', (e) => {
-    e.preventDefault()
-    dropBox.classList.remove('dragging-over')
-    const draggable = document.querySelector('.dragging')
-    if (draggable) {
-      alert('PDF 박스에 드랍되었습니다!')
-    }
-  })
 })
 
 const closeErrorModal = () => {
@@ -109,19 +91,6 @@ const closeErrorModal = () => {
       
     </object>
       </div>
-
-      <div v-if="errorFlag===400" > 
-
-        <div class="pdf-box d-flex align-items-center dotted-box">
-        <div>
-          <img :src="DropIcon" class="flex-row align-items-center" />
-          <p>S3 Path: {{ paperS3Path }}</p>
-          <p class="d-flex align-items-center">
-            좌측 리스트의 파일을 Drag&Drop하거나 업로드하세요.
-          </p>
-        </div>
-      </div>
-    </div>
 
       
     </div>

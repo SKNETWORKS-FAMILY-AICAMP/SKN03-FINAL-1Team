@@ -140,6 +140,7 @@ async def oauth_callback(code):
 
         # 프론트엔드 URL로 리다이렉트하며 Access Token 전달
         redirect_url = f"{oauth.home_uri}/auth/callback/?access_token={access_token}"
+        db_handler.disconnect()
         return RedirectResponse(url=redirect_url)
 
     finally:
@@ -249,7 +250,7 @@ async def get_userinfo(request: Request):
 # 5. bookmarks
 # 5.1. 북마크 리스트
 async def fetch_user_bookmarks(uuid):
-
+    print(uuid)
     print("=== GET /users/bookmarks ===")
     try:
         db_handler = MySQLHandler()
@@ -279,6 +280,12 @@ async def fetch_user_bookmarks(uuid):
                 bookmark["title"] = response_result["title"]
 
             output_data.append(bookmark)
+            
+        if not output_data:
+            raise HTTPException(
+                status_code=404,
+                detail="No bookmarks found. Add papers to your bookmarks to see them here.",
+            )
 
     except HTTPException as http_e:
         if http_e.status_code == 404:
@@ -300,6 +307,8 @@ async def fetch_user_bookmarks(uuid):
 
     else:
         print("=== FIN GET /users/bookmarks ===")
+        output_data = {"paperList" : output_data}
+        
         return response_template(
             result=output_data, message="Bookmark list retrieved", http_code=200
         )
@@ -318,7 +327,9 @@ async def handle_bookmark(data):
         request_json = jsonable_encoder(request_data)
 
         paperDoi = request_data.paperDoi
+        paperDoi = paperDoi.strip()
         userKeyword = request_data.userKeyword
+        userKeyword = userKeyword.strip()
         bookMark = request_data.bookMark
 
         data_check = ""
@@ -333,7 +344,7 @@ async def handle_bookmark(data):
             raise HTTPException(
                 status_code=400, detail=f"{data_check}Parmeter is Empty"
             )
-
+        print("succ")
     # 1-1. Data 오류 검증
     except HTTPException as http_e:
         if http_e.status_code == 400:
@@ -354,6 +365,7 @@ async def handle_bookmark(data):
     try:
         db_handler = MySQLHandler()
         uuid = data["uuid"]
+        print(uuid)
         db_handler.connect()
         select_query = "SELECT bookmarked_papers FROM DOCUMENTO.user WHERE user_id = %s"
         result = db_handler.fetch_one(select_query, (uuid,))
@@ -361,20 +373,20 @@ async def handle_bookmark(data):
 
         # True, 즉 추가하는 기능
         if bookMark:
-
-            bookmark_list = json.loads(bookmark_data)
-            if len(bookmark_list) > 1000:
-                raise HTTPException(
-                    status_code=400,
-                    detail="Bookmark limit exceeded. Please remove existing bookmarks to add new ones.",
-                )
-            if bookmark_list:
+            if bookmark_data:
+                bookmark_list = json.loads(bookmark_data)
+                if len(bookmark_list) > 1000:
+                    raise HTTPException(
+                        status_code=400,
+                        detail="Bookmark limit exceeded. Please remove existing bookmarks to add new ones.",
+                    )
+                
                 for bml in bookmark_list:
                     if bml["paperDoi"] == paperDoi:
                         bml["userKeyword"] = userKeyword
                         break
-                else:
-                    bookmark_list.append(request_json)
+                    else:
+                        bookmark_list.append(request_json)
             else:
                 bookmark_list = [request_json]
 
