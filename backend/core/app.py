@@ -91,9 +91,10 @@ async def logout(uuid: str = Depends(validate_token)):
 async def search_papers(
     request: Request,
     userKeyword :str = "",
+    uuid: str = Depends(validate_token)
 ):
 
-    return await handle_request(paper_search, {"keyword": userKeyword, "request": request})
+    return await handle_request(paper_search, {"keyword": userKeyword, "request": request, "uuid":uuid})
 
 # 4.-1 키워드 최적화
 @app.post("/papers/transformation/", dependencies=[Depends(validate_token)])
@@ -135,8 +136,8 @@ async def add_to_bookmarks(data: bookMarking, uuid: str = Depends(validate_token
 # notion에는 /papers/select/?paperDoi=”string” 이렇게 적혀있음
 @app.get("/papers/detail/", dependencies=[Depends(validate_token)])
 async def get_paper_by_doi(paperDoi: str = ""):
-    
-    return await handle_request(fetch_paper_details, paperDoi)
+   print(paperDoi)
+   return await handle_request(fetch_paper_details, paperDoi)
 
 
 # 7. 논문 요약

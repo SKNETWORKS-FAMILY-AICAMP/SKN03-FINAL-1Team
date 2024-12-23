@@ -17,6 +17,9 @@ async def paper_search(data: dict):  # seom-j
     try:
 
         # get data
+        uuid = data.get("uuid"," ")
+        
+        
         user_keyword = data.get("keyword"," ")
         user_keyword = user_keyword.strip()
         if not user_keyword:
@@ -78,6 +81,21 @@ async def paper_search(data: dict):  # seom-j
 
         db_handler = MySQLHandler()
         db_handler.connect()
+        select_query = "SELECT * FROM DOCUMENTO.user WHERE user_id = %s"
+        result = db_handler.fetch_one(select_query, (uuid,))
+        bookmark_doi = result.get("bookmark_doi", None)
+        if bookmark_doi:
+            bookmark_doi = bookmark_doi.split(',')
+        else:
+            bookmark_doi = list()
+        
+        
+        db_handler.disconnect()
+        db_handler.connect()
+        
+        
+        
+        
 
         paper_list = []
         for doi_item in doi_list:
@@ -93,6 +111,10 @@ async def paper_search(data: dict):  # seom-j
             if paper_data:
                 paper_data["paperDoi"] = paper_doi
                 paper_data["similarity"] = doi_item["similarity"]
+                paper_data["bookmarked"] = False
+                if paper_doi in bookmark_doi:
+                    paper_data["bookmarked"] = True
+                
                 paper_list.append(paper_data)
             else:
                 print(f"No data found for DOI: {paper_doi}")
@@ -219,7 +241,7 @@ async def process_transformation(data):
 
         #########################################################################################
     try:
-        print("?????")
+       
         request = data.get("request")
         searcher = request.app.state.searcher
         faiss_index = request.app.state.faiss_index
@@ -256,6 +278,8 @@ async def process_transformation(data):
                 WHERE paper_doi = %s
                 """
                 paper_data = db_handler.fetch_one(select_query, (paper_doi,))
+                
+                
                 if paper_data:
                     paper_data_dict = {
                         "paperDoi": paper_doi,
@@ -316,6 +340,10 @@ async def process_transformation(data):
     finally:
         db_handler.disconnect()
 
+
+
+
+
 async def paper_dummy(data):
     try:
         user_prompt = data.get("data").userPrompt
@@ -367,13 +395,15 @@ async def paper_dummy(data):
             "paperDoi": "10.18653/v1/2020.acl-main.417",
             "title": "ParaCrawl: Web-Scale Acquisition of Parallel Corpora",
             "engAbstract": "We report on methods to create the largest publicly available parallel corpora by crawling the web, using open source software. We empirically compare alternative methods and publish benchmark data sets for sentence alignment and sentence pair filtering. We also describe the parallel corpora released and evaluate their quality and their usefulness to create machine translation systems.",
-            "citation": 227
+            "citation": 227,
+            "bookmarked" : True
           },
           {
             "paperDoi": "10.18653/v1/2022.acl-long.264",
             "title": "The Trade-offs of Domain Adaptation for Neural Language Models",
             "engAbstract": "This work connects language model adaptation with concepts of machine learning theory. We consider a training setup with a large out-of-domain set and a small in-domain set. We derive how the benefit of training a model on either set depends on the size of the sets and the distance between their underlying distributions. We analyze how out-of-domain pre-training before in-domain fine-tuning achieves better generalization than either solution independently. Finally, we present how adaptation techniques based on data selection, such as importance sampling, intelligent data selection and influence functions, can be presented in a common framework which highlights their similarity and also their subtle differences.",
-            "citation": 18
+            "citation": 18,
+            "bookmarked" : True
           }
         ]
       },
@@ -384,7 +414,8 @@ async def paper_dummy(data):
             "paperDoi": "10.18653/v1/2022.acl-long.264",
             "title": "The Trade-offs of Domain Adaptation for Neural Language Models",
             "engAbstract": "This work connects language model adaptation with concepts of machine learning theory. We consider a training setup with a large out-of-domain set and a small in-domain set. We derive how the benefit of training a model on either set depends on the size of the sets and the distance between their underlying distributions. We analyze how out-of-domain pre-training before in-domain fine-tuning achieves better generalization than either solution independently. Finally, we present how adaptation techniques based on data selection, such as importance sampling, intelligent data selection and influence functions, can be presented in a common framework which highlights their similarity and also their subtle differences.",
-            "citation": 18
+            "citation": 18,
+            "bookmarked" : True
           }
         ]
       },
@@ -395,7 +426,8 @@ async def paper_dummy(data):
             "paperDoi": "10.18653/v1/2020.acl-demos.15",
             "title": "jiant: A Software Toolkit for Research on General-Purpose Text Understanding Models",
             "engAbstract": "We introduce jiant, an open source toolkit for conducting multitask and transfer learning experiments on English NLU tasks. jiant enables modular and configuration driven experimentation with state-of-the-art models and a broad set of tasks for probing, transfer learning, and multitask training experiments. jiant implements over 50 NLU tasks, including all GLUE and SuperGLUE benchmark tasks. We demonstrate that jiant reproduces published performance on a variety of tasks and models, e.g., RoBERTa and BERT.",
-            "citation": 92
+            "citation": 92,
+            "bookmarked" : False
           }
         ]
       },
@@ -406,7 +438,8 @@ async def paper_dummy(data):
             "paperDoi": "10.18653/v1/2020.acl-main.417",
             "title": "ParaCrawl: Web-Scale Acquisition of Parallel Corpora",
             "engAbstract": "We report on methods to create the largest publicly available parallel corpora by crawling the web, using open source software. We empirically compare alternative methods and publish benchmark data sets for sentence alignment and sentence pair filtering. We also describe the parallel corpora released and evaluate their quality and their usefulness to create machine translation systems.",
-            "citation": 227
+            "citation": 227,
+            "bookmarked" : True
           }
         ]
       },]}
@@ -418,16 +451,27 @@ async def paper_dummy(data):
 async def fetch_paper_details(data):
     print("=== GET /papers/detail ===")
     try:
-        print("WTF")
+        
         paper_doi = data
         paper_doi = paper_doi.strip()
+        
         if not paper_doi:
             raise HTTPException(
                 status_code=400, detail="논문을 선택하지 않으셨습니다!\n북마크에서 논문을 선택하거나 우측 돋보기 아이콘을 통해 논문 탐색을 먼저 해주세요!"
             )
+        if paper_doi == "DEFAULT":
+            raise HTTPException(
+                status_code=405, detail="왼쪽의 사이드 바를 눌러 북마크하신 논문을 확인하거나\n돋보기 아이콘을 통해 논문탐색을 시작해 주세요"
+            )
 
     except HTTPException as http_e:
-        if http_e.status_code == 400:
+        if http_e.status_code == 405:
+            return response_template(
+                result="WELCOME TO DOCUMENTO",
+                message=http_e.detail,
+                http_code=http_e.status_code,
+            )
+        elif  http_e.status_code == 400:
             return response_template(
                 result="EMPTY_PARAMETER",
                 message=http_e.detail,

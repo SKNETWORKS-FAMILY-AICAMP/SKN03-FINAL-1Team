@@ -17,6 +17,8 @@ const showErrorModal = ref(false) // 모달 상태
 
 
 
+
+
 // 논문 데이터 가져오기 (POST 요청 - 최초 1회만)
 const fetchPapers = async () => {
 papers.value = []
@@ -110,7 +112,7 @@ const closeErrorModal = () => {
 
       <div v-else>
         <div v-for="(paper, index) in papers" :key="index">
-          <PaperSearchItem :paper="paper" class="search-item" />
+          <PaperSearchItem :paper="paper" :keyword="inputText" class="search-item" />
         </div>
       
     </div>

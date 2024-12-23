@@ -367,10 +367,17 @@ async def handle_bookmark(data):
         uuid = data["uuid"]
         print(uuid)
         db_handler.connect()
-        select_query = "SELECT bookmarked_papers FROM DOCUMENTO.user WHERE user_id = %s"
-        result = db_handler.fetch_one(select_query, (uuid,))
-        bookmark_data = result.get("bookmarked_papers", None)
 
+        select_query = "SELECT * FROM DOCUMENTO.user WHERE user_id = %s"
+        result = db_handler.fetch_one(select_query, (uuid,))
+        print(result)
+        bookmark_data = result.get("bookmarked_papers", None)
+        print(bookmark_data)
+        doi_data = result.get("bookmark_doi", None)
+        if doi_data:
+            doi_data = doi_data.split(',')
+        else:
+            doi_data = list()
         # True, 즉 추가하는 기능
         if bookMark:
             if bookmark_data:
@@ -385,15 +392,21 @@ async def handle_bookmark(data):
                     if bml["paperDoi"] == paperDoi:
                         bml["userKeyword"] = userKeyword
                         break
-                    else:
-                        bookmark_list.append(request_json)
+                else:
+                    bookmark_list.append(request_json)
+                    doi_data.append(paperDoi)
+                        
             else:
                 bookmark_list = [request_json]
-
+                doi_data.append(paperDoi)
+            
+            doi_data = ','.join(doi_data)
+            print(doi_data)
+            
             update_query = (
-                "UPDATE DOCUMENTO.user SET bookmarked_papers = %s WHERE user_id = %s"
+                "UPDATE DOCUMENTO.user SET bookmarked_papers = %s, bookmark_doi = %s WHERE user_id = %s"
             )
-            db_handler.execute_query(update_query, (json.dumps(bookmark_list), uuid))
+            db_handler.execute_query(update_query, (json.dumps(bookmark_list), doi_data, uuid))
 
             output_data = {
                 "paperDoi": paperDoi,
@@ -427,12 +440,13 @@ async def handle_bookmark(data):
                     )
                 else:
                     bookmark_list.pop(del_cnt)
-
+                    doi_data.remove(paperDoi)
+                    
+            doi_data = ','.join(doi_data)
             update_query = (
-                "UPDATE DOCUMENTO.user SET bookmarked_papers = %s WHERE user_id = %s"
+                "UPDATE DOCUMENTO.user SET bookmarked_papers = %s, bookmark_doi = %s WHERE user_id = %s"
             )
-            db_handler.execute_query(update_query, (json.dumps(bookmark_list), uuid))
-
+            db_handler.execute_query(update_query, (json.dumps(bookmark_list), doi_data, uuid))
             output_data = {
                 "paperDoi": paperDoi,
                 "bookMark": bookMark,

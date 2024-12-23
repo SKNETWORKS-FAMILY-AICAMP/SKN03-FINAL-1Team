@@ -20,7 +20,8 @@ const fetchUserInfo = async () => {
   } catch (error) {
     localStorage.removeItem('access_token')
     localStorage.removeItem('user_info')
-    console.error('Failed to fetch user info:', error)
+
+    localStorage.removeItem('hide_modal_today')
   }
 }
 

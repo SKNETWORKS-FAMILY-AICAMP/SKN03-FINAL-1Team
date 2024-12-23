@@ -40,7 +40,10 @@ const handleIconClick = (view) => {
     router.push('/main')
   }
   if (view === 'papers/detail/') {
-    router.push('/papers/detail/')
+    router.push({
+        path: '/papers/detail/',
+        query: { paperDoi: 'DEFAULT' },
+      })
   } else {
     navbarStore.setSelectedNavItem(view)
   }

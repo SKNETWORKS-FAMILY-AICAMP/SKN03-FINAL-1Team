@@ -7,11 +7,18 @@ const LOGIN_URL = process.env.VUE_APP_LOGIN_URL
 
 const paperS3Path = ref('')
 const route = useRoute()
-const errorMessage = ref('') // 에러 메시지 저장
+const errorMessage = ref(`왼쪽의 사이드 바를 눌러 북마크하신 논문을 확인하거나\n돋보기 아이콘을 통해 논문탐색을 시작해 주세요`) // 에러 메시지 저장
 const errorTitle = ref('') // 에러 메시지 저장
 const showErrorModal = ref(false) // 모달 상태
 const errorFlag = ref(300)
+// 모달창 표시 여부 관리
+const isModalVisible = ref(false)
 
+// "오늘 하루 보지 않기" 체크박스 상태
+const doNotShowToday = ref(false)
+
+// 로컬 스토리지 키
+const LOCAL_STORAGE_KEY = 'hide_modal_today'
 
 onMounted(async () => {
   
@@ -23,10 +30,10 @@ onMounted(async () => {
       const response = await axiosConfig.get('/papers/detail/', {
         params: { paperDoi },
       })
-      console.log("response: ", response)
-      errorFlag.value = 200
-
-      paperS3Path.value = `${response.data.result.paperS3Path}#toolbar=1&navpanes=0&view=FitH&page=1` 
+      if (response.data.resultCode === 200){
+        errorFlag.value = 200
+        paperS3Path.value = `${response.data.result.paperS3Path}#toolbar=1&navpanes=0&view=FitH&page=1` 
+      } 
       
     } catch (error) {
       if (error.response && error.response.data) {
@@ -54,11 +61,26 @@ onMounted(async () => {
 
 })
 
-const closeErrorModal = () => {
+const closeModal = () => {
   showErrorModal.value = false
+  isModalVisible.value = false
   errorMessage.value = ''
+  if (doNotShowToday.value) {
+    // 체크박스가 활성화된 경우 로컬 스토리지에 값 저장
+    localStorage.setItem(LOCAL_STORAGE_KEY, 'true')
+  }
 }
 
+// 컴포넌트가 마운트되면 라우트와 로컬 스토리지 값 확인
+onMounted(() => {
+  const storedValue = localStorage.getItem(LOCAL_STORAGE_KEY)
+  console.log("isin")
+  if (!storedValue) {
+    // 로컬 스토리지 값이 없고, 현재 페이지가 대상 페이지일 때 모달 표시
+    
+    isModalVisible.value = true
+  }
+})
 
 
 
@@ -67,7 +89,33 @@ const closeErrorModal = () => {
 <template>
   
   <div class="container-fluid d-flex flex-row m-0 p-0">
+
+
+
+    <div v-if="isModalVisible" class="modal-overlay">
+    <div class="modal-content">
+      <h4>WELCOME TO DOCUMENTO</h4>
+      <p class="error-message">{{ errorMessage }}</p>     
+      
+      <div class="checkbox-container">
+        <input 
+          type="checkbox" 
+          id="doNotShowToday" 
+          v-model="doNotShowToday" 
+        />
+        <label for="doNotShowToday">오늘 하루 보지 않기</label>
+      </div>
+      <button class="close-button" @click="closeModal">닫기</button>
+    </div>
+  </div>
     
+
+
+
+
+
+
+
     <div class="p-0">
       <SideComponent />
     </div>
@@ -116,7 +164,10 @@ const closeErrorModal = () => {
   border-radius: 2px; /* 둥근 모서리 */
   padding: 4px; /* 내부 여백 */
 }
-
+.checkbox-container {
+  margin: 1rem 0;
+  text-align: left;
+}
 
 .dotted-box {
   width: 400px;

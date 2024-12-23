@@ -179,7 +179,11 @@ const copyKeyword = (keyword) => {
                 <div class="card-body text-start">
                   <div class="d-flex align-items-center">
                     <p class="fw-bold">{{ paper.title }}</p>
-                    <img :src="BookmarkIcon" class="px-1" />
+                    <img :src="BookmarkIcon" 
+                    :class="{ 
+    'bookmarked-icon': paper.bookmarked, 
+    'bookmark-icon': !paper.bookmarked 
+  }"   />
                   </div>
                   <p>
                     {{
@@ -228,6 +232,30 @@ const copyKeyword = (keyword) => {
 </template>
 
 <style scoped>
+
+
+.bookmarked-icon {
+  width: 40px;
+  transition: filter 0.3s ease; /* 부드러운 전환 효과 */
+  filter: brightness(0) saturate(100%) invert(50%) sepia(100%) saturate(200%) hue-rotate(90deg) brightness(90%) contrast(100%);
+}
+
+.bookmarked-icon:hover {
+  filter:none;
+}
+
+.bookmark-icon {
+  width: 40px;
+  transition: filter 0.3s ease; /* 부드러운 전환 효과 */
+  filter: none;
+}
+
+.bookmark-icon:hover {
+  filter:brightness(0) saturate(100%) invert(50%) sepia(100%) saturate(200%) hue-rotate(90deg) brightness(90%) contrast(100%);
+
+}
+
+
 .main-container {
   max-height: 80vh; /* 최대 높이 설정 */
   overflow-y: auto; /* 수직 스크롤 추가 */
