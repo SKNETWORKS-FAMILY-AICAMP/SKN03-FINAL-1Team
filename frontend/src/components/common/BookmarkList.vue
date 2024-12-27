@@ -4,6 +4,8 @@ import { ref, onMounted } from 'vue'
 import { useRouter } from 'vue-router'
 import BookmarkIcon from '@/assets/SideComponent/BookmarkIcon.png'
 import warningImage from '@/assets/warning.svg'
+const HOME_URL = process.env.VUE_APP_HOME_REDIRECT_URL
+
 const bookmarks = ref([])
 
 const isDeleteModalVisible = ref(false) // 모달창 표시 여부
@@ -22,7 +24,7 @@ const warnBookmark = [
 
 const showBookmarks = async () => {
   warnFlag.value = false
-  
+  console.log("showBookmarks")
   try {
     const response = await axios.get('/users/bookmarks/')
     if (response.data.resultCode === 200) {
@@ -74,15 +76,15 @@ const closeDeleteModal = () => {
 
 
 const requestPaperByDoi = async (paperDoi) => {
-  router.replace({
-        path: '/papers/detail/',
-        query: { paperDoi },
-      })
+
+  window.location.href = `${HOME_URL}papers/detail/?paperDoi=${paperDoi}`;
+
 }
 
 
 onMounted(() => {
   showBookmarks()
+  console.log("on mount")
 })
 </script>
 

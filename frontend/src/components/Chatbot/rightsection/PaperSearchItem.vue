@@ -1,9 +1,8 @@
 <script setup>
 import BookMarkIcon from '@/assets/BookMarkIcon.png'
-import { defineProps,ref, defineEmits } from 'vue'
-import BookmarkList  from '@/components/common/BookmarkList.vue' // 정확한 경로로 수정
+import { defineProps,ref } from 'vue'
 import axios from '@/axiosConfig' // 설정한 axios 인스턴스를 가져옵니다.
-const bookmarks = ref([])
+
 const isBookmarkModalVisible = ref(false) // 모달창 표시 여부
 const selectedBookmark = ref(null) // 선택된 북마크 정보
 
@@ -18,14 +17,9 @@ const props = defineProps({
     type: String,
     required: true,
   },
-  /**
-   * 
-   */
-  
+
 })
-
-
-
+const updateBookmark = ref(null);
 
 // 북마킹 함수 수정
 const Bookmarking = async (userKeyword, paperDoi, bookMark) => {
@@ -38,8 +32,11 @@ const Bookmarking = async (userKeyword, paperDoi, bookMark) => {
     });
 
     if (response.data.resultCode === 201) {
-      console.log("goog")
+      
+      console.log("good")
+      updateBookmark.value = inverseBookMark
     }
+    
     isBookmarkModalVisible.value = false;
   } catch (error) {
     console.error('북마크 처리 중 오류 발생:', error);
@@ -49,7 +46,12 @@ const Bookmarking = async (userKeyword, paperDoi, bookMark) => {
 // 삭제 확인 모달 열기
 const openBookmarkModal = (paper) => {
   selectedBookmark.value = paper
-  console.log("props.paper : ", props.paper['bookmarked'])
+  console.log("selectedBookmark : ", selectedBookmark)
+  if (updateBookmark.value !== null){
+    console.log("not null")
+    console.log()
+    selectedBookmark.value['bookmarked'] = updateBookmark
+  }
   isBookmarkModalVisible.value = true
 }
 
@@ -65,7 +67,12 @@ const closeBookmarkModal = () => {
   <div class="d-flex align-items-center">
     
     <div class="p-4" @click="openBookmarkModal(paper)">
-      <img :src="BookMarkIcon" 
+      <img v-if="updateBookmark !== null" :src="BookMarkIcon" 
+      :class="{ 
+    'bookmarked-icon': updateBookmark, 
+    'bookmark-icon': !updateBookmark 
+  }"/>
+  <img v-else :src="BookMarkIcon" 
       :class="{ 
     'bookmarked-icon': paper.bookmarked, 
     'bookmark-icon': !paper.bookmarked 

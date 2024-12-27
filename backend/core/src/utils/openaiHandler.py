@@ -12,24 +12,24 @@ class openaiHandler:
         Sets the OpenAI API key from environment variables or AWS SSM Parameter Store.
         """
 
-        #in local
-        print("Fetching API key from AWS SSM Parameter Store...")
-        ssm = boto3.client("ssm")
-        parameter = ssm.get_parameter(
-            Name="/DOCUMENTO/KEY/OPENAI_API_KEY/TRANSFORMATION", WithDecryption=True
-        )
-        os.environ["OPENAI_API_KEY"] = parameter["Parameter"]["Value"]
-        openai.api_key = os.environ["OPENAI_API_KEY"]
-
-        # api_key = os.environ.get("OPENAI_API_KEY")
-        # if not api_key:
-        #     print("Fetching API key from AWS SSM Parameter Store...")
-        #     ssm = boto3.client("ssm")
-        #     parameter = ssm.get_parameter(
-        #         Name="/DOCUMENTO/KEY/OPENAI_API_KEY/TRANSFORMATION", WithDecryption=True
-        #     )
-        #     os.environ["OPENAI_API_KEY"] = parameter["Parameter"]["Value"]
+        # #in local
+        # print("Fetching API key from AWS SSM Parameter Store...")
+        # ssm = boto3.client("ssm")
+        # parameter = ssm.get_parameter(
+        #     Name="/DOCUMENTO/KEY/OPENAI_API_KEY/TRANSFORMATION", WithDecryption=True
+        # )
+        # os.environ["OPENAI_API_KEY"] = parameter["Parameter"]["Value"]
         # openai.api_key = os.environ["OPENAI_API_KEY"]
+
+        api_key = os.environ.get("OPENAI_API_KEY")
+        if not api_key:
+            print("Fetching API key from AWS SSM Parameter Store...")
+            ssm = boto3.client("ssm")
+            parameter = ssm.get_parameter(
+                Name="/DOCUMENTO/KEY/OPENAI_API_KEY/TRANSFORMATION", WithDecryption=True
+            )
+            os.environ["OPENAI_API_KEY"] = parameter["Parameter"]["Value"]
+        openai.api_key = os.environ["OPENAI_API_KEY"]
 
     def create_system_prompt(self, user_prompt) -> str:
         """

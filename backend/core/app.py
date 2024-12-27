@@ -9,9 +9,9 @@ from src.reqeust_model import *
 app = FastAPI()
 
 # #local
-allowed = ["https://www.documento.click", "http://localhost:5173"]
+# allowed = ["https://www.documento.click", "http://localhost:5173"]
 
-# allowed = ["https://www.documento.click"]
+allowed = ["https://www.documento.click"]
 
 # ******************  CORS 처리  ****************** #
 app.add_middleware(

@@ -14,6 +14,10 @@ const errorMessage = ref('') // 에러 메시지 상태 추가
 const errorTitle = ref('')
 const showIntroAndSteps = ref(true)
 
+
+const isBookmarkModalVisible = ref(false) // 모달창 표시 여부
+const selectedBookmark = ref(null) // 선택된 북마크 정보
+
 const steps = [
   { id: 1, text: '키워드 변환을 통해 내가 원하는 논문 검색에 필요한 키워드를 추출하세요.' },
   { id: 2, text: '해당 키워드를 기반으로 논문을 검색하세요.' },
@@ -106,7 +110,63 @@ const copyKeyword = (keyword) => {
 };
 
 
+const updateBookmark = ref(null);
+
+// 북마킹 함수 수정
+const Bookmarking = async (userKeyword, paperDoi, bookMark) => {
+  console.log("userKeyword")
+
+  try {
+    const inverseBookMark = !bookMark;
+    const response = await axios.post('/users/bookmarks/', {
+      userKeyword,
+      paperDoi,
+      bookMark: inverseBookMark,
+    });
+
+    if (response.data.resultCode === 201) {
+      
+      console.log("good")
+      updateBookmark.value = inverseBookMark
+    }
+    
+    isBookmarkModalVisible.value = false;
+  } catch (error) {
+    console.error('북마크 처리 중 오류 발생:', error);
+  }
+};
+
+// 삭제 확인 모달 열기
+const openBookmarkModal = (paper) => {
+  console.log("selectedBookmark : " ,selectedBookmark)
+  selectedBookmark.value = paper
+  if (updateBookmark.value !== null){
+    console.log("not null")
+    console.log()
+    selectedBookmark.value['bookmarked'] = updateBookmark
+  }
+  isBookmarkModalVisible.value = true
+}
+
+// 삭제 확인 모달 닫기
+const closeBookmarkModal = () => {
+  isBookmarkModalVisible.value = false
+}
+
+
+
+
+
+
+
+
+
 </script>
+
+
+
+
+
 <template>
   <div class="main-container">
 
@@ -172,12 +232,12 @@ const copyKeyword = (keyword) => {
                 v-for="(paper, paperIndex) in keywordItem.paperList"
                 :key="paperIndex"
                 class="card mb-3 shadow-sm me-3"
-                @click="requestPaperByDoi(paper.paperDoi)"
-                style="cursor: pointer; width: 30%"
-                title="해당 논문 자세히 보기 "
+                style=" width: 30%"
+                
               >
                 <div class="card-body text-start">
-                  <div class="d-flex align-items-center">
+                  <div class="d-flex align-items-center" 
+                  @click="openBookmarkModal(paper)">
                     <p class="fw-bold">{{ paper.title }}</p>
                     <img :src="BookmarkIcon" 
                     :class="{ 
@@ -185,13 +245,62 @@ const copyKeyword = (keyword) => {
     'bookmark-icon': !paper.bookmarked 
   }"   />
                   </div>
-                  <p>
+
+
+                  <p
+                  @click="requestPaperByDoi(paper.paperDoi)"
+                style="cursor: pointer;"
+                title="해당 논문 자세히 보기 ">
                     {{
                       paper.engAbstract.length > 250
                         ? paper.engAbstract.slice(0, 250) + '...'
                         : paper.engAbstract
                     }}
                   </p>
+<!-- 북마킹킹 확인 모달 -->
+<div
+      v-if="isBookmarkModalVisible"
+      class="bookmark-overlay"
+    >
+      <div class="bookmark-content">
+        <div v-if="selectedBookmark.bookmarked===true">
+          <h3 class="bookmark-title">북마크 삭제 확인</h3>
+        <p>
+          "{{ selectedBookmark?.title }}"  논문을 북마크에서 정말로 삭제하시겠습니까?
+        </p>
+
+        </div>
+
+        <div v-else>
+          <h3 class="bookmark-title">북마크 등록 확인</h3>
+        <p>
+          "{{ selectedBookmark?.title }}" 논문을 북마크에 등록하시겠습니까?
+        </p>
+
+        </div>
+        
+
+
+
+        <div class="bookmarkbutton-group">
+          <button
+            class="bookmarkconfirm-button"
+            @click="Bookmarking(keywordItem.generatedKeyword.split('[')[0], selectedBookmark.paperDoi, selectedBookmark.bookmarked)"
+          >
+            네
+          </button>
+          <button
+            class="bookmarkcancel-button"
+            @click="closeBookmarkModal"
+          >
+            아니요
+          </button>
+        </div>
+      </div>
+    </div>
+
+
+
                 </div>
               </div>
             </div>
@@ -233,7 +342,48 @@ const copyKeyword = (keyword) => {
 
 <style scoped>
 
+.bookmark-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: rgba(0, 0, 0, 0.1);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 1000;
+}
 
+.bookmark-content {
+  background: #a04747;
+  padding: 20px;
+  border-radius: 8px;
+  text-align: center;
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+  width: 400px;
+}
+
+.bookmarkbutton-group {
+  display: flex;
+  justify-content: space-between;
+  margin-top: 20px;
+}
+
+.bookmarkconfirm-button,
+.bookmarkcancel-button {
+  background: #902e2e;
+  color: white;
+  padding: 10px 20px;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+}
+
+.bookmarkconfirm-button:hover,
+.bookmarkcancel-button:hover {
+  background: #28a745;
+}
 .bookmarked-icon {
   width: 40px;
   transition: filter 0.3s ease; /* 부드러운 전환 효과 */
