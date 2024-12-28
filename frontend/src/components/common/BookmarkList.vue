@@ -2,8 +2,12 @@
 import axios from '@/axiosConfig' // 설정한 axios 인스턴스를 가져옵니다.
 import { ref, onMounted } from 'vue'
 import { useRouter } from 'vue-router'
-import BookmarkIcon from '@/assets/SideComponent/BookmarkIcon.png'
+import { StarIcon } from '@heroicons/vue/24/solid'; // Heroicons의 북마크 아이콘 가져오기
+import { ExclamationTriangleIcon } from '@heroicons/vue/24/solid';
+
 import warningImage from '@/assets/warning.svg'
+
+
 const HOME_URL = process.env.VUE_APP_HOME_REDIRECT_URL
 
 const bookmarks = ref([])
@@ -95,38 +99,59 @@ onMounted(() => {
       <li
         v-for="bookmark in bookmarks"
         :key="bookmark.bookmarkTitle"
-        class="list-group-item text-start my-2 rounded-4"
+        class="list-group-item text-start mt-3 rounded-4"
 
         >
-      
+
+        
+        <h5>
+              <strong class="text-truncate-2" >{{ bookmark.title }}</strong>
+            </h5>
+            <hr />
         <div class="d-flex align-items-center">
+          
           <div 
           @click="requestPaperByDoi(bookmark.paperDoi)"
                 style="cursor: pointer;"
                 title="해당 논문 자세히 보기 "
           class="me-3">
-            <h5>
-              <strong class="fst-italic">{{ bookmark.title }}</strong>
-            </h5>
-            <p>{{ bookmark.userKeyword }}</p>
-            <p>{{ bookmark.paperDoi }}</p>
+          <p class="text-truncate-2">{{ bookmark.userKeyword }}</p>
+            <div v-if="warnFlag">
+              
+            <p class="text-truncate-2">{{ bookmark.paperDoi }}</p>
+            </div>
+
+            <div v-else>
+
+              <p class="text-truncate-1">{{ bookmark.paperDoi }}</p>
+            </div>
+            
+
+
+
+
           </div>
 
 
-          <div v-if="warnFlag">
-            <img :src="warningImage" 
-            width=35
-            class="warning-image" />
+          <div v-if="warnFlag" >
+            <ExclamationTriangleIcon 
+  class="warn-icon"  
+/>
           </div>
           <div v-else>
-            <img :src="BookmarkIcon" 
-            class="bookmark-icon" 
-            @click="openDeleteModal(bookmark)" 
-            />
+            <StarIcon 
+  class="bookmark-icon" 
+  @click="openDeleteModal(bookmark)" 
+/>
+
           </div>
           
         </div>
       </li>
+
+
+
+      
     </ul>
 
 <!-- 삭제 확인 모달 -->
@@ -136,21 +161,23 @@ onMounted(() => {
     >
       <div class="modal-content">
         <h3 class="modal-title">삭제 확인</h3>
-        <p>
-          "{{ selectedBookmark?.title }}" 북마크를 정말로 삭제하시겠습니까?
+        <strong class="text-truncate-2">
+          {{ selectedBookmark?.title }}  
+        </strong>
+        <p> 를 북마크에서 정말로 삭제하시겠습니까?
         </p>
         <div class="button-group">
           <button
             class="confirm-button"
             @click="delBookmarks(selectedBookmark.userKeyword, selectedBookmark.paperDoi)"
           >
-            네
+            Y
           </button>
           <button
             class="cancel-button"
             @click="closeDeleteModal"
           >
-            아니요
+            N
           </button>
         </div>
       </div>
@@ -161,54 +188,67 @@ onMounted(() => {
 
 <style scoped>
 
+.bookmark-container {
+    flex-grow: 1;
+    display: flex;
+    flex-direction: column;
+    padding: 20px 0px 20px 20px;
+  }
+  
+  .bookmark-list {
+    position: relative;
+    margin-top: 20px;
+    padding: 10px 10px;
+    font-size: 20px;
+    color: white;
+  }
+  
+  .bookmark-list::after {
+    content: '';
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    width: 100%;
+    height: 1px;
+    background-color: white;
+  }
+  
+  .text-truncate-2 {
+    display: -webkit-box; /* Flexbox 사용을 위해 설정 */
+    -webkit-line-clamp: 2; /* 표시할 최대 줄 수 */
+    -webkit-box-orient: vertical; /* 수직 방향으로 박스 정렬 */
+    overflow: hidden; /* 넘치는 내용 숨기기 */
+    text-overflow: ellipsis; /* 생략 표시(...) */
+  }
+  .text-truncate-1 {
+    display: -webkit-box; /* Flexbox 사용을 위해 설정 */
+    -webkit-line-clamp: 1; /* 표시할 최대 줄 수 */
+    -webkit-box-orient: vertical; /* 수직 방향으로 박스 정렬 */
+    overflow: hidden; /* 넘치는 내용 숨기기 */
+    text-overflow: ellipsis; /* 생략 표시(...) */
+  }
+
+
 .bookmark-icon {
-  width: 40px;
-  transition: filter 0.3s ease; /* 부드러운 전환 효과 */
-  filter: brightness(0) saturate(100%) invert(50%) sepia(100%) saturate(200%) hue-rotate(90deg) brightness(90%) contrast(100%);
+  width: 30px;
+  transition: fill 0.3s ease; /* 부드러운 전환 효과 */
+  fill: #ffca1a;
 }
 
 .bookmark-icon:hover {
-  filter:none
+fill: #ffd94d;
 }
 
+hr {
+    border: 2px solid #a04747 !important;
+    margin: 10px 0;
+  }
 
-
-.bookmark-container {
-  flex-grow: 1;
-  display: flex;
-  flex-direction: column;
-  padding: 20px 0px 20px 20px;
-}
-
-.bookmark-list {
-  position: relative;
-  margin-top: 20px;
-  padding: 10px 0;
-  font-size: 20px;
-  color: white;
-}
-
-.bookmark-list::after {
-  content: '';
-  position: absolute;
-  bottom: 0;
-  left: 0;
-  width: 100%;
-  height: 1px;
-  background-color: white;
-}
-
-.draggable {
-  cursor: grab;
-}
-
-.dragging {
-  opacity: 0.5;
-}
-.warning-image {
-  filter: brightness(0) saturate(100%) invert(38%) sepia(32%) saturate(1286%) hue-rotate(314deg) brightness(91%) contrast(90%);
-}
-
+  .warn-icon {
+    width: 30px;
+    transition: fill 0.3s ease; /* 부드러운 전환 효과 */
+    fill: #a04747;
+  }
 
 .modal-overlay {
   position: fixed;
@@ -224,12 +264,13 @@ onMounted(() => {
 }
 
 .modal-content {
-  background: #a04747;
+  
+  border: 2px solid #902e2e !important;
   padding: 20px;
   border-radius: 8px;
   text-align: center;
   box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
-  width: 400px;
+  width: 400px !important;
 }
 
 .button-group {
@@ -252,5 +293,8 @@ onMounted(() => {
 .cancel-button:hover {
   background: #28a745;
 }
+
+
+
 
 </style>

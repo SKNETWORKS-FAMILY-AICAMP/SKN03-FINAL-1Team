@@ -700,7 +700,7 @@ async def fetch_prior_papers(data):
             ref_doi = ref["paper_doi"]
 
             select_query = """
-            SELECT paper_doi, title, generated_keyword 
+            SELECT paper_doi, title
             FROM paper 
             WHERE paper_doi = %s
             """
@@ -713,7 +713,7 @@ async def fetch_prior_papers(data):
                         "paperDoi": ref_data["paper_doi"],
                         "parentPaperDoi": paper_doi,
                         "title": ref_data["title"],
-                        "generatedKeyword": ref_data.get("generated_keyword", ""),
+                        
                         "similarity": ref["similarity"],
                     }
                 )

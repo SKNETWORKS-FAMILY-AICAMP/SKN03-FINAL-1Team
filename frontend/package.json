@@ -11,6 +11,7 @@
     "format": "prettier --write src/"
   },
   "dependencies": {
+    "@heroicons/vue": "^2.2.0",
     "axios": "^1.7.9",
     "bootstrap": "^5.3.3",
     "dotenv": "^16.4.5",

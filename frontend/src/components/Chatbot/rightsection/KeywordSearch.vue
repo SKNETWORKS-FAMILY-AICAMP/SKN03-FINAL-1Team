@@ -4,6 +4,9 @@ import { useRouter } from 'vue-router'
 import axios from '@/axiosConfig' // 설정한 axios 인스턴스를 가져옵니다.
 import BookmarkIcon from '@/assets/SideComponent/BookmarkIcon.png'
 
+
+import '@/assets/css/BookmarkComponent.css';
+
 const router = useRouter()
 const LOGIN_URL = process.env.VUE_APP_LOGIN_URL
 const showErrorModal = ref(false)
@@ -199,10 +202,7 @@ const closeBookmarkModal = () => {
         
 
         <div v-if="generatedResults" class="results-area mt-5">
-          <div class="mb-4">
-            <p class="text-start dynamic-padding">{{ generatedResults.generatedPrompt }}</p>
-            <!-- ~~의 키워드 검색 결과입니다. -->
-          </div>
+
 
 
           <div
@@ -340,212 +340,6 @@ const closeBookmarkModal = () => {
   </div>
 </template>
 
-<style scoped>
+<!-- <style scoped>
 
-.bookmark-overlay {
-  position: fixed;
-  top: 0;
-  left: 0;
-  width: 100%;
-  height: 100%;
-  background: rgba(0, 0, 0, 0.1);
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  z-index: 1000;
-}
-
-.bookmark-content {
-  background: #a04747;
-  padding: 20px;
-  border-radius: 8px;
-  text-align: center;
-  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
-  width: 400px;
-}
-
-.bookmarkbutton-group {
-  display: flex;
-  justify-content: space-between;
-  margin-top: 20px;
-}
-
-.bookmarkconfirm-button,
-.bookmarkcancel-button {
-  background: #902e2e;
-  color: white;
-  padding: 10px 20px;
-  border: none;
-  border-radius: 4px;
-  cursor: pointer;
-}
-
-.bookmarkconfirm-button:hover,
-.bookmarkcancel-button:hover {
-  background: #28a745;
-}
-.bookmarked-icon {
-  width: 40px;
-  transition: filter 0.3s ease; /* 부드러운 전환 효과 */
-  filter: brightness(0) saturate(100%) invert(50%) sepia(100%) saturate(200%) hue-rotate(90deg) brightness(90%) contrast(100%);
-}
-
-.bookmarked-icon:hover {
-  filter:none;
-}
-
-.bookmark-icon {
-  width: 40px;
-  transition: filter 0.3s ease; /* 부드러운 전환 효과 */
-  filter: none;
-}
-
-.bookmark-icon:hover {
-  filter:brightness(0) saturate(100%) invert(50%) sepia(100%) saturate(200%) hue-rotate(90deg) brightness(90%) contrast(100%);
-
-}
-
-
-.main-container {
-  max-height: 80vh; /* 최대 높이 설정 */
-  overflow-y: auto; /* 수직 스크롤 추가 */
-  display: flex;
-  align-items: center; /* 수직 가운데 정렬 */
-  justify-content: center; /* 수평 가운데 정렬 */
-}
-
-.main-container::-webkit-scrollbar {
-  width: 8px; /* 스크롤 바의 너비 */
-}
-
-.main-container::-webkit-scrollbar-thumb {
-  background-color: #da7e7e; /* 스크롤 바의 색상 (부트스트랩 기본색) */
-  border-radius: 4px; /* 스크롤 바의 모서리 둥글기 */
-}
-
-.main-container::-webkit-scrollbar-thumb:hover {
-  background-color: #8a9cce; /* 스크롤 바 호버 시 색상 */
-}
-
-.main-container::-webkit-scrollbar-track {
-  background-color: #f8f9fa; /* 스크롤 바 트랙의 배경색 */
-}
-
-.test-content {
-  margin: auto;
-  max-width: 1000px;
-}
-
-.input-area {
-  border: 1px solid #a04747;
-  border-radius: 50px;
-  display: flex;
-  gap: 10px;
-  width: 100%; /* 좌우로 꽉 차게 설정 */
-  margin-bottom: 5vh;
-}
-
-.chat-input {
-  flex-grow: 1; /* 입력 필드가 남는 공간을 차지하도록 설정 */
-  padding: 10px;
-  border: none;
-}
-
-.chat-input:focus {
-  border-color: none;
-  box-shadow: none;
-  outline: none; /* 포커스 시 기본 아웃라인 제거 */
-}
-
-.send-button {
-  background-color: #a04747;
-  color: white;
-  border: none;
-  padding: 10px 20px;
-  font-size: 16px;
-  cursor: pointer;
-  border-radius: 50%;
-  width: 50px;
-  height: 50px;
-}
-
-.send-button:hover {
-  background-color: #7a3737; /* 어두운 빨간색으로 변경 */
-}
-
-.results-area .card {
-  max-width: 600px;
-  margin: 0 auto;
-  border: 1px solid #a04747;
-}
-
-.intro-text {
-  margin-top: 20px;
-}
-
-/* steps 관련 스타일 */
-.steps-container {
-  margin-top: 50px;
-}
-
-.bg-light {
-  background-color: #f8f9fa !important;
-}
-
-.shadow {
-  box-shadow: 0 0.5rem 1rem rgba(0, 0, 0, 0.15) !important;
-}
-@media (max-width: 999px) {
-  .dynamic-padding {
-    padding-left: 0 !important;
-  }
-}
-
-@media (min-width: 1000px) {
-  .dynamic-padding {
-    padding-left: 1rem !important;
-  }
-}
-
-.modal-overlay {
-  position: fixed;
-  top: 0;
-  left: 0;
-  width: 100%;
-  height: 100%;
-  background: rgba(0, 0, 0, 0.5);
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  z-index: 1000;
-}
-
-.modal-content {
-  background: white;
-  padding: 20px;
-  border-radius: 8px;
-  text-align: center;
-  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
-}
-
-.modal-content button {
-  background-color: #a04747;
-  color: white;
-  border: none;
-  padding: 10px 20px;
-  border-radius: 5px;
-  cursor: pointer;
-}
-
-.modal-content button:hover {
-  background-color: #7a3737;
-}
-.error-message {
-  white-space: pre-line; /* \n을 줄바꿈으로 인식 */
-}
-.copy-message {
-  color: green;
-  font-size: 14px;
-  margin-top: 10px;
-}
-</style>
+</style> -->
