@@ -15,13 +15,13 @@ const router = useRouter()
 const route = useRoute()
 
 const footerIcons = ref([
-  { id: 1, src: DocumentIcon, view: 'papers/select' },
+  { id: 1, src: DocumentIcon, view: 'papers/detail/' },
   { id: 'home', src: HomeIcon, view: 'home' },
   { id: 3, src: SettingIcon, view: 'settings' },
 ])
 
 watchEffect(() => {
-  if (route.fullPath.startsWith('/papers/select')) {
+  if (route.fullPath.startsWith('/papers/detail/')) {
     changeIcon()
   }
 })
@@ -39,8 +39,11 @@ const handleIconClick = (view) => {
   if (view === 'main') {
     router.push('/main')
   }
-  if (view === 'papers/select') {
-    router.push('/papers/select')
+  if (view === 'papers/detail/') {
+    router.push({
+        path: '/papers/detail/',
+        query: { paperDoi: 'DEFAULT' },
+      })
   } else {
     navbarStore.setSelectedNavItem(view)
   }

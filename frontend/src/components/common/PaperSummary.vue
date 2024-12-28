@@ -2,67 +2,87 @@
 import { ref, onMounted } from 'vue'
 import { useRoute } from 'vue-router'
 import axios from '@/axiosConfig'
-
+import warningImage from '@/assets/warning.svg'
 const route = useRoute()
 const paperDoi = route.query.paperDoi || ''
-const summary = ref('')
+const flag_code = ref(400)
 const paperSummarys = ref([]) // 배열로 초기화
 
-const mockResponse = {
-  resultCode: 201,
-  message: 'Summary retrieved successfully.',
-  result: [
-    {
-      title: 'Hierarchical Text-Conditional Image Generation with CLIP Latents',
-      userKeyword: '텍스트-이미지 생성',
-      Author: 'test작가',
-      publicationYear: 'publicationYear',
-      publicationMonth: 'publicationMonth',
-      generatedKeyword: '텍스트-이미지 생성 (Text to Image generation)',
-      generatedCoreMethod:
-        'DALL-E 2는 Diffusion Model과 CLIP의 조합으로 작동하여, 텍스트-이미지 생성에서 높은 수준의 성능을 보여줍니다. 텍스트 입력이 주어지면, CLIP은 이를 분석하여 관련된 이미지 특성을 파악하고, Diffusion Model은 이 정보에 따라 처음에는 노이즈 상태의 이미지에서 시작하여 점진적으로 텍스트에 맞는 이미지를 생성하게 됩니다.',
-      generatedTechnologies:
-        'Diffusion Model은 이미지를 점진적으로 변화시키는 과정에서 노이즈를 추가하고 제거하여 이미지를 생성하는 방식입니다. 처음에는 순수한 노이즈로부터 시작하여 단계적으로 노이즈를 제거함으로써 텍스트에서 묘사된 구체적인 형태의 이미지를 생성할 수 있습니다. 이러한 역방향 노이즈 제거 과정은 이미지를 점점 선명하고 세밀하게 만들어가며, 고해상도와 자연스러운 디테일을 확보하게 합니다.',
-    },
-  ],
-}
-
 const fetchPaperSummary = async () => {
+  flag_code.value = 400
   try {
+    
     console.log('test입니다.')
-    const summaryResponse = await axios.post('/papers/summary/', { paperDoi })
-    if (summaryResponse.data.resultCode === 201) {
-      paperSummarys.value = mockResponse.result
+    const summaryResponse = await axios.get('/papers/summary/', {
+  params: { paperDoi },
+});
+  console.log(summaryResponse.data.resultCode)
+    if (summaryResponse.data.resultCode === 200) {
+      paperSummarys.value = summaryResponse.data.result
+      flag_code.value = 200
     } else {
       paperSummarys.value = 'Error: Invalid response code for summary'
     }
   } catch (error) {
-    console.error('에러발생', error)
-    paperSummarys.value = mockResponse.result
+  if (error.response && error.response.data) {
+    const { resultCode, message} = error.response.data
+    flag_code.value = resultCode
+    console.log(message)
+}
   }
 }
 
 onMounted(() => {
-  // fetchPaperSummary()
+   fetchPaperSummary()
 })
 </script>
 
 <template>
   <div class="paper-summary-container">
-    <div class="paper-summary mt-5 text-start">논문 핵심 요약</div>
-    <div class="summary-detail-container flex-column mt-2 overflow-auto" style="max-height: 75vh">
-      <div v-if="paperSummarys.length > 0" class="list-group">
+
+  <div class="paper-summary mt-5 text-start">논문 핵심 요약</div>
+
+  <div v-if="flag_code === 200" class="summary-detail-container flex-column mt-2 overflow-auto" style="max-height: 75vh">
+      <div class="list-group">
         <ul class="list-group">
           <li v-for="paper in paperSummarys" :key="paper.title" class="list-group-item">
             <div class="text-start fw-bold fst-italic">{{ paper.title }} <br /></div>
-            <strong>키워드:</strong> {{ paper.generatedKeyword }}<br />
-            <strong>핵심 방법론:</strong> {{ paper.generatedCoreMethod }}<br />
-            <strong>활용 기술:</strong> {{ paper.generatedTechnologies }}
+            <strong>논문 요약:</strong> {{ paper.Summary }}<br />
+            <strong>요약 키워드:</strong> {{ paper.Keyword }}<br />
+            <strong>핵심 방법론:</strong> {{ paper.coreMethod }}<br />
+            <strong>핵심 활용 기술 및 설명:</strong> {{ paper.coreExplain }}<br />
+            <strong>실험 결과:</strong> {{ paper.experimentResult }}<br />
+            <strong>실험 내용:</strong> {{ paper.experimentContext }}
+            
           </li>
         </ul>
       </div>
-    </div>
+
+    
+      
   </div>
+    
+  <div v-if="flag_code === 404" >
+    <img
+      :src="warningImage"
+      alt="warning"
+      width=80%
+      class="warning-image"
+    />
+
+    <p>해당 논문 핵심 요약은 아직 준비되지 않았습니다</p>
+    <p>이는 추후 없데이트 예정입니다</p> 
+      </div>
+
+
+
+  </div>
+  
+
+
+ 
+
+
 </template>
 
 <style scoped>
@@ -75,7 +95,7 @@ onMounted(() => {
 
 .paper-summary {
   position: relative;
-  margin-top: 20px;
+  margin: 20px;
   padding: 10px 0;
   font-size: 20px;
   color: white;
@@ -112,5 +132,8 @@ onMounted(() => {
 
 .summary-detail-container::-webkit-scrollbar-track {
   background-color: #f8f9fa; /* 스크롤 바 트랙의 배경색 */
+}
+.warning-image {
+  filter: brightness(0) saturate(100%) invert(75%) sepia(70%) saturate(500%) hue-rotate(1deg) brightness(95%) contrast(90%);
 }
 </style>

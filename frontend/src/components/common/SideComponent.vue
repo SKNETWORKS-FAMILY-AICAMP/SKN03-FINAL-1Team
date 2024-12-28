@@ -1,6 +1,7 @@
 <script setup>
-import { ref } from 'vue'
+import { ref, watch } from 'vue'
 import { useNavbarStore } from '@/stores/navbarStore'
+import { useRoute } from 'vue-router' // Vue Router의 useRoute 훅 임포트
 
 import NavigationBar from '@/components/common/NavigationBar.vue'
 import BookmarkList from '@/components/common/BookmarkList.vue'
@@ -10,6 +11,12 @@ import AccordionButtonImage from '@/assets/accordion-button.png'
 
 const isSidebarOpen = ref(true)
 const navbarStore = useNavbarStore()
+const route = useRoute() // 현재 라우트 정보 가져오기
+
+// 라우트가 '/paper'로 시작하는 경우 isSidebarOpen 기본값 설정
+if (route.path.startsWith('/paper')) {
+  isSidebarOpen.value = false
+}
 
 const toggleSidebar = () => {
   isSidebarOpen.value = !isSidebarOpen.value
@@ -17,6 +24,16 @@ const toggleSidebar = () => {
 
 const view = 'bookmark'
 navbarStore.setSelectedNavItem(view)
+
+// 라우트 변경 감지
+watch(
+  () => route.path,
+  (newPath) => {
+    if (newPath.startsWith('/paper')) {
+      isSidebarOpen.value = false
+    }
+  }
+)
 </script>
 
 <template>
