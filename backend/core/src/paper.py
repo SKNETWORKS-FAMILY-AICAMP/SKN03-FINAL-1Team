@@ -25,7 +25,7 @@ async def paper_search(data: dict):  # seom-j
         if not user_keyword:
             raise HTTPException(
                 status_code=400,
-                detail="탐색 키워드를 입력하지 않았습니다!\n키워드를 입력해서 DOCUMENTO 서비스를 이용해주세요!",
+                detail="탐색 키워드를 입력하지 않았습니다!",
             )
 
         # get searcher, faiss_index, faiss_ids (global variables)
@@ -102,7 +102,7 @@ async def paper_search(data: dict):  # seom-j
             paper_doi = doi_item["paper_doi"]
 
             select_query = """
-            SELECT title, authors, venue, publication_year, publication_month, eng_abstract, kor_abstract,citation 
+            SELECT title, authors, venue, publication_year, publication_month, eng_abstract, kor_abstract,citation, generated_summarization
             FROM DOCUMENTO.paper 
             WHERE paper_doi = %s
             """
@@ -110,10 +110,17 @@ async def paper_search(data: dict):  # seom-j
 
             if paper_data:
                 paper_data["paperDoi"] = paper_doi
-                paper_data["similarity"] = doi_item["similarity"]
+                paper_data["similarity"] = int(doi_item["similarity"])
                 paper_data["bookmarked"] = False
                 if paper_doi in bookmark_doi:
                     paper_data["bookmarked"] = True
+                
+                # generated_summarization 처리     
+                generated_summary = json.loads(paper_data.get("generated_summarization"))
+                del paper_data['generated_summarization']
+                paper_data["Keyword"] = generated_summary.get("논문의 키워드", "")
+                paper_data["coreMethod"] = generated_summary.get("논문의 핵심 방법론", "") 
+
                 
                 paper_list.append(paper_data)
             else:
@@ -122,7 +129,7 @@ async def paper_search(data: dict):  # seom-j
         if not paper_list:
             raise HTTPException(
                 status_code=404,
-                detail="해당 키워드와 충분한 유사도를 가진 논문이 아직 존재하지 않습니다!\n다른 키워드를 검색해서 DOCUMENTO 서비스를 이용해주세요!",
+                detail="해당 키워드와 충분한 유사도를 가진 논문이\n아직 존재하지 않습니다!",
             )
 
     except HTTPException as http_e:
@@ -234,7 +241,7 @@ async def process_transformation(data):
             )
     except Exception as un_expc:
         print(un_expc)
-        detail="해당 문구와 관련된 키워드 및 논문을 찾을 수 없습니다!\n좀 더 길고 자세하게 서술해 주세요!"
+        detail="해당 문구와 관련된\n키워드 및 논문을 찾을 수 없습니다!"
         return response_template(
                 result="NO_RESULTS", message=detail, http_code=404
             )
@@ -292,7 +299,7 @@ async def process_transformation(data):
                     print(f"No data found for DOI: {paper_doi}")
             if not paper_list:
                 raise HTTPException(
-                    status_code=404, detail="해당 문구와 관련된 키워드 및 논문을 찾을 수 없습니다!\n좀 더 길고 자세하게 서술해 주세요!"
+                    status_code=404, detail="해당 문구와 관련된\n키워드 및 논문을 찾을 수 없습니다!"
                 )
             
             
@@ -308,7 +315,7 @@ async def process_transformation(data):
 
         if not limited_keyword_listm:
             raise HTTPException(
-                status_code=404, detail="해당 문구와 관련된 키워드 및 논문을 찾을 수 없습니다!\n좀 더 길고 자세하게 서술해 주세요!"
+                status_code=404, detail="해당 문구와 관련된\n키워드 및 논문을 찾을 수 없습니다!"
             )
 
     except HTTPException as http_e:
@@ -327,7 +334,7 @@ async def process_transformation(data):
 
     else:
         output_data = {
-            "generatedPrompt": f'"{user_prompt}"의 키워드 검색 결과입니다.\n\n',
+            "generatedPrompt": user_prompt,
             "generatedKeywordList": limited_keyword_listm,
         }
 
@@ -357,12 +364,12 @@ async def paper_dummy(data):
             
         if user_prompt == "FAKE":
             raise HTTPException(
-                status_code=404, detail="No results found. Please refine your search."
+                status_code=404, detail="해당 문구와 관련된\n키워드 및 논문을 찾을 수 없습니다!"
             )
         
         if user_prompt == "EMPTY":
             raise HTTPException(
-                status_code=404, detail="No results found. Please refine your search."
+                status_code=404, detail="해당 문구와 관련된\n키워드 및 논문을 찾을 수 없습니다!"
             )
 
     except HTTPException as http_e:
@@ -386,7 +393,7 @@ async def paper_dummy(data):
         raise HTTPException(status_code=500, detail=f"Error processing data: {un_expc}")
     else:  
         output_data= {
-    "generatedPrompt": "\"Efficient fine-tuning strategies for large-scale pre-trained language models\"의 키워드 검색 결과입니다.\n\n",
+    "generatedPrompt": "Efficient fine-tuning strategies for large-scale pre-trained language models",
     "generatedKeywordList": [
       {
         "generatedKeyword": "Optimization of Large-Scale Language Models [대규모 언어 모델의 최적화]",
@@ -415,6 +422,20 @@ async def paper_dummy(data):
             "title": "The Trade-offs of Domain Adaptation for Neural Language Models",
             "engAbstract": "This work connects language model adaptation with concepts of machine learning theory. We consider a training setup with a large out-of-domain set and a small in-domain set. We derive how the benefit of training a model on either set depends on the size of the sets and the distance between their underlying distributions. We analyze how out-of-domain pre-training before in-domain fine-tuning achieves better generalization than either solution independently. Finally, we present how adaptation techniques based on data selection, such as importance sampling, intelligent data selection and influence functions, can be presented in a common framework which highlights their similarity and also their subtle differences.",
             "citation": 18,
+            "bookmarked" : True
+          },
+           {
+            "paperDoi": "10.18653/v1/2020.acl-main.417",
+            "title": "ParaCrawl: Web-Scale Acquisition of Parallel Corpora",
+            "engAbstract": "We report on methods to create the largest publicly available parallel corpora by crawling the web, using open source software. We empirically compare alternative methods and publish benchmark data sets for sentence alignment and sentence pair filtering. We also describe the parallel corpora released and evaluate their quality and their usefulness to create machine translation systems.",
+            "citation": 227,
+            "bookmarked" : True
+          },
+            {
+            "paperDoi": "10.18653/v1/2020.acl-main.417",
+            "title": "ParaCrawl: Web-Scale Acquisition of Parallel Corpora",
+            "engAbstract": "We report on methods to create the largest publicly available parallel corpora by crawling the web, using open source software. We empirically compare alternative methods and publish benchmark data sets for sentence alignment and sentence pair filtering. We also describe the parallel corpora released and evaluate their quality and their usefulness to create machine translation systems.",
+            "citation": 227,
             "bookmarked" : True
           }
         ]
@@ -614,9 +635,9 @@ async def process_summary(data):
                 detail="There is no such data. Check the paperDoi input.",
             )
         
-        default_msg = "아직 준비중 입니다다"
+        default_msg = "아직 준비중 입니다"
         
-        output_data = [{
+        output_data = {
             "title": paper_data.get("title"),
             "Summary" : generated_summary.get("논문 요약", default_msg),
             "experimentResult" : generated_summary.get("실험 결과", default_msg),
@@ -624,7 +645,7 @@ async def process_summary(data):
             "Keyword" : generated_summary.get("논문의 키워드", default_msg),
             "coreMethod" : generated_summary.get("논문의 핵심 방법론", default_msg),
             "coreExplain" : generated_summary.get("핵심 활용 기술 및 설명", default_msg),
-        }]
+        }
 
     except HTTPException as http_e:
         if http_e.status_code == 404:
@@ -698,9 +719,9 @@ async def fetch_prior_papers(data):
         paper_list = []
         for ref in reference_papers:
             ref_doi = ref["paper_doi"]
-
+            print("ref_doi : ", ref_doi)
             select_query = """
-            SELECT paper_doi, title
+            SELECT paper_doi, title, generated_summarization
             FROM paper 
             WHERE paper_doi = %s
             """
@@ -708,18 +729,28 @@ async def fetch_prior_papers(data):
 
             # create output
             if ref_data:
+                generated_summary = json.loads(ref_data.get("generated_summarization"))
+                del ref_data['generated_summarization']
+                Keyword = generated_summary.get("논문의 키워드", "")
+                Method = generated_summary.get("논문의 핵심 방법론", "") 
+                Summary = generated_summary.get("논문 요약", "") 
+                
                 paper_list.append(
                     {
                         "paperDoi": ref_data["paper_doi"],
                         "parentPaperDoi": paper_doi,
                         "title": ref_data["title"],
-                        
+                        "Keyword" : Keyword,
+                        "coreMethod":Method,
+                        "Summary":Summary,
                         "similarity": ref["similarity"],
                     }
                 )
 
         if not paper_list:
             raise HTTPException(status_code=404, detail="No previous papers found.")
+        
+        sorted_paper_list = sorted(paper_list, key=lambda x: x["similarity"], reverse=True)
 
     except HTTPException as http_e:
         if http_e.status_code == 404:
@@ -743,7 +774,7 @@ async def fetch_prior_papers(data):
         )
 
     else:
-        output_data = {"paperList": paper_list}
+        output_data = {"paperList": sorted_paper_list}
         db_handler.disconnect()
         print("=== FIN /papers/priorpapers ===")
         return response_template(

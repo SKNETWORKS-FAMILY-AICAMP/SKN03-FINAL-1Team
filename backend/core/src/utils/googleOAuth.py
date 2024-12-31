@@ -27,7 +27,7 @@ class googleOAuth:
                 WithDecryption=True,
             )
 
-            # # LOCAL
+            # LOCAL
             # parameter = ssm.get_parameter(
             #     Name="/TEST/KEY/GOOGLE_OAUTH_KEY/GOOGLE_CLIENT_ID",
             #     WithDecryption=True,
@@ -39,7 +39,7 @@ class googleOAuth:
                 WithDecryption=True,
             )
 
-            # #LOCAL
+            #LOCAL
             # parameter = ssm.get_parameter(
             #     Name="/TEST/KEY/GOOGLE_OAUTH_KEY/GOOGLE_CLIENT_SECRET",
             #     WithDecryption=True,
@@ -51,7 +51,7 @@ class googleOAuth:
                 WithDecryption=True,
             )
 
-            # # LOCAL
+            # LOCAL
             # parameter = ssm.get_parameter(
             #     Name="/TEST/KEY/GOOGLE_OAUTH_KEY/GOOGLE_REDIRECT_URI",
             #     WithDecryption=True,
@@ -63,7 +63,7 @@ class googleOAuth:
                 WithDecryption=True,
             )
 
-            # # LOCAL
+            # LOCAL
             # parameter = ssm.get_parameter(
             #     Name="/TEST/URI/HOME_URI",
             #     WithDecryption=True,

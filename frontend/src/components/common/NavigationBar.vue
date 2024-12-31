@@ -17,7 +17,6 @@ const route = useRoute()
 const footerIcons = ref([
   { id: 1, src: DocumentIcon, view: 'papers/detail/' },
   { id: 'home', src: HomeIcon, view: 'home' },
-  { id: 3, src: SettingIcon, view: 'settings' },
 ])
 
 watchEffect(() => {

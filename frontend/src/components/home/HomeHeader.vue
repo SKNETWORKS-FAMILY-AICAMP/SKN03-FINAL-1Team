@@ -69,15 +69,16 @@ onMounted(() => {
       </div>
       <div id="userMenu" class="user-info">
         <template v-if="userInfo">
-          
+          <strong>{{ userInfo.userName }}</strong>
           <!--img :src="userInfo.userImg" alt="User Picture" width="32" height="32" /!-->
           <!-- 사용자 이미지 -->
     <img
       v-if="userInfo.userImg"
       :src="userInfo.userImg"
       alt="User Picture"
-      width="32"
-      height="32"
+      width="44"
+      height="44"
+      style="border-radius: 5px;"
     />
 
     <!-- 기본 이미지 -->
@@ -92,7 +93,7 @@ onMounted(() => {
 
 
 
-          <span>{{ userInfo.userName }}</span>
+          
           <button @click="handleLogout" class="styled-button">Logout</button>
         </template>
         <template v-else>
@@ -164,7 +165,8 @@ header ul.menu li a:hover {
 .user-info {
   display: flex;
   align-items: center;
-  gap: 10px; /* 간격 추가 */
+  gap: 20px; /* 간격 추가 */
+  margin-right: 25px;
 }
 
 .styled-button {
