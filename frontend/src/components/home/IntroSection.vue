@@ -1,9 +1,10 @@
 <template>
   <div class="container mt-3 px-3">
     <div class="row custom-row justify-content-center d-flex">
-      <div class="col-md-6 justify-content-center">
-        <div class="card border-0">
-          <div class="card-body">
+      <div class="col-md-6 d-flex justify-content-center">
+        <div class="card border-0"
+        >
+          <div class="card-body ">
             <p>
               인공지능은 빠르게 발전하는 분야이기 때문에 최신 연구와 기술을 파악하는 것이
               필수적입니다. 이때, 논문에서는 AI의 새로운 알고리즘, 데이터 처리 방법, 응용 분야 등이
@@ -21,14 +22,22 @@
           </div>
         </div>
       </div>
+
+
+
       <div class="col-md-6 d-flex justify-content-center align-items-center">
-        <img src="@/assets/home_image1.png" class="img-fluid" />
+        <img src="@/assets/home_image1.png" class="img-fluid" 
+        />
       </div>
     </div>
-    <div class="row custom-row justify-content-center d-flex pt-5">
-      <div class="col-md-6 justify-content-center">
-        <div class="card border-0">
-          <div class="card-body">
+
+
+    
+    <div class="row custom-row justify-content-center d-flex">
+      <div class="col-md-6 d-flex justify-content-center">
+        <div class="card border-0"
+        >
+          <div class="card-body ">
             <p>저희는 다음과 같은 서비스를 제공합니다</p>
             <p>
               첫째, 연구 주제에 맞는 키워드를 어떻게 설정해야 할지 고민이신가요? 저희는 키워드 추천
@@ -55,6 +64,11 @@
 <style scoped>
 .card-body {
   text-align: justify;
+  font-size: small;
+  display: flex;
+  flex-direction: column;
+  justify-content: center !important;
+  max-height: 300px
 }
 
 /* 이미지 크기 고정 */

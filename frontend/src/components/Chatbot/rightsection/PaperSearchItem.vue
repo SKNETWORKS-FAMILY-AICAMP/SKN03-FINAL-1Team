@@ -1,5 +1,6 @@
 <script setup>
-import BookMarkIcon from '@/assets/BookMarkIcon.png'
+import BookmarkIcon from '@/assets/SideComponent/BookmarkIcon.png'
+import UnbookmarkIcon from '@/assets/bookmarksvg.svg'
 import { defineProps,ref } from 'vue'
 import axios from '@/axiosConfig' // 설정한 axios 인스턴스를 가져옵니다.
 
@@ -46,7 +47,7 @@ const Bookmarking = async (userKeyword, paperDoi, bookMark) => {
 // 삭제 확인 모달 열기
 const openBookmarkModal = (paper) => {
   selectedBookmark.value = paper
-  console.log("selectedBookmark : ", selectedBookmark)
+  console.log("selectedBookmark : ", selectedBookmark.value)
   if (updateBookmark.value !== null){
     console.log("not null")
     console.log()
@@ -64,21 +65,23 @@ const closeBookmarkModal = () => {
 </script>
 
 <template>
-  <div class="d-flex align-items-center">
-    
-    <div class="p-4" @click="openBookmarkModal(paper)">
-      <img v-if="updateBookmark !== null" :src="BookMarkIcon" 
-      :class="{ 
-    'bookmarked-icon': updateBookmark, 
-    'bookmark-icon': !updateBookmark 
-  }"/>
-  <img v-else :src="BookMarkIcon" 
-      :class="{ 
-    'bookmarked-icon': paper.bookmarked, 
-    'bookmark-icon': !paper.bookmarked 
-  }"/>
-      <div>
-        <h2>{{ paper.citation }} Citations</h2>
+  <div class="d-flex align-items-center justify-content-start">
+
+
+
+  <div class="p-4 d-flex flex-column align-items-center" @click="openBookmarkModal(paper)"
+    style="width: 100px;">
+
+  
+      <img v-if="updateBookmark !== null" :src="updateBookmark ? BookmarkIcon : UnbookmarkIcon" 
+                    
+                    style="width: 20px; height: 24px; margin-bottom: 10px;"/>
+      <img v-else :src="paper.bookmarked ? BookmarkIcon : UnbookmarkIcon" 
+                    
+      style="width: 20px; height: 24px; margin-bottom: 10px;"/>
+      <div 
+      >
+        <h2 style="color: #a04747;">{{ paper.similarity }}%</h2>
       </div>
     </div>
 
@@ -91,53 +94,56 @@ const closeBookmarkModal = () => {
       style="text-decoration: none; color: inherit"
     >
       <div>
-        <h5>{{ paper.title }}</h5>
+        <h5 class="text-truncate-1">{{ paper.title }}</h5>
         <p class="my-1 author">
           {{ paper.publication_month }} {{ paper.publication_year }} | {{ paper.authors }}
         </p>
-        <p class="no-margin">DOI: {{ paper.paperDoi }}</p>
-        <p class="no-margin abstract">Abstract: {{ paper.kor_abstract }}</p>
+        <p class="no-margin"><span style="color: #902e2e; font-weight: bold;">키워드:</span> {{ paper.Keyword }}</p>
+        <p class="no-margin abstract"><span style="color: #902e2e; font-weight: bold;">핵심 방법론:</span> {{ paper.coreMethod }}</p>
       </div>
     </router-link>
 
-    <!-- 북마킹킹 확인 모달 -->
+
+
+<!-- 북마킹 확인 모달 -->
 <div
       v-if="isBookmarkModalVisible"
-      class="modal-overlay"
+      class="bookmark-overlay"
     >
-      <div class="modal-content">
+      <div class="bookmark-content">
         <div v-if="selectedBookmark.bookmarked===true">
-          <h3 class="modal-title">북마크 삭제 확인</h3>
-        <p>
-          "{{ selectedBookmark?.title }}"  논문을 북마크에서 정말로 삭제하시겠습니까?
-        </p>
+          
+        <strong class="text-truncate-1"
+        style="font-size: 15px;color: black;">{{ selectedBookmark.title }}</strong>
+        <br><p style="font-size: 13px; color: black;">논문을 정말로 북마크에서 <span style="font-size: 18px;color:#a04747;font-weight:bold ">삭제</span>
+          하시겠습니까?</p>
+        
 
         </div>
 
         <div v-else>
-          <h3 class="modal-title">북마크 등록 확인</h3>
-        <p>
-          "{{ selectedBookmark?.title }}" 논문을 북마크에 등록하시겠습니까?
-        </p>
+          
+          <strong class="text-truncate-1"
+        style="font-size: 15px;color: black;">{{ selectedBookmark.title }}</strong>
+        <br><p style="font-size: 13px;color: black;">논문을 정말로 북마크에 <span style="font-size: 18px;color:#a04747;font-weight:bold ">등록</span>
+          하시겠습니까?</p>
 
         </div>
         
 
 
 
-        <div class="button-group">
-          <button
-            class="confirm-button"
-            @click="Bookmarking(keyword, selectedBookmark.paperDoi, selectedBookmark.bookmarked)"
+        <div class="bookmarkbutton-group">
+          <div class="left-content" @click="closeBookmarkModal"
           >
-            네
-          </button>
-          <button
-            class="cancel-button"
-            @click="closeBookmarkModal"
-          >
-            아니요
-          </button>
+      아니요
+    </div>
+
+    <div class="right-content" @click="Bookmarking(keyword, selectedBookmark.paperDoi, selectedBookmark.bookmarked)">
+      네
+    </div>
+
+
         </div>
       </div>
     </div>
@@ -174,7 +180,7 @@ const closeBookmarkModal = () => {
 }
 .abstract {
   display: -webkit-box; /* Flexbox 기반 표시 */
-  -webkit-line-clamp: 2; /* 표시할 최대 줄 수 (여기서는 3줄) */
+  -webkit-line-clamp: 1; /* 표시할 최대 줄 수 (여기서는 3줄) */
   -webkit-box-orient: vertical; /* 세로 방향 정렬 */
   overflow: hidden; /* 넘치는 부분 감춤 */
   text-overflow: ellipsis; /* '...' 표시 */
@@ -229,4 +235,69 @@ const closeBookmarkModal = () => {
 .cancel-button:hover {
   background: #28a745;
 }
+
+.bookmark-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0, 0, 0, 0.1);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    z-index: 1000;
+  }
+  
+  .bookmark-content {
+    background: #f8f9fa;
+    padding: 20px;
+    border-radius: 20px;
+    text-align: center;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+    width: 300px;
+  }
+  
+.bookmarkbutton-group {
+  display: flex;
+  justify-content: center;
+  margin-top: 15px;
+  align-items: center;
+  height: 100%;
+  border-top: 1px solid #eba2a2;
+  
+}
+
+.left-content, .right-content {
+  flex: 1; /* 콘텐츠 영역 동등 배분 */
+  text-align: center; /* 텍스트 가운데 정렬 */
+  padding: 3px;
+  color: #a04747;
+  background-color: #f8f9fa;
+
+}
+.left-content:hover, .right-content:hover {
+
+  color: #f8f9fa;
+  background-color: #a04747;
+
+}
+
+.left-content {
+  border-right: 0.5px solid #eba2a2;
+}
+
+.right-content {
+  border-left: 0.5px solid #eba2a2;
+}
+
+.text-truncate-1 {
+    display: -webkit-box; /* Flexbox 사용을 위해 설정 */
+    -webkit-line-clamp: 1; /* 표시할 최대 줄 수 */
+    -webkit-box-orient: vertical; /* 수직 방향으로 박스 정렬 */
+    overflow: hidden; /* 넘치는 내용 숨기기 */
+    text-overflow: ellipsis; /* 생략 표시(...) */
+    font-weight: bold;
+    
+  }
 </style>
