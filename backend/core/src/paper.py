@@ -280,7 +280,7 @@ async def process_transformation(data):
             for doi_item in doi_list:
                 paper_doi = doi_item["paper_doi"]
                 select_query = """
-                SELECT title, eng_abstract, citation 
+                SELECT title, eng_abstract, citation, kor_summary
                 FROM DOCUMENTO.paper 
                 WHERE paper_doi = %s
                 """
@@ -291,7 +291,7 @@ async def process_transformation(data):
                     paper_data_dict = {
                         "paperDoi": paper_doi,
                         "title": paper_data["title"],
-                        "engAbstract": paper_data["eng_abstract"],
+                        "engAbstract": paper_data["kor_summary"],
                         "citation": paper_data["citation"],
                     }
                     paper_list.append(paper_data_dict)
