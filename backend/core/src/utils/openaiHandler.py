@@ -26,7 +26,7 @@ class openaiHandler:
             print("Fetching API key from AWS SSM Parameter Store...")
             ssm = boto3.client("ssm")
             parameter = ssm.get_parameter(
-                Name="/DOCUMENTO/KEY/OPENAI_API_KEY/TRANSFORMATION", WithDecryption=True
+                Name="/DOCUMENTO/KEY/OPENAI_API_KEY/LAST", WithDecryption=True
             )
             os.environ["OPENAI_API_KEY"] = parameter["Parameter"]["Value"]
         openai.api_key = os.environ["OPENAI_API_KEY"]
